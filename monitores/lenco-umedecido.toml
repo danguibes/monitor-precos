@@ -1,0 +1,20 @@
+# Criado pelo formulário, pedido #3. Para mudar, use o link "editar" da página:
+# ele reabre o formulário preenchido. Editar este arquivo à mão também funciona.
+
+nome = "Lenço umedecido"
+titulo = "Lenço umedecido"
+modo = "descoberta"
+intervalo_minimo_horas = 12
+termos = ["lenço umedecido", "pano umedecido", "toalha umedecida"]
+
+[regras]
+incluir = []
+excluir = []
+
+[pedido]
+numero = 3
+termos = "lenço umedecido\npano umedecido\ntoalha umedecida"
+precisa = ""
+exclui = ""
+tamanho = ""
+pack = ""
