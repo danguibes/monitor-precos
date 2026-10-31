@@ -1,0 +1,9 @@
+[project]
+name = "monitor-precos"
+version = "0.1.0"
+description = "Monitor pessoal de preço + frete para um CEP"
+requires-python = ">=3.12"
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
+testpaths = ["tests"]

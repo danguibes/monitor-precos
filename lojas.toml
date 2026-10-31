@@ -1,0 +1,60 @@
+# Registro único de lojas. TODO monitor pesquisa TODAS as lojas daqui:
+# nenhum monitor escolhe lojas. Loja que não vende o produto simplesmente
+# não devolve oferta.
+#
+# Para incluir uma loja VTEX, basta o host: busca e frete vêm da API pública
+# (/api/catalog_system e /api/checkout/pub/orderForms/simulation). As outras
+# precisam de um coletor em precos/lojas/.
+
+# ATENÇÃO: as chaves soltas (api, navegador) ficam ANTES das tabelas [[vtex]].
+# Em TOML, chave escrita depois de uma tabela pertence a essa tabela.
+
+# Lojas com API própria, sem navegador (coletor em precos/lojas/)
+api = ["Pão de Açúcar"]
+
+# Lojas pelo navegador do monitor (coletor em precos/lojas/)
+# Mercado Livre e Vila das Frutas precisam de login: py monitor.py --configurar
+navegador = ["Carrefour", "Magalu", "Casas Bahia", "Mercado Livre", "Vila das Frutas"]
+
+# Lojas VTEX, pela API pública, sem navegador
+[[vtex]]
+nome = "Electrolux"
+host = "loja.electrolux.com.br"
+
+[[vtex]]
+nome = "Fast Shop"
+host = "site.fastshop.com.br"
+
+[[vtex]]
+nome = "Consul"
+host = "www.consul.com.br"
+
+[[vtex]]
+nome = "Brastemp"
+host = "www.brastemp.com.br"
+
+[[vtex]]
+nome = "Compra Certa"
+host = "www.compracerta.com.br"
+
+[[vtex]]
+nome = "Midea"
+host = "www.midea.com.br"
+
+[[vtex]]
+nome = "Mambo"
+host = "www.mambo.com.br"
+
+[[vtex]]
+nome = "Atacadão"
+host = "www.atacadao.com.br"
+
+[[vtex]]
+nome = "Oba Hortifruti"
+host = "www.obahortifruti.com.br"
+
+# Fora, e por quê:
+#   Shopee   — captcha no navegador; o caminho é a API oficial de afiliados
+#   Assaí    — só vende online por iFood e Rappi
+#   Hirota   — só retirada no CEP de casa
+#   Zaffari, Covabra, Savegnago, Na Sua Casa (Coca-Cola) — VTEX, não entregam no CEP

@@ -1,0 +1,8 @@
+# Opções gerais, que valem para todos os monitores (cada monitor pode
+# sobrescrever intervalo_minimo_horas e abrir_relatorio no próprio arquivo).
+# O CEP NÃO fica aqui: fica em local.toml, que não vai para o git.
+
+intervalo_minimo_horas = 6
+abrir_relatorio = "quando_baixar"  # quando_baixar, sempre ou nunca
+navegador_visivel = false          # true mostra a janela durante a coleta
+publicar = true                    # publica os relatórios, sem o CEP, no GitHub Pages

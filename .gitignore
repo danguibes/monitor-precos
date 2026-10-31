@@ -1,0 +1,24 @@
+# Tudo o que o monitor gera mora em dados/: histórico, banco, relatórios,
+# estado.json, log e o perfil do navegador (com os cookies de login do ML).
+dados/
+
+# O que é pessoal: o CEP (e a lista do que não pode ser publicado).
+local.toml
+
+# Credenciais (API de afiliados da Shopee, Claude) — nunca no git.
+.env
+.env.*
+!.env.example
+
+# Redes de segurança, caso algo seja gerado fora de dados/ por engano.
+perfil-navegador/
+historico*.csv
+*.db
+*.sqlite
+relatorio*.html
+estado.json
+*.log
+
+__pycache__/
+*.pyc
+.pytest_cache/

@@ -1,0 +1,112 @@
+{
+ "items": [
+  {
+   "id": "195387",
+   "requestIndex": 0,
+   "quantity": 1,
+   "seller": "cnl253",
+   "sellerChain": [
+    "cnl253"
+   ],
+   "tax": 0,
+   "priceValidUntil": null,
+   "price": 407090,
+   "listPrice": 407090,
+   "rewardValue": 0,
+   "sellingPrice": 407090,
+   "offerings": [],
+   "priceTags": [],
+   "measurementUnit": "un",
+   "unitMultiplier": 1.0,
+   "parentItemIndex": null,
+   "parentAssemblyBinding": null,
+   "availability": "cannotBeDelivered",
+   "catalogProvider": "vrn:vtex.catalog-api-proxy:-:fastshopbr:master:/proxy/authenticated/catalog/pvt/sku/stockkeepingunitbyid/195387",
+   "priceDefinition": {
+    "calculatedSellingPrice": 407090,
+    "total": 407090,
+    "sellingPrices": [
+     {
+      "value": 407090,
+      "quantity": 1
+     }
+    ],
+    "reason": null,
+    "pricePerUnit": 407090
+   },
+   "priceTable": null
+  }
+ ],
+ "ratesAndBenefitsData": null,
+ "paymentData": {
+  "installmentOptions": [],
+  "paymentSystems": [],
+  "payments": [],
+  "giftCards": [],
+  "giftCardMessages": [],
+  "availableAccounts": [],
+  "availableTokens": [],
+  "availableAssociations": {}
+ },
+ "selectableGifts": [],
+ "marketingData": null,
+ "postalCode": "01310100",
+ "country": "BRA",
+ "logisticsInfo": [
+  {
+   "itemIndex": 0,
+   "addressId": null,
+   "selectedSla": null,
+   "selectedDeliveryChannel": null,
+   "quantity": 1,
+   "shipsTo": [
+    "BRA"
+   ],
+   "slas": [],
+   "deliveryChannels": [
+    {
+     "id": "delivery"
+    }
+   ]
+  }
+ ],
+ "messages": [
+  {
+   "code": "cannotBeDelivered",
+   "text": "O item Freezer Vertical Electrolux FEI27T Degelo Manual 249L Inverter Branco Bivolt não pode ser entregue para as coordenadas selecionadas",
+   "status": "error",
+   "fields": {
+    "ean": "7909569524831",
+    "itemIndex": "0",
+    "skuName": "Freezer Vertical Electrolux FEI27T Degelo Manual 249L Inverter Branco Bivolt"
+   }
+  }
+ ],
+ "purchaseConditions": {
+  "itemPurchaseConditions": [
+   {
+    "id": "195387",
+    "seller": "cnl253",
+    "sellerChain": [
+     "cnl253"
+    ],
+    "slas": [],
+    "price": 407090,
+    "listPrice": 407090
+   }
+  ]
+ },
+ "pickupPoints": [],
+ "subscriptionData": null,
+ "totals": [],
+ "itemMetadata": null,
+ "sellers": [
+  {
+   "id": "cnl253",
+   "name": "Webcontinental Marketplace",
+   "logo": ""
+  }
+ ],
+ "allowMultipleDeliveries": false,
+ "minimumOrderValue": 0
+}

@@ -1,0 +1,102 @@
+{
+ "items": [
+  {
+   "id": "194627",
+   "requestIndex": 0,
+   "quantity": 1,
+   "seller": "1",
+   "sellerChain": [
+    "1"
+   ],
+   "tax": 0,
+   "priceValidUntil": null,
+   "price": null,
+   "listPrice": null,
+   "rewardValue": 0,
+   "sellingPrice": null,
+   "offerings": [],
+   "priceTags": [],
+   "measurementUnit": "un",
+   "unitMultiplier": 1.0,
+   "parentItemIndex": null,
+   "parentAssemblyBinding": null,
+   "availability": "withoutStock",
+   "catalogProvider": "vrn:vtex.catalog-api-proxy:-:fastshopbr:master:/proxy/authenticated/catalog/pvt/sku/stockkeepingunitbyid/194627",
+   "priceDefinition": null,
+   "priceTable": null
+  }
+ ],
+ "ratesAndBenefitsData": null,
+ "paymentData": {
+  "installmentOptions": [],
+  "paymentSystems": [],
+  "payments": [],
+  "giftCards": [],
+  "giftCardMessages": [],
+  "availableAccounts": [],
+  "availableTokens": [],
+  "availableAssociations": {}
+ },
+ "selectableGifts": [],
+ "marketingData": null,
+ "postalCode": "01310100",
+ "country": "BRA",
+ "logisticsInfo": [
+  {
+   "itemIndex": 0,
+   "addressId": null,
+   "selectedSla": null,
+   "selectedDeliveryChannel": null,
+   "quantity": 1,
+   "shipsTo": [
+    "BRA"
+   ],
+   "slas": [],
+   "deliveryChannels": [
+    {
+     "id": "delivery"
+    }
+   ]
+  }
+ ],
+ "messages": [
+  {
+   "code": "withoutStock",
+   "text": "O item Freezer Vertical Electrolux Efficient  249L SmartBivolt Inverter (FEI27T) Bivolt não tem estoque",
+   "status": "error",
+   "fields": {
+    "ean": "7909569524831",
+    "itemIndex": "0",
+    "skuName": "Freezer Vertical Electrolux Efficient  249L SmartBivolt Inverter (FEI27T) Bivolt"
+   }
+  }
+ ],
+ "purchaseConditions": {
+  "itemPurchaseConditions": [
+   {
+    "id": "194627",
+    "seller": "1",
+    "sellerChain": [
+     "1"
+    ],
+    "slas": [],
+    "price": null,
+    "listPrice": null
+   }
+  ]
+ },
+ "pickupPoints": [],
+ "subscriptionData": null,
+ "totals": [],
+ "itemMetadata": null,
+ "sellers": [
+  {
+   "id": "1",
+   "name": "Fast Shop",
+   "logo": null,
+   "minimumOrderValue": 0
+  }
+ ],
+ "allowMultipleDeliveries": false,
+ "minimumOrderValue": 0
+}

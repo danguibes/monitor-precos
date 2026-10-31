@@ -1,0 +1,2236 @@
+{
+ "items": [
+  {
+   "id": "310131200",
+   "requestIndex": 0,
+   "quantity": 1,
+   "seller": "1",
+   "sellerChain": [
+    "1"
+   ],
+   "tax": 0,
+   "priceValidUntil": "2027-10-31T00:24:36Z",
+   "price": 279900,
+   "listPrice": 279900,
+   "rewardValue": 0,
+   "sellingPrice": 279900,
+   "offerings": [],
+   "priceTags": [
+    {
+     "name": "discount@shipping-0858293d-9bf5-486c-b1e9-671d173965d4#73b32115-737f-479f-82e4-84495f45125b",
+     "value": -19754,
+     "rawValue": -197.54,
+     "isPercentual": false,
+     "identifier": null,
+     "owner": "electrolux",
+     "sourceSystem": null
+    }
+   ],
+   "measurementUnit": "un",
+   "unitMultiplier": 1.0,
+   "parentItemIndex": null,
+   "parentAssemblyBinding": null,
+   "availability": "available",
+   "catalogProvider": "vrn:vtex.catalog-api-proxy:-:electrolux:master:/proxy/authenticated/catalog/pvt/sku/stockkeepingunitbyid/310131200",
+   "priceDefinition": {
+    "calculatedSellingPrice": 279900,
+    "total": 279900,
+    "sellingPrices": [
+     {
+      "value": 279900,
+      "quantity": 1
+     }
+    ],
+    "reason": "priceTable",
+    "pricePerUnit": 279900
+   },
+   "priceTable": null
+  }
+ ],
+ "ratesAndBenefitsData": {
+  "rateAndBenefitsIdentifiers": [
+   {
+    "id": "0858293d-9bf5-486c-b1e9-671d173965d4",
+    "name": "FRETE LOJA (S e SE) FIXO 49,90 | CONVENCIONAL",
+    "featured": false,
+    "description": "Regra de frete com valor máximo de R$ 49,90 para as regiões Sul e Sudeste nas categorias abaixo.\nCategoria: Ar Potátil, Freezer Vertical, Lava e Seca, Secadoras e Torre de Cocção.",
+    "matchedParameters": {
+     "Seller@CatalogSystem": "1|inclusive",
+     "zipCode@Shipping": "01310100",
+     "slaIds": "1.convencional,2.agendada",
+     "category@CatalogSystem": "1000118,1000119,1000521,1000220,1000512,1000587|inclusive"
+    },
+    "additionalInfo": null,
+    "triggeredBy": null,
+    "isCupomDiscount": null
+   }
+  ],
+  "teaser": [
+   {
+    "featured": true,
+    "id": "d41423da-18ff-42ae-9b70-cdf9c65fbe63",
+    "name": "PIX 5% - LOJA ELECTROLUX",
+    "generalValues": {
+     "promotionName": "no <icon-pix>Pix</icon-pix>"
+    },
+    "conditions": {
+     "parameters": [
+      {
+       "name": "PaymentMethodId",
+       "value": "125"
+      }
+     ],
+     "minimumQuantity": 0
+    },
+    "effects": {
+     "parameters": [
+      {
+       "name": "PercentualDiscount",
+       "value": "5"
+      }
+     ]
+    },
+    "teaserType": "Profiler"
+   }
+  ],
+  "campaigns": []
+ },
+ "paymentData": {
+  "installmentOptions": [
+   {
+    "paymentSystem": "1",
+    "bin": null,
+    "paymentName": "American Express",
+    "paymentGroupName": "creditCardPaymentGroup",
+    "value": 279900,
+    "installments": [
+     {
+      "count": 1,
+      "hasInterestRate": false,
+      "interestRate": 0,
+      "value": 279900,
+      "total": 279900,
+      "sellerMerchantInstallments": [
+       {
+        "id": "ELECTROLUX",
+        "count": 1,
+        "hasInterestRate": false,
+        "interestRate": 0,
+        "value": 279900,
+        "total": 279900
+       }
+      ]
+     },
+     {
+      "count": 2,
+      "hasInterestRate": false,
+      "interestRate": 0,
+      "value": 139950,
+      "total": 279900,
+      "sellerMerchantInstallments": [
+       {
+        "id": "ELECTROLUX",
+        "count": 2,
+        "hasInterestRate": false,
+        "interestRate": 0,
+        "value": 139950,
+        "total": 279900
+       }
+      ]
+     },
+     {
+      "count": 3,
+      "hasInterestRate": false,
+      "interestRate": 0,
+      "value": 93300,
+      "total": 279900,
+      "sellerMerchantInstallments": [
+       {
+        "id": "ELECTROLUX",
+        "count": 3,
+        "hasInterestRate": false,
+        "interestRate": 0,
+        "value": 93300,
+        "total": 279900
+       }
+      ]
+     },
+     {
+      "count": 4,
+      "hasInterestRate": false,
+      "interestRate": 0,
+      "value": 69975,
+      "total": 279900,
+      "sellerMerchantInstallments": [
+       {
+        "id": "ELECTROLUX",
+        "count": 4,
+        "hasInterestRate": false,
+        "interestRate": 0,
+        "value": 69975,
+        "total": 279900
+       }
+      ]
+     },
+     {
+      "count": 5,
+      "hasInterestRate": false,
+      "interestRate": 0,
+      "value": 55980,
+      "total": 279900,
+      "sellerMerchantInstallments": [
+       {
+        "id": "ELECTROLUX",
+        "count": 5,
+        "hasInterestRate": false,
+        "interestRate": 0,
+        "value": 55980,
+        "total": 279900
+       }
+      ]
+     },
+     {
+      "count": 6,
+      "hasInterestRate": false,
+      "interestRate": 0,
+      "value": 46650,
+      "total": 279900,
+      "sellerMerchantInstallments": [
+       {
+        "id": "ELECTROLUX",
+        "count": 6,
+        "hasInterestRate": false,
+        "interestRate": 0,
+        "value": 46650,
+        "total": 279900
+       }
+      ]
+     },
+     {
+      "count": 7,
+      "hasInterestRate": false,
+      "interestRate": 0,
+      "value": 39985,
+      "total": 279900,
+      "sellerMerchantInstallments": [
+       {
+        "id": "ELECTROLUX",
+        "count": 7,
+        "hasInterestRate": false,
+        "interestRate": 0,
+        "value": 39985,
+        "total": 279900
+       }
+      ]
+     },
+     {
+      "count": 8,
+      "hasInterestRate": false,
+      "interestRate": 0,
+      "value": 34987,
+      "total": 279900,
+      "sellerMerchantInstallments": [
+       {
+        "id": "ELECTROLUX",
+        "count": 8,
+        "hasInterestRate": false,
+        "interestRate": 0,
+        "value": 34987,
+        "total": 279900
+       }
+      ]
+     },
+     {
+      "count": 9,
+      "hasInterestRate": false,
+      "interestRate": 0,
+      "value": 31100,
+      "total": 279900,
+      "sellerMerchantInstallments": [
+       {
+        "id": "ELECTROLUX",
+        "count": 9,
+        "hasInterestRate": false,
+        "interestRate": 0,
+        "value": 31100,
+        "total": 279900
+       }
+      ]
+     },
+     {
+      "count": 10,
+      "hasInterestRate": false,
+      "interestRate": 0,
+      "value": 27990,
+      "total": 279900,
+      "sellerMerchantInstallments": [
+       {
+        "id": "ELECTROLUX",
+        "count": 10,
+        "hasInterestRate": false,
+        "interestRate": 0,
+        "value": 27990,
+        "total": 279900
+       }
+      ]
+     },
+     {
+      "count": 11,
+      "hasInterestRate": true,
+      "interestRate": 150,
+      "value": 27792,
+      "total": 305712,
+      "sellerMerchantInstallments": [
+       {
+        "id": "ELECTROLUX",
+        "count": 11,
+        "hasInterestRate": true,
+        "interestRate": 150,
+        "value": 27792,
+        "total": 305712
+       }
+      ]
+     },
+     {
+      "count": 12,
+      "hasInterestRate": true,
+      "interestRate": 150,
+      "value": 25661,
+      "total": 307932,
+      "sellerMerchantInstallments": [
+       {
+        "id": "ELECTROLUX",
+        "count": 12,
+        "hasInterestRate": true,
+        "interestRate": 150,
+        "value": 25661,
+        "total": 307932
+       }
+      ]
+     },
+     {
+      "count": 13,
+      "hasInterestRate": true,
+      "interestRate": 150,
+      "value": 23858,
+      "total": 310154,
+      "sellerMerchantInstallments": [
+       {
+        "id": "ELECTROLUX",
+        "count": 13,
+        "hasInterestRate": true,
+        "interestRate": 150,
+        "value": 23858,
+        "total": 310154
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "paymentSystem": "2",
+    "bin": null,
+    "paymentName": "Visa",
+    "paymentGroupName": "creditCardPaymentGroup",
+    "value": 279900,
+    "installments": [
+     {
+      "count": 1,
+      "hasInterestRate": false,
+      "interestRate": 0,
+      "value": 279900,
+      "total": 279900,
+      "sellerMerchantInstallments": [
+       {
+        "id": "ELECTROLUX",
+        "count": 1,
+        "hasInterestRate": false,
+        "interestRate": 0,
+        "value": 279900,
+        "total": 279900
+       }
+      ]
+     },
+     {
+      "count": 2,
+      "hasInterestRate": false,
+      "interestRate": 0,
+      "value": 139950,
+      "total": 279900,
+      "sellerMerchantInstallments": [
+       {
+        "id": "ELECTROLUX",
+        "count": 2,
+        "hasInterestRate": false,
+        "interestRate": 0,
+        "value": 139950,
+        "total": 279900
+       }
+      ]
+     },
+     {
+      "count": 3,
+      "hasInterestRate": false,
+      "interestRate": 0,
+      "value": 93300,
+      "total": 279900,
+      "sellerMerchantInstallments": [
+       {
+        "id": "ELECTROLUX",
+        "count": 3,
+        "hasInterestRate": false,
+        "interestRate": 0,
+        "value": 93300,
+        "total": 279900
+       }
+      ]
+     },
+     {
+      "count": 4,
+      "hasInterestRate": false,
+      "interestRate": 0,
+      "value": 69975,
+      "total": 279900,
+      "sellerMerchantInstallments": [
+       {
+        "id": "ELECTROLUX",
+        "count": 4,
+        "hasInterestRate": false,
+        "interestRate": 0,
+        "value": 69975,
+        "total": 279900
+       }
+      ]
+     },
+     {
+      "count": 5,
+      "hasInterestRate": false,
+      "interestRate": 0,
+      "value": 55980,
+      "total": 279900,
+      "sellerMerchantInstallments": [
+       {
+        "id": "ELECTROLUX",
+        "count": 5,
+        "hasInterestRate": false,
+        "interestRate": 0,
+        "value": 55980,
+        "total": 279900
+       }
+      ]
+     },
+     {
+      "count": 6,
+      "hasInterestRate": false,
+      "interestRate": 0,
+      "value": 46650,
+      "total": 279900,
+      "sellerMerchantInstallments": [
+       {
+        "id": "ELECTROLUX",
+        "count": 6,
+        "hasInterestRate": false,
+        "interestRate": 0,
+        "value": 46650,
+        "total": 279900
+       }
+      ]
+     },
+     {
+      "count": 7,
+      "hasInterestRate": false,
+      "interestRate": 0,
+      "value": 39985,
+      "total": 279900,
+      "sellerMerchantInstallments": [
+       {
+        "id": "ELECTROLUX",
+        "count": 7,
+        "hasInterestRate": false,
+        "interestRate": 0,
+        "value": 39985,
+        "total": 279900
+       }
+      ]
+     },
+     {
+      "count": 8,
+      "hasInterestRate": false,
+      "interestRate": 0,
+      "value": 34987,
+      "total": 279900,
+      "sellerMerchantInstallments": [
+       {
+        "id": "ELECTROLUX",
+        "count": 8,
+        "hasInterestRate": false,
+        "interestRate": 0,
+        "value": 34987,
+        "total": 279900
+       }
+      ]
+     },
+     {
+      "count": 9,
+      "hasInterestRate": false,
+      "interestRate": 0,
+      "value": 31100,
+      "total": 279900,
+      "sellerMerchantInstallments": [
+       {
+        "id": "ELECTROLUX",
+        "count": 9,
+        "hasInterestRate": false,
+        "interestRate": 0,
+        "value": 31100,
+        "total": 279900
+       }
+      ]
+     },
+     {
+      "count": 10,
+      "hasInterestRate": false,
+      "interestRate": 0,
+      "value": 27990,
+      "total": 279900,
+      "sellerMerchantInstallments": [
+       {
+        "id": "ELECTROLUX",
+        "count": 10,
+        "hasInterestRate": false,
+        "interestRate": 0,
+        "value": 27990,
+        "total": 279900
+       }
+      ]
+     },
+     {
+      "count": 11,
+      "hasInterestRate": true,
+      "interestRate": 150,
+      "value": 27792,
+      "total": 305712,
+      "sellerMerchantInstallments": [
+       {
+        "id": "ELECTROLUX",
+        "count": 11,
+        "hasInterestRate": true,
+        "interestRate": 150,
+        "value": 27792,
+        "total": 305712
+       }
+      ]
+     },
+     {
+      "count": 12,
+      "hasInterestRate": true,
+      "interestRate": 150,
+      "value": 25661,
+      "total": 307932,
+      "sellerMerchantInstallments": [
+       {
+        "id": "ELECTROLUX",
+        "count": 12,
+        "hasInterestRate": true,
+        "interestRate": 150,
+        "value": 25661,
+        "total": 307932
+       }
+      ]
+     },
+     {
+      "count": 13,
+      "hasInterestRate": true,
+      "interestRate": 150,
+      "value": 23858,
+      "total": 310154,
+      "sellerMerchantInstallments": [
+       {
+        "id": "ELECTROLUX",
+        "count": 13,
+        "hasInterestRate": true,
+        "interestRate": 150,
+        "value": 23858,
+        "total": 310154
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "paymentSystem": "3",
+    "bin": null,
+    "paymentName": "Diners",
+    "paymentGroupName": "creditCardPaymentGroup",
+    "value": 279900,
+    "installments": [
+     {
+      "count": 1,
+      "hasInterestRate": false,
+      "interestRate": 0,
+      "value": 279900,
+      "total": 279900,
+      "sellerMerchantInstallments": [
+       {
+        "id": "ELECTROLUX",
+        "count": 1,
+        "hasInterestRate": false,
+        "interestRate": 0,
+        "value": 279900,
+        "total": 279900
+       }
+      ]
+     },
+     {
+      "count": 2,
+      "hasInterestRate": false,
+      "interestRate": 0,
+      "value": 139950,
+      "total": 279900,
+      "sellerMerchantInstallments": [
+       {
+        "id": "ELECTROLUX",
+        "count": 2,
+        "hasInterestRate": false,
+        "interestRate": 0,
+        "value": 139950,
+        "total": 279900
+       }
+      ]
+     },
+     {
+      "count": 3,
+      "hasInterestRate": false,
+      "interestRate": 0,
+      "value": 93300,
+      "total": 279900,
+      "sellerMerchantInstallments": [
+       {
+        "id": "ELECTROLUX",
+        "count": 3,
+        "hasInterestRate": false,
+        "interestRate": 0,
+        "value": 93300,
+        "total": 279900
+       }
+      ]
+     },
+     {
+      "count": 4,
+      "hasInterestRate": false,
+      "interestRate": 0,
+      "value": 69975,
+      "total": 279900,
+      "sellerMerchantInstallments": [
+       {
+        "id": "ELECTROLUX",
+        "count": 4,
+        "hasInterestRate": false,
+        "interestRate": 0,
+        "value": 69975,
+        "total": 279900
+       }
+      ]
+     },
+     {
+      "count": 5,
+      "hasInterestRate": false,
+      "interestRate": 0,
+      "value": 55980,
+      "total": 279900,
+      "sellerMerchantInstallments": [
+       {
+        "id": "ELECTROLUX",
+        "count": 5,
+        "hasInterestRate": false,
+        "interestRate": 0,
+        "value": 55980,
+        "total": 279900
+       }
+      ]
+     },
+     {
+      "count": 6,
+      "hasInterestRate": false,
+      "interestRate": 0,
+      "value": 46650,
+      "total": 279900,
+      "sellerMerchantInstallments": [
+       {
+        "id": "ELECTROLUX",
+        "count": 6,
+        "hasInterestRate": false,
+        "interestRate": 0,
+        "value": 46650,
+        "total": 279900
+       }
+      ]
+     },
+     {
+      "count": 7,
+      "hasInterestRate": false,
+      "interestRate": 0,
+      "value": 39985,
+      "total": 279900,
+      "sellerMerchantInstallments": [
+       {
+        "id": "ELECTROLUX",
+        "count": 7,
+        "hasInterestRate": false,
+        "interestRate": 0,
+        "value": 39985,
+        "total": 279900
+       }
+      ]
+     },
+     {
+      "count": 8,
+      "hasInterestRate": false,
+      "interestRate": 0,
+      "value": 34987,
+      "total": 279900,
+      "sellerMerchantInstallments": [
+       {
+        "id": "ELECTROLUX",
+        "count": 8,
+        "hasInterestRate": false,
+        "interestRate": 0,
+        "value": 34987,
+        "total": 279900
+       }
+      ]
+     },
+     {
+      "count": 9,
+      "hasInterestRate": false,
+      "interestRate": 0,
+      "value": 31100,
+      "total": 279900,
+      "sellerMerchantInstallments": [
+       {
+        "id": "ELECTROLUX",
+        "count": 9,
+        "hasInterestRate": false,
+        "interestRate": 0,
+        "value": 31100,
+        "total": 279900
+       }
+      ]
+     },
+     {
+      "count": 10,
+      "hasInterestRate": false,
+      "interestRate": 0,
+      "value": 27990,
+      "total": 279900,
+      "sellerMerchantInstallments": [
+       {
+        "id": "ELECTROLUX",
+        "count": 10,
+        "hasInterestRate": false,
+        "interestRate": 0,
+        "value": 27990,
+        "total": 279900
+       }
+      ]
+     },
+     {
+      "count": 11,
+      "hasInterestRate": true,
+      "interestRate": 150,
+      "value": 27792,
+      "total": 305712,
+      "sellerMerchantInstallments": [
+       {
+        "id": "ELECTROLUX",
+        "count": 11,
+        "hasInterestRate": true,
+        "interestRate": 150,
+        "value": 27792,
+        "total": 305712
+       }
+      ]
+     },
+     {
+      "count": 12,
+      "hasInterestRate": true,
+      "interestRate": 150,
+      "value": 25661,
+      "total": 307932,
+      "sellerMerchantInstallments": [
+       {
+        "id": "ELECTROLUX",
+        "count": 12,
+        "hasInterestRate": true,
+        "interestRate": 150,
+        "value": 25661,
+        "total": 307932
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "paymentSystem": "4",
+    "bin": null,
+    "paymentName": "Mastercard",
+    "paymentGroupName": "creditCardPaymentGroup",
+    "value": 279900,
+    "installments": [
+     {
+      "count": 1,
+      "hasInterestRate": false,
+      "interestRate": 0,
+      "value": 279900,
+      "total": 279900,
+      "sellerMerchantInstallments": [
+       {
+        "id": "ELECTROLUX",
+        "count": 1,
+        "hasInterestRate": false,
+        "interestRate": 0,
+        "value": 279900,
+        "total": 279900
+       }
+      ]
+     },
+     {
+      "count": 2,
+      "hasInterestRate": false,
+      "interestRate": 0,
+      "value": 139950,
+      "total": 279900,
+      "sellerMerchantInstallments": [
+       {
+        "id": "ELECTROLUX",
+        "count": 2,
+        "hasInterestRate": false,
+        "interestRate": 0,
+        "value": 139950,
+        "total": 279900
+       }
+      ]
+     },
+     {
+      "count": 3,
+      "hasInterestRate": false,
+      "interestRate": 0,
+      "value": 93300,
+      "total": 279900,
+      "sellerMerchantInstallments": [
+       {
+        "id": "ELECTROLUX",
+        "count": 3,
+        "hasInterestRate": false,
+        "interestRate": 0,
+        "value": 93300,
+        "total": 279900
+       }
+      ]
+     },
+     {
+      "count": 4,
+      "hasInterestRate": false,
+      "interestRate": 0,
+      "value": 69975,
+      "total": 279900,
+      "sellerMerchantInstallments": [
+       {
+        "id": "ELECTROLUX",
+        "count": 4,
+        "hasInterestRate": false,
+        "interestRate": 0,
+        "value": 69975,
+        "total": 279900
+       }
+      ]
+     },
+     {
+      "count": 5,
+      "hasInterestRate": false,
+      "interestRate": 0,
+      "value": 55980,
+      "total": 279900,
+      "sellerMerchantInstallments": [
+       {
+        "id": "ELECTROLUX",
+        "count": 5,
+        "hasInterestRate": false,
+        "interestRate": 0,
+        "value": 55980,
+        "total": 279900
+       }
+      ]
+     },
+     {
+      "count": 6,
+      "hasInterestRate": false,
+      "interestRate": 0,
+      "value": 46650,
+      "total": 279900,
+      "sellerMerchantInstallments": [
+       {
+        "id": "ELECTROLUX",
+        "count": 6,
+        "hasInterestRate": false,
+        "interestRate": 0,
+        "value": 46650,
+        "total": 279900
+       }
+      ]
+     },
+     {
+      "count": 7,
+      "hasInterestRate": false,
+      "interestRate": 0,
+      "value": 39985,
+      "total": 279900,
+      "sellerMerchantInstallments": [
+       {
+        "id": "ELECTROLUX",
+        "count": 7,
+        "hasInterestRate": false,
+        "interestRate": 0,
+        "value": 39985,
+        "total": 279900
+       }
+      ]
+     },
+     {
+      "count": 8,
+      "hasInterestRate": false,
+      "interestRate": 0,
+      "value": 34987,
+      "total": 279900,
+      "sellerMerchantInstallments": [
+       {
+        "id": "ELECTROLUX",
+        "count": 8,
+        "hasInterestRate": false,
+        "interestRate": 0,
+        "value": 34987,
+        "total": 279900
+       }
+      ]
+     },
+     {
+      "count": 9,
+      "hasInterestRate": false,
+      "interestRate": 0,
+      "value": 31100,
+      "total": 279900,
+      "sellerMerchantInstallments": [
+       {
+        "id": "ELECTROLUX",
+        "count": 9,
+        "hasInterestRate": false,
+        "interestRate": 0,
+        "value": 31100,
+        "total": 279900
+       }
+      ]
+     },
+     {
+      "count": 10,
+      "hasInterestRate": false,
+      "interestRate": 0,
+      "value": 27990,
+      "total": 279900,
+      "sellerMerchantInstallments": [
+       {
+        "id": "ELECTROLUX",
+        "count": 10,
+        "hasInterestRate": false,
+        "interestRate": 0,
+        "value": 27990,
+        "total": 279900
+       }
+      ]
+     },
+     {
+      "count": 11,
+      "hasInterestRate": true,
+      "interestRate": 150,
+      "value": 27792,
+      "total": 305712,
+      "sellerMerchantInstallments": [
+       {
+        "id": "ELECTROLUX",
+        "count": 11,
+        "hasInterestRate": true,
+        "interestRate": 150,
+        "value": 27792,
+        "total": 305712
+       }
+      ]
+     },
+     {
+      "count": 12,
+      "hasInterestRate": true,
+      "interestRate": 150,
+      "value": 25661,
+      "total": 307932,
+      "sellerMerchantInstallments": [
+       {
+        "id": "ELECTROLUX",
+        "count": 12,
+        "hasInterestRate": true,
+        "interestRate": 150,
+        "value": 25661,
+        "total": 307932
+       }
+      ]
+     },
+     {
+      "count": 13,
+      "hasInterestRate": true,
+      "interestRate": 150,
+      "value": 23858,
+      "total": 310154,
+      "sellerMerchantInstallments": [
+       {
+        "id": "ELECTROLUX",
+        "count": 13,
+        "hasInterestRate": true,
+        "interestRate": 150,
+        "value": 23858,
+        "total": 310154
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "paymentSystem": "8",
+    "bin": null,
+    "paymentName": "Hipercard",
+    "paymentGroupName": "creditCardPaymentGroup",
+    "value": 279900,
+    "installments": [
+     {
+      "count": 1,
+      "hasInterestRate": false,
+      "interestRate": 0,
+      "value": 279900,
+      "total": 279900,
+      "sellerMerchantInstallments": [
+       {
+        "id": "ELECTROLUX",
+        "count": 1,
+        "hasInterestRate": false,
+        "interestRate": 0,
+        "value": 279900,
+        "total": 279900
+       }
+      ]
+     },
+     {
+      "count": 2,
+      "hasInterestRate": false,
+      "interestRate": 0,
+      "value": 139950,
+      "total": 279900,
+      "sellerMerchantInstallments": [
+       {
+        "id": "ELECTROLUX",
+        "count": 2,
+        "hasInterestRate": false,
+        "interestRate": 0,
+        "value": 139950,
+        "total": 279900
+       }
+      ]
+     },
+     {
+      "count": 3,
+      "hasInterestRate": false,
+      "interestRate": 0,
+      "value": 93300,
+      "total": 279900,
+      "sellerMerchantInstallments": [
+       {
+        "id": "ELECTROLUX",
+        "count": 3,
+        "hasInterestRate": false,
+        "interestRate": 0,
+        "value": 93300,
+        "total": 279900
+       }
+      ]
+     },
+     {
+      "count": 4,
+      "hasInterestRate": false,
+      "interestRate": 0,
+      "value": 69975,
+      "total": 279900,
+      "sellerMerchantInstallments": [
+       {
+        "id": "ELECTROLUX",
+        "count": 4,
+        "hasInterestRate": false,
+        "interestRate": 0,
+        "value": 69975,
+        "total": 279900
+       }
+      ]
+     },
+     {
+      "count": 5,
+      "hasInterestRate": false,
+      "interestRate": 0,
+      "value": 55980,
+      "total": 279900,
+      "sellerMerchantInstallments": [
+       {
+        "id": "ELECTROLUX",
+        "count": 5,
+        "hasInterestRate": false,
+        "interestRate": 0,
+        "value": 55980,
+        "total": 279900
+       }
+      ]
+     },
+     {
+      "count": 6,
+      "hasInterestRate": false,
+      "interestRate": 0,
+      "value": 46650,
+      "total": 279900,
+      "sellerMerchantInstallments": [
+       {
+        "id": "ELECTROLUX",
+        "count": 6,
+        "hasInterestRate": false,
+        "interestRate": 0,
+        "value": 46650,
+        "total": 279900
+       }
+      ]
+     },
+     {
+      "count": 7,
+      "hasInterestRate": false,
+      "interestRate": 0,
+      "value": 39985,
+      "total": 279900,
+      "sellerMerchantInstallments": [
+       {
+        "id": "ELECTROLUX",
+        "count": 7,
+        "hasInterestRate": false,
+        "interestRate": 0,
+        "value": 39985,
+        "total": 279900
+       }
+      ]
+     },
+     {
+      "count": 8,
+      "hasInterestRate": false,
+      "interestRate": 0,
+      "value": 34987,
+      "total": 279900,
+      "sellerMerchantInstallments": [
+       {
+        "id": "ELECTROLUX",
+        "count": 8,
+        "hasInterestRate": false,
+        "interestRate": 0,
+        "value": 34987,
+        "total": 279900
+       }
+      ]
+     },
+     {
+      "count": 9,
+      "hasInterestRate": false,
+      "interestRate": 0,
+      "value": 31100,
+      "total": 279900,
+      "sellerMerchantInstallments": [
+       {
+        "id": "ELECTROLUX",
+        "count": 9,
+        "hasInterestRate": false,
+        "interestRate": 0,
+        "value": 31100,
+        "total": 279900
+       }
+      ]
+     },
+     {
+      "count": 10,
+      "hasInterestRate": false,
+      "interestRate": 0,
+      "value": 27990,
+      "total": 279900,
+      "sellerMerchantInstallments": [
+       {
+        "id": "ELECTROLUX",
+        "count": 10,
+        "hasInterestRate": false,
+        "interestRate": 0,
+        "value": 27990,
+        "total": 279900
+       }
+      ]
+     },
+     {
+      "count": 11,
+      "hasInterestRate": true,
+      "interestRate": 150,
+      "value": 27792,
+      "total": 305712,
+      "sellerMerchantInstallments": [
+       {
+        "id": "ELECTROLUX",
+        "count": 11,
+        "hasInterestRate": true,
+        "interestRate": 150,
+        "value": 27792,
+        "total": 305712
+       }
+      ]
+     },
+     {
+      "count": 12,
+      "hasInterestRate": true,
+      "interestRate": 150,
+      "value": 25661,
+      "total": 307932,
+      "sellerMerchantInstallments": [
+       {
+        "id": "ELECTROLUX",
+        "count": 12,
+        "hasInterestRate": true,
+        "interestRate": 150,
+        "value": 25661,
+        "total": 307932
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "paymentSystem": "9",
+    "bin": null,
+    "paymentName": "Elo",
+    "paymentGroupName": "creditCardPaymentGroup",
+    "value": 279900,
+    "installments": [
+     {
+      "count": 1,
+      "hasInterestRate": false,
+      "interestRate": 0,
+      "value": 279900,
+      "total": 279900,
+      "sellerMerchantInstallments": [
+       {
+        "id": "ELECTROLUX",
+        "count": 1,
+        "hasInterestRate": false,
+        "interestRate": 0,
+        "value": 279900,
+        "total": 279900
+       }
+      ]
+     },
+     {
+      "count": 2,
+      "hasInterestRate": false,
+      "interestRate": 0,
+      "value": 139950,
+      "total": 279900,
+      "sellerMerchantInstallments": [
+       {
+        "id": "ELECTROLUX",
+        "count": 2,
+        "hasInterestRate": false,
+        "interestRate": 0,
+        "value": 139950,
+        "total": 279900
+       }
+      ]
+     },
+     {
+      "count": 3,
+      "hasInterestRate": false,
+      "interestRate": 0,
+      "value": 93300,
+      "total": 279900,
+      "sellerMerchantInstallments": [
+       {
+        "id": "ELECTROLUX",
+        "count": 3,
+        "hasInterestRate": false,
+        "interestRate": 0,
+        "value": 93300,
+        "total": 279900
+       }
+      ]
+     },
+     {
+      "count": 4,
+      "hasInterestRate": false,
+      "interestRate": 0,
+      "value": 69975,
+      "total": 279900,
+      "sellerMerchantInstallments": [
+       {
+        "id": "ELECTROLUX",
+        "count": 4,
+        "hasInterestRate": false,
+        "interestRate": 0,
+        "value": 69975,
+        "total": 279900
+       }
+      ]
+     },
+     {
+      "count": 5,
+      "hasInterestRate": false,
+      "interestRate": 0,
+      "value": 55980,
+      "total": 279900,
+      "sellerMerchantInstallments": [
+       {
+        "id": "ELECTROLUX",
+        "count": 5,
+        "hasInterestRate": false,
+        "interestRate": 0,
+        "value": 55980,
+        "total": 279900
+       }
+      ]
+     },
+     {
+      "count": 6,
+      "hasInterestRate": false,
+      "interestRate": 0,
+      "value": 46650,
+      "total": 279900,
+      "sellerMerchantInstallments": [
+       {
+        "id": "ELECTROLUX",
+        "count": 6,
+        "hasInterestRate": false,
+        "interestRate": 0,
+        "value": 46650,
+        "total": 279900
+       }
+      ]
+     },
+     {
+      "count": 7,
+      "hasInterestRate": false,
+      "interestRate": 0,
+      "value": 39985,
+      "total": 279900,
+      "sellerMerchantInstallments": [
+       {
+        "id": "ELECTROLUX",
+        "count": 7,
+        "hasInterestRate": false,
+        "interestRate": 0,
+        "value": 39985,
+        "total": 279900
+       }
+      ]
+     },
+     {
+      "count": 8,
+      "hasInterestRate": false,
+      "interestRate": 0,
+      "value": 34987,
+      "total": 279900,
+      "sellerMerchantInstallments": [
+       {
+        "id": "ELECTROLUX",
+        "count": 8,
+        "hasInterestRate": false,
+        "interestRate": 0,
+        "value": 34987,
+        "total": 279900
+       }
+      ]
+     },
+     {
+      "count": 9,
+      "hasInterestRate": false,
+      "interestRate": 0,
+      "value": 31100,
+      "total": 279900,
+      "sellerMerchantInstallments": [
+       {
+        "id": "ELECTROLUX",
+        "count": 9,
+        "hasInterestRate": false,
+        "interestRate": 0,
+        "value": 31100,
+        "total": 279900
+       }
+      ]
+     },
+     {
+      "count": 10,
+      "hasInterestRate": false,
+      "interestRate": 0,
+      "value": 27990,
+      "total": 279900,
+      "sellerMerchantInstallments": [
+       {
+        "id": "ELECTROLUX",
+        "count": 10,
+        "hasInterestRate": false,
+        "interestRate": 0,
+        "value": 27990,
+        "total": 279900
+       }
+      ]
+     },
+     {
+      "count": 11,
+      "hasInterestRate": false,
+      "interestRate": 0,
+      "value": 25445,
+      "total": 279900,
+      "sellerMerchantInstallments": [
+       {
+        "id": "ELECTROLUX",
+        "count": 11,
+        "hasInterestRate": false,
+        "interestRate": 0,
+        "value": 25445,
+        "total": 279900
+       }
+      ]
+     },
+     {
+      "count": 12,
+      "hasInterestRate": false,
+      "interestRate": 0,
+      "value": 23325,
+      "total": 279900,
+      "sellerMerchantInstallments": [
+       {
+        "id": "ELECTROLUX",
+        "count": 12,
+        "hasInterestRate": false,
+        "interestRate": 0,
+        "value": 23325,
+        "total": 279900
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "paymentSystem": "72",
+    "bin": null,
+    "paymentName": "PicPay",
+    "paymentGroupName": "picPayPaymentGroup",
+    "value": 279900,
+    "installments": [
+     {
+      "count": 1,
+      "hasInterestRate": false,
+      "interestRate": 0,
+      "value": 279900,
+      "total": 279900,
+      "sellerMerchantInstallments": [
+       {
+        "id": "ELECTROLUX",
+        "count": 1,
+        "hasInterestRate": false,
+        "interestRate": 0,
+        "value": 279900,
+        "total": 279900
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "paymentSystem": "125",
+    "bin": null,
+    "paymentName": "Pix",
+    "paymentGroupName": "instantPaymentPaymentGroup",
+    "value": 279900,
+    "installments": [
+     {
+      "count": 1,
+      "hasInterestRate": false,
+      "interestRate": 0,
+      "value": 265905,
+      "total": 265905,
+      "sellerMerchantInstallments": [
+       {
+        "id": "ELECTROLUX",
+        "count": 1,
+        "hasInterestRate": false,
+        "interestRate": 0,
+        "value": 265905,
+        "total": 265905
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "paymentSystem": "178",
+    "bin": null,
+    "paymentName": "Nubank",
+    "paymentGroupName": "NubankPaymentGroup",
+    "value": 279900,
+    "installments": [
+     {
+      "count": 1,
+      "hasInterestRate": false,
+      "interestRate": 0,
+      "value": 279900,
+      "total": 279900,
+      "sellerMerchantInstallments": [
+       {
+        "id": "ELECTROLUX",
+        "count": 1,
+        "hasInterestRate": false,
+        "interestRate": 0,
+        "value": 279900,
+        "total": 279900
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "paymentSystem": "900",
+    "bin": null,
+    "paymentName": "WH Google Pay",
+    "paymentGroupName": "WH Google PayPaymentGroup",
+    "value": 279900,
+    "installments": [
+     {
+      "count": 1,
+      "hasInterestRate": false,
+      "interestRate": 0,
+      "value": 279900,
+      "total": 279900,
+      "sellerMerchantInstallments": [
+       {
+        "id": "ELECTROLUX",
+        "count": 1,
+        "hasInterestRate": false,
+        "interestRate": 0,
+        "value": 279900,
+        "total": 279900
+       }
+      ]
+     },
+     {
+      "count": 2,
+      "hasInterestRate": false,
+      "interestRate": 0,
+      "value": 139950,
+      "total": 279900,
+      "sellerMerchantInstallments": [
+       {
+        "id": "ELECTROLUX",
+        "count": 2,
+        "hasInterestRate": false,
+        "interestRate": 0,
+        "value": 139950,
+        "total": 279900
+       }
+      ]
+     },
+     {
+      "count": 3,
+      "hasInterestRate": false,
+      "interestRate": 0,
+      "value": 93300,
+      "total": 279900,
+      "sellerMerchantInstallments": [
+       {
+        "id": "ELECTROLUX",
+        "count": 3,
+        "hasInterestRate": false,
+        "interestRate": 0,
+        "value": 93300,
+        "total": 279900
+       }
+      ]
+     },
+     {
+      "count": 4,
+      "hasInterestRate": false,
+      "interestRate": 0,
+      "value": 69975,
+      "total": 279900,
+      "sellerMerchantInstallments": [
+       {
+        "id": "ELECTROLUX",
+        "count": 4,
+        "hasInterestRate": false,
+        "interestRate": 0,
+        "value": 69975,
+        "total": 279900
+       }
+      ]
+     },
+     {
+      "count": 5,
+      "hasInterestRate": false,
+      "interestRate": 0,
+      "value": 55980,
+      "total": 279900,
+      "sellerMerchantInstallments": [
+       {
+        "id": "ELECTROLUX",
+        "count": 5,
+        "hasInterestRate": false,
+        "interestRate": 0,
+        "value": 55980,
+        "total": 279900
+       }
+      ]
+     },
+     {
+      "count": 6,
+      "hasInterestRate": false,
+      "interestRate": 0,
+      "value": 46650,
+      "total": 279900,
+      "sellerMerchantInstallments": [
+       {
+        "id": "ELECTROLUX",
+        "count": 6,
+        "hasInterestRate": false,
+        "interestRate": 0,
+        "value": 46650,
+        "total": 279900
+       }
+      ]
+     },
+     {
+      "count": 7,
+      "hasInterestRate": false,
+      "interestRate": 0,
+      "value": 39985,
+      "total": 279900,
+      "sellerMerchantInstallments": [
+       {
+        "id": "ELECTROLUX",
+        "count": 7,
+        "hasInterestRate": false,
+        "interestRate": 0,
+        "value": 39985,
+        "total": 279900
+       }
+      ]
+     },
+     {
+      "count": 8,
+      "hasInterestRate": false,
+      "interestRate": 0,
+      "value": 34987,
+      "total": 279900,
+      "sellerMerchantInstallments": [
+       {
+        "id": "ELECTROLUX",
+        "count": 8,
+        "hasInterestRate": false,
+        "interestRate": 0,
+        "value": 34987,
+        "total": 279900
+       }
+      ]
+     },
+     {
+      "count": 9,
+      "hasInterestRate": false,
+      "interestRate": 0,
+      "value": 31100,
+      "total": 279900,
+      "sellerMerchantInstallments": [
+       {
+        "id": "ELECTROLUX",
+        "count": 9,
+        "hasInterestRate": false,
+        "interestRate": 0,
+        "value": 31100,
+        "total": 279900
+       }
+      ]
+     },
+     {
+      "count": 10,
+      "hasInterestRate": false,
+      "interestRate": 0,
+      "value": 27990,
+      "total": 279900,
+      "sellerMerchantInstallments": [
+       {
+        "id": "ELECTROLUX",
+        "count": 10,
+        "hasInterestRate": false,
+        "interestRate": 0,
+        "value": 27990,
+        "total": 279900
+       }
+      ]
+     }
+    ]
+   }
+  ],
+  "paymentSystems": [
+   {
+    "id": 125,
+    "name": "Pix",
+    "groupName": "instantPaymentPaymentGroup",
+    "validator": null,
+    "stringId": "125",
+    "template": "instantPaymentPaymentGroup-template",
+    "requiresDocument": false,
+    "displayDocument": false,
+    "isCustom": false,
+    "description": null,
+    "requiresAuthentication": false,
+    "dueDate": "2026-11-07T00:23:25.9523361Z",
+    "availablePayments": null
+   },
+   {
+    "id": 3,
+    "name": "Diners",
+    "groupName": "creditCardPaymentGroup",
+    "validator": null,
+    "stringId": "3",
+    "template": "creditCardPaymentGroup-template",
+    "requiresDocument": true,
+    "displayDocument": true,
+    "isCustom": false,
+    "description": null,
+    "requiresAuthentication": false,
+    "dueDate": "2026-11-07T00:23:25.9523363Z",
+    "availablePayments": null
+   },
+   {
+    "id": 8,
+    "name": "Hipercard",
+    "groupName": "creditCardPaymentGroup",
+    "validator": null,
+    "stringId": "8",
+    "template": "creditCardPaymentGroup-template",
+    "requiresDocument": true,
+    "displayDocument": true,
+    "isCustom": false,
+    "description": null,
+    "requiresAuthentication": false,
+    "dueDate": "2026-11-07T00:23:25.9523364Z",
+    "availablePayments": null
+   },
+   {
+    "id": 1,
+    "name": "American Express",
+    "groupName": "creditCardPaymentGroup",
+    "validator": null,
+    "stringId": "1",
+    "template": "creditCardPaymentGroup-template",
+    "requiresDocument": true,
+    "displayDocument": true,
+    "isCustom": false,
+    "description": null,
+    "requiresAuthentication": false,
+    "dueDate": "2026-11-07T00:23:25.9523366Z",
+    "availablePayments": null
+   },
+   {
+    "id": 2,
+    "name": "Visa",
+    "groupName": "creditCardPaymentGroup",
+    "validator": null,
+    "stringId": "2",
+    "template": "creditCardPaymentGroup-template",
+    "requiresDocument": true,
+    "displayDocument": true,
+    "isCustom": false,
+    "description": null,
+    "requiresAuthentication": false,
+    "dueDate": "2026-11-07T00:23:25.9523371Z",
+    "availablePayments": null
+   },
+   {
+    "id": 4,
+    "name": "Mastercard",
+    "groupName": "creditCardPaymentGroup",
+    "validator": null,
+    "stringId": "4",
+    "template": "creditCardPaymentGroup-template",
+    "requiresDocument": true,
+    "displayDocument": true,
+    "isCustom": false,
+    "description": null,
+    "requiresAuthentication": false,
+    "dueDate": "2026-11-07T00:23:25.9523374Z",
+    "availablePayments": null
+   },
+   {
+    "id": 9,
+    "name": "Elo",
+    "groupName": "creditCardPaymentGroup",
+    "validator": null,
+    "stringId": "9",
+    "template": "creditCardPaymentGroup-template",
+    "requiresDocument": true,
+    "displayDocument": true,
+    "isCustom": false,
+    "description": null,
+    "requiresAuthentication": false,
+    "dueDate": "2026-11-07T00:23:25.9523381Z",
+    "availablePayments": null
+   },
+   {
+    "id": 178,
+    "name": "Nubank",
+    "groupName": "NubankPaymentGroup",
+    "validator": null,
+    "stringId": "178",
+    "template": "NubankPaymentGroup-template",
+    "requiresDocument": false,
+    "displayDocument": false,
+    "isCustom": false,
+    "description": null,
+    "requiresAuthentication": false,
+    "dueDate": "2026-11-07T00:23:25.9523384Z",
+    "availablePayments": null
+   },
+   {
+    "id": 72,
+    "name": "PicPay",
+    "groupName": "picPayPaymentGroup",
+    "validator": null,
+    "stringId": "72",
+    "template": "picPayPaymentGroup-template",
+    "requiresDocument": false,
+    "displayDocument": false,
+    "isCustom": false,
+    "description": null,
+    "requiresAuthentication": false,
+    "dueDate": "2026-11-07T00:23:25.952339Z",
+    "availablePayments": null
+   },
+   {
+    "id": 900,
+    "name": "WH Google Pay",
+    "groupName": "WH Google PayPaymentGroup",
+    "validator": null,
+    "stringId": "900",
+    "template": "WH Google PayPaymentGroup-template",
+    "requiresDocument": false,
+    "displayDocument": false,
+    "isCustom": false,
+    "description": null,
+    "requiresAuthentication": false,
+    "dueDate": "2026-11-07T00:23:25.952339Z",
+    "availablePayments": null
+   }
+  ],
+  "payments": [],
+  "giftCards": [],
+  "giftCardMessages": [],
+  "availableAccounts": [],
+  "availableTokens": [],
+  "availableAssociations": {}
+ },
+ "selectableGifts": [],
+ "marketingData": null,
+ "postalCode": "01310100",
+ "country": "BRA",
+ "logisticsInfo": [
+  {
+   "itemIndex": 0,
+   "addressId": null,
+   "selectedSla": null,
+   "selectedDeliveryChannel": null,
+   "quantity": 1,
+   "shipsTo": [
+    "BRA"
+   ],
+   "slas": [
+    {
+     "id": "1.Convencional",
+     "deliveryChannel": "delivery",
+     "name": "1.Convencional",
+     "deliveryIds": [
+      {
+       "courierId": "144f448",
+       "warehouseId": "1_1",
+       "dockId": "1dcdfa3",
+       "courierName": "BR71_TMA_SP_Capital_SS",
+       "quantity": 1,
+       "kitItemDetails": []
+      }
+     ],
+     "shippingEstimate": "4bd",
+     "shippingEstimateDate": "2026-11-06T21:29:00-03:00",
+     "lockTTL": null,
+     "availableDeliveryWindows": [],
+     "deliveryWindow": null,
+     "price": 4990,
+     "listPrice": 24744,
+     "tax": 0,
+     "pickupStoreInfo": {
+      "isPickupStore": false,
+      "friendlyName": null,
+      "address": null,
+      "additionalInfo": null,
+      "dockId": null
+     },
+     "pickupPointId": null,
+     "pickupDistance": 0.0,
+     "polygonName": "",
+     "transitTime": "2bd"
+    },
+    {
+     "id": "2.Agendada",
+     "deliveryChannel": "delivery",
+     "name": "2.Agendada",
+     "deliveryIds": [
+      {
+       "courierId": "1a2c023",
+       "warehouseId": "1_1",
+       "dockId": "1dcdfa3",
+       "courierName": "TMA Agendada_SP",
+       "quantity": 1,
+       "kitItemDetails": []
+      }
+     ],
+     "shippingEstimate": "4bd",
+     "shippingEstimateDate": "2026-11-06T21:29:00-03:00",
+     "lockTTL": null,
+     "availableDeliveryWindows": [
+      {
+       "startDateUtc": "2026-11-06T08:00:00+00:00",
+       "endDateUtc": "2026-11-06T12:00:59+00:00",
+       "price": 0,
+       "lisPrice": 0,
+       "tax": 0
+      },
+      {
+       "startDateUtc": "2026-11-06T13:00:00+00:00",
+       "endDateUtc": "2026-11-06T18:00:59+00:00",
+       "price": 0,
+       "lisPrice": 0,
+       "tax": 0
+      },
+      {
+       "startDateUtc": "2026-11-09T08:00:00+00:00",
+       "endDateUtc": "2026-11-09T12:00:59+00:00",
+       "price": 0,
+       "lisPrice": 0,
+       "tax": 0
+      },
+      {
+       "startDateUtc": "2026-11-09T13:00:00+00:00",
+       "endDateUtc": "2026-11-09T18:00:59+00:00",
+       "price": 0,
+       "lisPrice": 0,
+       "tax": 0
+      },
+      {
+       "startDateUtc": "2026-11-10T08:00:00+00:00",
+       "endDateUtc": "2026-11-10T12:00:59+00:00",
+       "price": 0,
+       "lisPrice": 0,
+       "tax": 0
+      },
+      {
+       "startDateUtc": "2026-11-10T13:00:00+00:00",
+       "endDateUtc": "2026-11-10T18:00:59+00:00",
+       "price": 0,
+       "lisPrice": 0,
+       "tax": 0
+      },
+      {
+       "startDateUtc": "2026-11-11T08:00:00+00:00",
+       "endDateUtc": "2026-11-11T12:00:59+00:00",
+       "price": 0,
+       "lisPrice": 0,
+       "tax": 0
+      },
+      {
+       "startDateUtc": "2026-11-11T13:00:00+00:00",
+       "endDateUtc": "2026-11-11T18:00:59+00:00",
+       "price": 0,
+       "lisPrice": 0,
+       "tax": 0
+      },
+      {
+       "startDateUtc": "2026-11-12T08:00:00+00:00",
+       "endDateUtc": "2026-11-12T12:00:59+00:00",
+       "price": 0,
+       "lisPrice": 0,
+       "tax": 0
+      },
+      {
+       "startDateUtc": "2026-11-12T13:00:00+00:00",
+       "endDateUtc": "2026-11-12T18:00:59+00:00",
+       "price": 0,
+       "lisPrice": 0,
+       "tax": 0
+      },
+      {
+       "startDateUtc": "2026-11-13T08:00:00+00:00",
+       "endDateUtc": "2026-11-13T12:00:59+00:00",
+       "price": 0,
+       "lisPrice": 0,
+       "tax": 0
+      },
+      {
+       "startDateUtc": "2026-11-13T13:00:00+00:00",
+       "endDateUtc": "2026-11-13T18:00:59+00:00",
+       "price": 0,
+       "lisPrice": 0,
+       "tax": 0
+      }
+     ],
+     "deliveryWindow": null,
+     "price": 4990,
+     "listPrice": 24744,
+     "tax": 0,
+     "pickupStoreInfo": {
+      "isPickupStore": false,
+      "friendlyName": null,
+      "address": null,
+      "additionalInfo": null,
+      "dockId": null
+     },
+     "pickupPointId": null,
+     "pickupDistance": 0.0,
+     "polygonName": "",
+     "transitTime": "2bd"
+    }
+   ],
+   "deliveryChannels": [
+    {
+     "id": "delivery"
+    },
+    {
+     "id": "pickup-in-point"
+    }
+   ]
+  }
+ ],
+ "messages": [],
+ "purchaseConditions": {
+  "itemPurchaseConditions": [
+   {
+    "id": "310131200",
+    "seller": "1",
+    "sellerChain": [
+     "1"
+    ],
+    "slas": [
+     {
+      "id": "1.Convencional",
+      "deliveryChannel": "delivery",
+      "name": "1.Convencional",
+      "deliveryIds": [
+       {
+        "courierId": "144f448",
+        "warehouseId": "1_1",
+        "dockId": "1dcdfa3",
+        "courierName": "BR71_TMA_SP_Capital_SS",
+        "quantity": 1,
+        "kitItemDetails": []
+       }
+      ],
+      "shippingEstimate": "4bd",
+      "shippingEstimateDate": "2026-11-06T21:29:00-03:00",
+      "lockTTL": null,
+      "availableDeliveryWindows": [],
+      "deliveryWindow": null,
+      "price": 24744,
+      "listPrice": 24744,
+      "tax": 0,
+      "pickupStoreInfo": {
+       "isPickupStore": false,
+       "friendlyName": null,
+       "address": null,
+       "additionalInfo": null,
+       "dockId": null
+      },
+      "pickupPointId": null,
+      "pickupDistance": 0.0,
+      "polygonName": "",
+      "transitTime": "2bd"
+     },
+     {
+      "id": "2.Agendada",
+      "deliveryChannel": "delivery",
+      "name": "2.Agendada",
+      "deliveryIds": [
+       {
+        "courierId": "1a2c023",
+        "warehouseId": "1_1",
+        "dockId": "1dcdfa3",
+        "courierName": "TMA Agendada_SP",
+        "quantity": 1,
+        "kitItemDetails": []
+       }
+      ],
+      "shippingEstimate": "4bd",
+      "shippingEstimateDate": "2026-11-06T21:29:00-03:00",
+      "lockTTL": null,
+      "availableDeliveryWindows": [
+       {
+        "startDateUtc": "2026-11-06T08:00:00+00:00",
+        "endDateUtc": "2026-11-06T12:00:59+00:00",
+        "price": 0,
+        "lisPrice": 0,
+        "tax": 0
+       },
+       {
+        "startDateUtc": "2026-11-06T13:00:00+00:00",
+        "endDateUtc": "2026-11-06T18:00:59+00:00",
+        "price": 0,
+        "lisPrice": 0,
+        "tax": 0
+       },
+       {
+        "startDateUtc": "2026-11-09T08:00:00+00:00",
+        "endDateUtc": "2026-11-09T12:00:59+00:00",
+        "price": 0,
+        "lisPrice": 0,
+        "tax": 0
+       },
+       {
+        "startDateUtc": "2026-11-09T13:00:00+00:00",
+        "endDateUtc": "2026-11-09T18:00:59+00:00",
+        "price": 0,
+        "lisPrice": 0,
+        "tax": 0
+       },
+       {
+        "startDateUtc": "2026-11-10T08:00:00+00:00",
+        "endDateUtc": "2026-11-10T12:00:59+00:00",
+        "price": 0,
+        "lisPrice": 0,
+        "tax": 0
+       },
+       {
+        "startDateUtc": "2026-11-10T13:00:00+00:00",
+        "endDateUtc": "2026-11-10T18:00:59+00:00",
+        "price": 0,
+        "lisPrice": 0,
+        "tax": 0
+       },
+       {
+        "startDateUtc": "2026-11-11T08:00:00+00:00",
+        "endDateUtc": "2026-11-11T12:00:59+00:00",
+        "price": 0,
+        "lisPrice": 0,
+        "tax": 0
+       },
+       {
+        "startDateUtc": "2026-11-11T13:00:00+00:00",
+        "endDateUtc": "2026-11-11T18:00:59+00:00",
+        "price": 0,
+        "lisPrice": 0,
+        "tax": 0
+       },
+       {
+        "startDateUtc": "2026-11-12T08:00:00+00:00",
+        "endDateUtc": "2026-11-12T12:00:59+00:00",
+        "price": 0,
+        "lisPrice": 0,
+        "tax": 0
+       },
+       {
+        "startDateUtc": "2026-11-12T13:00:00+00:00",
+        "endDateUtc": "2026-11-12T18:00:59+00:00",
+        "price": 0,
+        "lisPrice": 0,
+        "tax": 0
+       },
+       {
+        "startDateUtc": "2026-11-13T08:00:00+00:00",
+        "endDateUtc": "2026-11-13T12:00:59+00:00",
+        "price": 0,
+        "lisPrice": 0,
+        "tax": 0
+       },
+       {
+        "startDateUtc": "2026-11-13T13:00:00+00:00",
+        "endDateUtc": "2026-11-13T18:00:59+00:00",
+        "price": 0,
+        "lisPrice": 0,
+        "tax": 0
+       }
+      ],
+      "deliveryWindow": null,
+      "price": 24744,
+      "listPrice": 24744,
+      "tax": 0,
+      "pickupStoreInfo": {
+       "isPickupStore": false,
+       "friendlyName": null,
+       "address": null,
+       "additionalInfo": null,
+       "dockId": null
+      },
+      "pickupPointId": null,
+      "pickupDistance": 0.0,
+      "polygonName": "",
+      "transitTime": "2bd"
+     }
+    ],
+    "price": 279900,
+    "listPrice": 279900
+   }
+  ]
+ },
+ "pickupPoints": [],
+ "subscriptionData": null,
+ "totals": [
+  {
+   "id": "Items",
+   "name": "Total dos Itens",
+   "value": 279900
+  }
+ ],
+ "itemMetadata": {
+  "items": [
+   {
+    "id": "310131200",
+    "seller": "1",
+    "assemblyOptions": [
+     {
+      "id": "garantia-estendida",
+      "name": "garantia-estendida",
+      "required": false,
+      "inputValues": {
+       "garantia-estendida": {
+        "maximumNumberOfCharacters": 500,
+        "domain": []
+       }
+      },
+      "composition": null
+     }
+    ],
+    "catalogProvider": "vrn:vtex.catalog-api-proxy:-:electrolux:master:/proxy/authenticated/catalog/pvt/sku/stockkeepingunitbyid/310131200"
+   }
+  ]
+ },
+ "sellers": [
+  {
+   "id": "1",
+   "name": "Electrolux",
+   "logo": null,
+   "minimumOrderValue": 0
+  }
+ ],
+ "allowMultipleDeliveries": true,
+ "minimumOrderValue": 0
+}

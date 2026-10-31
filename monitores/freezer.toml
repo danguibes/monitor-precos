@@ -1,0 +1,104 @@
+# Freezer: modo "acompanhado" — modelos fixos, cada um com o código que precisa
+# aparecer no anúncio E na página do produto (padrao, uma regex).
+# As lojas não ficam aqui: todo monitor pesquisa todas as de lojas.toml.
+
+nome = "Freezer"
+modo = "acompanhado"
+voltagem = "127"  # 127 ou 220; bivolt sempre entra
+intervalo_minimo_horas = 6
+
+[[produtos]]
+modelo = "Electrolux FEI27T"
+busca = "FEI27T"
+padrao = "FEI27T"
+litros = 249
+medidas = "55 x 62 x 165 cm"
+obs = "Vertical, inverter, degelo manual"
+
+[[produtos]]
+modelo = "Electrolux FEI23T"
+busca = "FEI23T"
+padrao = "FEI23T"
+litros = 212
+medidas = "55 x 62 x 144 cm"
+obs = "Vertical, inverter, degelo manual"
+
+[[produtos]]
+modelo = "Consul CVU26MB"
+busca = "CVU26M"
+padrao = "CVU26M"
+litros = 254
+medidas = "62 x 70,6 x 155 cm"
+obs = "Vertical, degelo manual"
+
+[[produtos]]
+modelo = "Brastemp BVR28PB"
+busca = "BVR28P"
+padrao = "BVR28PB"
+litros = 276
+medidas = "63 x 72 x 171 cm"
+obs = "Vertical, frost free (um pouco maior que 60x70)"
+
+[[produtos]]
+modelo = "Philco PFV205B"
+busca = "PFV205B"
+padrao = "PFV205B"
+litros = 201
+medidas = "~55 x 60 cm"
+obs = "Vertical, freezer/refrigerador, degelo manual"
+
+[[produtos]]
+modelo = "Midea MDRU276FZA"
+busca = "MDRU276FZA"
+padrao = "MDRU276FZA|196L 2 em 1"
+litros = 196
+medidas = "55,6 x 61,4 x 143 cm"
+obs = "Vertical, inverter, 2 em 1"
+
+[[produtos]]
+modelo = "Midea MDRU255FFA"
+busca = "MDRU255FFA"
+padrao = "MDRU255FFA|174L Frost Free"
+litros = 174
+medidas = "?"
+obs = "Vertical, frost free, inverter"
+
+[[produtos]]
+modelo = "Consul CVU20MB"
+busca = "CVU20"
+padrao = "CVU20"
+litros = 189
+medidas = "?"
+obs = "Vertical, degelo manual"
+
+[[produtos]]
+modelo = "Consul CVU18MB"
+busca = "CVU18"
+padrao = "CVU18"
+litros = 159
+medidas = "48,3 x 62 x 130 cm"
+obs = "Vertical, degelo manual, estreito"
+
+[[produtos]]
+modelo = "Electrolux FEI19T"
+busca = "FEI19T"
+padrao = "FEI19"
+litros = 175
+medidas = "?"
+obs = "Vertical, inverter, degelo manual"
+
+[[produtos]]
+modelo = "Philco PFV165B"
+busca = "PFV165B"
+padrao = "PFV165"
+litros = 140
+medidas = "?"
+obs = "Vertical, degelo manual"
+
+[[produtos]]
+modelo = "Electrolux HB150"
+busca = "HB150"
+padrao = "HB150"
+litros = 141
+medidas = "?"
+obs = "Horizontal compacto, inverter"

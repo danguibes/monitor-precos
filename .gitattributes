@@ -1,0 +1,3 @@
+* text=auto eol=lf
+# Fixtures são cópias de páginas reais: guardadas byte a byte.
+tests/fixtures/** -text

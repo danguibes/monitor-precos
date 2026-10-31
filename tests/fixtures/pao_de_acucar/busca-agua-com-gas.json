@@ -1,0 +1,213 @@
+{
+ "totalPages": 1,
+ "totalProducts": 8,
+ "filters": [
+  {
+   "name": "Categoria",
+   "values": [
+    {
+     "code": "cat2%3AN%C3%A3o+Alco%C3%B3licas",
+     "name": "Não Alcoólicas",
+     "count": 8,
+     "selected": false
+    }
+   ]
+  },
+  {
+   "name": "Subcategoria",
+   "values": [
+    {
+     "code": "cat3%3AHidrata%C3%A7%C3%A3o",
+     "name": "Hidratação",
+     "count": 8,
+     "selected": false
+    }
+   ]
+  },
+  {
+   "name": "Tipo",
+   "values": [
+    {
+     "code": "cat4%3A%C3%81gua+com+G%C3%A1s",
+     "name": "Água com Gás",
+     "count": 1,
+     "selected": false
+    }
+   ]
+  },
+  {
+   "name": "Marca",
+   "values": [
+    {
+     "code": "marca%3ACrystal",
+     "name": "Crystal",
+     "count": 2,
+     "selected": false
+    },
+    {
+     "code": "marca%3AMinalba",
+     "name": "Minalba",
+     "count": 4,
+     "selected": false
+    },
+    {
+     "code": "marca%3ANestl%C3%A9",
+     "name": "Nestlé",
+     "count": 1,
+     "selected": false
+    },
+    {
+     "code": "marca%3APureza+Vital",
+     "name": "Pureza Vital",
+     "count": 1,
+     "selected": false
+    }
+   ]
+  },
+  {
+   "name": "Preço",
+   "values": [
+    {
+     "code": "price%3A0-10",
+     "name": "Até R$ 10",
+     "count": 1,
+     "selected": false
+    },
+    {
+     "code": "price%3A20-30",
+     "name": "R$ 20 a R$ 30",
+     "count": 3,
+     "selected": false
+    },
+    {
+     "code": "price%3A30-50",
+     "name": "R$ 30 a R$ 50",
+     "count": 2,
+     "selected": false
+    },
+    {
+     "code": "price%3A50-100",
+     "name": "R$ 50 a R$ 100",
+     "count": 2,
+     "selected": false
+    }
+   ]
+  }
+ ],
+ "products": [
+  {
+   "id": 334174,
+   "stock": true,
+   "price": 29.94,
+   "unitPriceHomogeneousKit": 4.99,
+   "sku": "9901471",
+   "brand": "Minalba",
+   "productImages": [
+    "/img/uploads/1/618/514618.jpg"
+   ],
+   "urlDetails": "https://www.paodeacucar.com/produto/334174/agua-mineral-com-gas-minalba-garrafa-1-5-litros-com-6-unidades",
+   "name": "Água Mineral com Gás MINALBA Garrafa 1,5 Litros - com 6 Unidades",
+   "variableWeight": false
+  },
+  {
+   "id": 334175,
+   "stock": true,
+   "price": 59.88,
+   "unitPriceHomogeneousKit": 4.99,
+   "sku": "9901472",
+   "brand": "Minalba",
+   "productImages": [
+    "/img/uploads/1/619/514619.jpg"
+   ],
+   "urlDetails": "https://www.paodeacucar.com/produto/334175/agua-mineral-com-gas-minalba-garrafa-1-5-litros-com-12-unidades",
+   "name": "Água Mineral com Gás MINALBA Garrafa 1,5 Litros - com 12 Unidades",
+   "variableWeight": false
+  },
+  {
+   "id": 334172,
+   "stock": true,
+   "price": 28.14,
+   "unitPriceHomogeneousKit": 4.69,
+   "sku": "9901466",
+   "brand": "Crystal",
+   "productImages": [
+    "/img/uploads/1/599/514599.jpg"
+   ],
+   "urlDetails": "https://www.paodeacucar.com/produto/334172/agua-mineral-com-gas-crystal-garrafa-1-5-litros-com-6-unidades",
+   "name": "Água Mineral com Gás CRYSTAL Garrafa 1,5 Litros - com 6 Unidades",
+   "variableWeight": false
+  },
+  {
+   "id": 334116,
+   "stock": true,
+   "price": 56.28,
+   "unitPriceHomogeneousKit": 4.69,
+   "sku": "9901467",
+   "brand": "Crystal",
+   "productImages": [
+    "/img/uploads/1/600/514600.jpg"
+   ],
+   "urlDetails": "https://www.paodeacucar.com/produto/334116/agua-mineral-com-gas-crystal-garrafa-1-5-litros-com-12-unidades",
+   "name": "Água Mineral com Gás CRYSTAL Garrafa 1,5 Litros - com 12 Unidades",
+   "variableWeight": false
+  },
+  {
+   "id": 334119,
+   "stock": true,
+   "price": 24.54,
+   "unitPriceHomogeneousKit": 4.09,
+   "sku": "9901473",
+   "brand": "Minalba",
+   "productImages": [
+    "/img/uploads/1/135/554135.jpg"
+   ],
+   "urlDetails": "https://www.paodeacucar.com/produto/334119/agua-mineral-sem-gas-minalba-garrafa-1-5-litros-com-6-unidades",
+   "name": "Água Mineral sem Gás MINALBA Garrafa 1,5 Litros - com 6 Unidades",
+   "variableWeight": false
+  },
+  {
+   "id": 334120,
+   "stock": true,
+   "price": 49.08,
+   "unitPriceHomogeneousKit": 4.09,
+   "sku": "9901474",
+   "brand": "Minalba",
+   "productImages": [
+    "/img/uploads/1/137/554137.jpg"
+   ],
+   "urlDetails": "https://www.paodeacucar.com/produto/334120/agua-mineral-sem-gas-minalba-garrafa-1-5-litros-com-12-unidades",
+   "name": "Água Mineral sem Gás MINALBA Garrafa 1,5 Litros - com 12 Unidades",
+   "variableWeight": false
+  },
+  {
+   "id": 334181,
+   "stock": true,
+   "price": 44.28,
+   "unitPriceHomogeneousKit": 3.69,
+   "sku": "9901479",
+   "brand": "Nestlé",
+   "productImages": [
+    "/img/uploads/1/139/554139.jpg"
+   ],
+   "urlDetails": "https://www.paodeacucar.com/produto/334181/agua-mineral-sem-gas-nestle-pureza-vital-garrafa-1-5-litros-com-12-unidades",
+   "name": "Água Mineral sem Gás NESTLÉ Pureza Vital Garrafa 1,5 Litros - com 12 Unidades",
+   "variableWeight": false
+  },
+  {
+   "id": 67564,
+   "stock": false,
+   "priceType": "P",
+   "price": 4.09,
+   "sku": "8664204",
+   "brand": "Pureza Vital",
+   "productImages": [
+    "/img/uploads/1/157/33078157.png",
+    "/img/uploads/1/158/33078158.png"
+   ],
+   "urlDetails": "https://www.paodeacucar.com/produto/67564/agua-mineral-com-gas-nestle-pureza-vital-garrafa-1-5-litros",
+   "name": "Água Mineral com Gás NESTLÉ Pureza Vital Garrafa 1,5 Litros",
+   "variableWeight": false
+  }
+ ],
+ "banners": []
+}

@@ -1,0 +1,9 @@
+# Copie para local.toml e preencha. local.toml fica fora do git: o que é
+# pessoal mora só nesta máquina. Os logins (Mercado Livre, Vila das Frutas)
+# ficam no perfil do navegador, em dados/perfil-navegador/, também fora do git.
+
+cep = "00000-000"
+
+# A publicação no GitHub Pages é barrada se qualquer um destes aparecer na
+# página gerada (o CEP acima já entra sozinho). Ponha rua, número, bairro.
+nao_publicar = ["Rua Exemplo", "ap 00"]

@@ -1,0 +1,28 @@
+# Água com gás: modo "descoberta" — busca aberta, entra todo anúncio que
+# passa nas regras. As lojas não ficam aqui: todo monitor pesquisa todas as
+# de lojas.toml.
+
+nome = "Água com gás"
+titulo = "Água com gás · pack 6 × 1,5 L"
+modo = "descoberta"
+intervalo_minimo_horas = 12
+
+# Termos amplos: cada loja busca de um jeito, e a "Minalba com gás" da Vila das
+# Frutas só aparece na busca sem "1,5".
+termos = [
+  "agua com gas",
+  "agua com gas 1,5",
+  "agua mineral com gas 1,5 litros",
+  "agua gaseificada 1,5",
+]
+
+[regras]
+# todas precisam aparecer no título (regex, sem diferença de maiúscula)
+incluir = ['[áa]gua', 'com\s*g[áa]s|c/\s*g[áa]s|gaseificad|gasosa']
+# nenhuma pode aparecer
+excluir = ['sem\s*g[áa]s', 'sabor|saborizad|lim[ãa]o|t[ôo]nica|refrigerante|energ[ée]tic', 'combo|\+']
+# volume de UMA unidade, em ml
+volume_ml = [1400, 1600]
+# compara o custo de receber 6: avulsas, kits de 2 ou 3, ou o pack de 6;
+# o frete entra uma vez só. Pack de 12 não entra (obrigaria a levar 12).
+montar_pack = 6
