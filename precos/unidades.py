@@ -8,7 +8,9 @@ from __future__ import annotations
 import re
 
 _QTD = [
-    r"\bcom\s+(\d{1,3})\s+unidades?\b",
+    r"\bleve\s+(\d{1,3})\s+pague\b",  # "Leve 16 Pague 15": vêm 16
+    r"\bcom\s+(\d{1,3})\s+(?:unidades?|rolos?|latas?)\b",
+    r"\b(\d{1,3})\s*(?:rolos?|latas)\b",  # papel higiênico, refrigerante
     r"\bkit\s+(?:c/\s*|com\s+)?(\d{1,3})\b",
     r"\b(?:pack|fardo|caixa|cx\.?|pct\.?|pacote|engradado)\s*(?:c/\s*|com\s+|de\s+)?(\d{1,3})\b",
     r"\bc/\s*(\d{1,3})\b",

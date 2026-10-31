@@ -34,6 +34,22 @@ def test_quantidade_e_volume(titulo, qtd, ml):
     assert volume_ml(titulo) == ml
 
 
+@pytest.mark.parametrize("titulo, qtd", [
+    # formatos de título de papel higiênico; "12 Rolos" era lido como 1 unidade
+    ("Papel Higiênico Folha Dupla Neve 12 Rolos 30m", 12),
+    ("Papel Higiênico Personal Folha Dupla 30m com 12 Rolos", 12),
+    ("Papel Higiênico Folha Tripla Leve 16 Pague 15", 16),
+    ("Papel Higiênico Folha Dupla 4 Rolos 30m", 4),
+    ("Papel Higiênico Folha Dupla Pacote com 12 Unidades", 12),
+    ("Papel Higiênico Folha Simples 1 Rolo 300m", 1),
+    ("Refrigerante Guaraná 350ml 12 latas", 12),
+])
+def test_quantidade_em_rolos_latas_e_leve_pague(titulo, qtd):
+    assert quantidade(titulo) == qtd
+
+
+
+
 def test_litros_do_pack():
     assert litros("Água Mineral com Gás CRYSTAL Garrafa 1,5 Litros - com 6 Unidades") == 9.0
     assert litros("Água sem indicação de volume") is None
