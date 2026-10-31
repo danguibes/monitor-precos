@@ -43,14 +43,22 @@ def test_site_tem_indice_e_um_relatorio_por_monitor_sem_cep(tmp_path):
 
 
 def test_indice_tem_novo_monitor_e_editar_quando_ha_repositorio(tmp_path):
-    from precos.publicar import gerar_indice, link_novo_monitor
-    item = {"id": "agua", "nome": "Água", "melhor": None, "ultima": None}
-    gerar_indice([item], tmp_path / "i.html", "https://github.com/dono/repo")
+    from urllib.parse import parse_qs, urlsplit
+
+    from precos.publicar import gerar_indice, link_editar, link_novo_monitor
+    repo = "https://github.com/dono/repo"
+    a_mao = {"id": "agua", "nome": "Água", "melhor": None, "ultima": None, "cfg": {"nome": "Água"}}
+    gerar_indice([a_mao], tmp_path / "i.html", repo, ["Pedido #3 aberto por @outro foi ignorado"])
     pagina = (tmp_path / "i.html").read_text(encoding="utf-8")
-    assert "+ Novo monitor" in pagina and "/edit/main/monitores/agua.toml" in pagina
-    assert link_novo_monitor("https://github.com/dono/repo").startswith(
-        "https://github.com/dono/repo/new/main/monitores?filename=novo-monitor.toml&value=%23")
-    gerar_indice([item], tmp_path / "sem.html")  # sem repositório, sem botão
+    assert "+ Novo monitor" in pagina and "/edit/main/monitores/agua.toml" in pagina  # escrito à mão: arquivo
+    assert "Pedido #3 aberto por @outro foi ignorado" in pagina  # pedido de terceiro aparece na página
+    assert link_novo_monitor(repo) == f"{repo}/issues/new?template=novo-monitor.yml"
+    # criado pelo formulário: o editar reabre o formulário preenchido
+    cfg = {"nome": "Detergente", "pedido": {"termos": "detergente\nlava louça", "pack": "6"}}
+    q = parse_qs(urlsplit(link_editar(repo, "detergente", cfg)).query)
+    assert q["template"] == ["novo-monitor.yml"] and q["monitor"] == ["detergente"]
+    assert q["termos"] == ["detergente\nlava louça"] and q["pack"] == ["6"]
+    gerar_indice([a_mao], tmp_path / "sem.html")  # sem repositório, sem botão
     assert "Novo monitor" not in (tmp_path / "sem.html").read_text(encoding="utf-8")
 
 

@@ -14,6 +14,7 @@ Uso:
   py monitor.py --configurar viladasfrutas -> o mesmo, só com as páginas que contêm o termo
   py monitor.py --sem-navegador -> só as lojas por API (rápido)
   py monitor.py --publicar   -> só republica os relatórios no GitHub Pages
+  py monitor.py --pedidos    -> só atende os pedidos do formulário (novo monitor)
   py monitor.py --nao-publicar -> coleta sem publicar
 
 Tudo o que é gerado (histórico, relatório, log, perfil do navegador) fica em dados/.
@@ -98,6 +99,22 @@ def atualizar_do_github() -> None:
         log(f"git pull falhou (segue com o que há aqui): {r.stderr.strip()[:200]}")
 
 
+def atender_pedidos() -> None:
+    """Pedidos do formulário do GitHub viram monitores antes de a rodada carregar a lista."""
+    from precos import pedidos
+    from precos.base import salvar_json
+    from precos.publicar import AVISOS_PEDIDOS, repo_web
+    repo = repo_web()
+    if not repo:
+        return
+    try:
+        avisos = pedidos.atender(repo.removeprefix("https://github.com/"), log)
+    except Exception as exc:  # um pedido estranho nunca derruba a coleta
+        log(f"Pedidos: ERRO {exc!r}")
+        return
+    salvar_json(AVISOS_PEDIDOS, avisos)
+
+
 def publicar_se_ligado(monitores, argv) -> None:
     if "--nao-publicar" in argv or not monitores[0]["cfg"].get("publicar"):
         return
@@ -111,6 +128,10 @@ def publicar_se_ligado(monitores, argv) -> None:
 def main(argv):
     if "--logon" in argv:
         atualizar_do_github()
+    if {"--logon", "--todos", "--pedidos"} & set(argv):
+        atender_pedidos()
+        if "--pedidos" in argv:
+            return 0
     try:
         monitores = mon.carregar(precisa_cep="--relatorio" not in argv)
     except mon.ConfiguracaoInvalida as e:

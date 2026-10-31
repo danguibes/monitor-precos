@@ -1,0 +1,76 @@
+name: Novo monitor de preço
+description: Peça um monitor novo (ou altere um existente) sem escrever código.
+title: "Monitor: "
+labels: ["novo-monitor"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Preencha em palavras comuns. Na próxima rodada do notebook o monitor lê este pedido,
+        cria o monitor, pesquisa em **todas** as lojas e responde aqui com o resultado.
+        Só pedidos abertos pelo dono do repositório são atendidos.
+  - type: input
+    id: nome
+    attributes:
+      label: Nome
+      description: Como o monitor vai aparecer na página.
+      placeholder: Detergente líquido 500 ml
+    validations:
+      required: true
+  - type: textarea
+    id: termos
+    attributes:
+      label: Como procurar
+      description: Um termo por linha, do jeito que você digitaria na busca de uma loja. Termos amplos funcionam melhor.
+      placeholder: |
+        detergente liquido
+        detergente 500ml
+    validations:
+      required: true
+  - type: textarea
+    id: precisa
+    attributes:
+      label: Precisa conter
+      description: |
+        Uma palavra ou expressão por linha; o anúncio precisa ter TODAS as linhas.
+        Para aceitar uma ou outra na mesma linha, escreva "ou" entre elas: com gás ou gaseificada.
+        Acento e maiúscula não importam.
+      placeholder: detergente
+  - type: textarea
+    id: exclui
+    attributes:
+      label: Não pode conter
+      description: Uma por linha; o anúncio com QUALQUER uma delas é descartado.
+      placeholder: |
+        refil
+        kit
+  - type: input
+    id: tamanho
+    attributes:
+      label: Tamanho de uma unidade
+      description: Opcional. Em ml ou litros (500 ml, 1,5 L). Aceita uma folga de 7% para mais ou para menos.
+      placeholder: 500 ml
+  - type: input
+    id: pack
+    attributes:
+      label: Comparar o custo de quantas unidades
+      description: |
+        Opcional. Com 6, a comparação é o custo de receber 6 unidades: avulsas, kits que somem 6,
+        ou o pack de 6 — com o frete contado uma vez. Deixe vazio para comparar anúncio por anúncio.
+      placeholder: "6"
+  - type: dropdown
+    id: frequencia
+    attributes:
+      label: Frequência
+      description: No máximo uma consulta a cada...
+      options:
+        - 12 horas
+        - 6 horas
+        - 24 horas
+    validations:
+      required: true
+  - type: input
+    id: monitor
+    attributes:
+      label: Monitor a alterar
+      description: Só ao alterar um monitor que já existe — o link "editar" da página já preenche. Para um monitor novo, deixe vazio.

@@ -51,10 +51,21 @@ caminho absoluto e, sem isso, o monitor para de rodar no logon sem avisar.
 
 ## Monitores: o rol de produtos
 
-Cada monitor é um arquivo em `monitores/`, em TOML (aceita comentários). Para
-criar um, copie o mais parecido e troque o que procurar. Dá para fazer **pelo
-site do GitHub, inclusive no celular**: o monitor faz `git pull` antes de cada
-rodada, e o Actions acusa se o arquivo quebrou.
+**O jeito fácil é o formulário.** O botão "+ Novo monitor" da página abre um
+formulário no GitHub (funciona no celular): nome, como procurar, o que precisa
+e o que não pode conter, tamanho, quantas unidades comparar. Tudo em palavras —
+"com gás ou gaseificada" vira a regra, acento e maiúscula não importam. Na
+próxima rodada o notebook lê o pedido, cria `monitores/<id>.toml`, valida, faz
+commit só desse arquivo, responde no pedido e o fecha; se algo não fizer
+sentido, responde o problema e deixa o pedido aberto. **Só pedidos do dono do
+repositório são atendidos**; os de outra conta ficam intocados e aparecem como
+aviso na página inicial. O "editar" de cada monitor criado assim reabre o
+formulário preenchido. Para atender os pedidos sem esperar a rodada:
+`py monitor.py --pedidos`.
+
+Cada monitor é um arquivo em `monitores/`, em TOML (aceita comentários), e
+também pode ser escrito à mão — o modelo comentado está em `modelos/monitor.toml`.
+O monitor faz `git pull` antes de cada rodada, e o Actions acusa se o arquivo quebrou.
 
 | monitor | arquivo | modo | dados em |
 |---|---|---|---|
@@ -125,6 +136,7 @@ precos/                 o código
   historico.py          CSV
   relatorio.py          HTML (a versão local e a pública, sem CEP)
   publicar.py           GitHub Pages: gera, varre e empurra para gh-pages
+  pedidos.py            o formulário "Novo monitor": pedido do GitHub vira monitores/<id>.toml
   navegador.py          o Chrome do monitor
   lojas/<loja>.py       um módulo por loja
 tests/                  testes offline

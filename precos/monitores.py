@@ -70,3 +70,26 @@ def carregar(precisa_cep: bool = True) -> list[dict]:
             "estado": ESTADO if id_ == "freezer" else pasta / "estado.json",
         })
     return monitores
+
+
+def validar_monitor(m: dict) -> None:
+    """O mesmo crivo para monitor escrito à mão (teste do Actions) e criado pelo formulário."""
+    import re
+    if m.get("modo") not in ("acompanhado", "descoberta"):
+        raise ConfiguracaoInvalida("modo precisa ser acompanhado ou descoberta")
+    if "lojas" in m or "lojas_navegador" in m or "lojas_api" in m:
+        raise ConfiguracaoInvalida("monitor não escolhe lojas: todas valem para todos")
+    try:
+        if m["modo"] == "descoberta":
+            if not m.get("termos") or not m.get("titulo"):
+                raise ConfiguracaoInvalida("descoberta precisa de titulo e termos")
+            regras = m.get("regras", {})
+            for r in regras.get("incluir", []) + regras.get("excluir", []):
+                re.compile(r)
+        else:
+            for p in m["produtos"]:
+                if not p.get("modelo") or not p.get("busca"):
+                    raise ConfiguracaoInvalida("cada produto precisa de modelo e busca")
+                re.compile(p["padrao"])
+    except re.error as e:
+        raise ConfiguracaoInvalida(f"regra inválida: {e}")

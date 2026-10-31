@@ -31,17 +31,7 @@ def test_toda_loja_do_registro_tem_coletor():
 
 @pytest.mark.parametrize("arq", ARQUIVOS_MONITOR, ids=lambda a: a.stem)
 def test_cada_monitor_e_valido(arq):
-    m = tomllib.loads(arq.read_text(encoding="utf-8"))
-    assert m.get("modo") in ("acompanhado", "descoberta")
-    assert "lojas" not in m and "lojas_navegador" not in m, "monitor não escolhe lojas: todas valem para todos"
-    if m["modo"] == "descoberta":
-        assert m["termos"] and m.get("titulo")
-        for r in m["regras"].get("incluir", []) + m["regras"].get("excluir", []):
-            re.compile(r)
-    else:
-        for p in m["produtos"]:
-            assert p["modelo"] and p["busca"]
-            re.compile(p["padrao"])
+    monitores.validar_monitor(tomllib.loads(arq.read_text(encoding="utf-8")))
 
 
 def test_todo_monitor_recebe_todas_as_lojas():

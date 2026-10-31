@@ -60,14 +60,28 @@ def repo_web() -> str | None:
     return f"https://github.com/{m.group(1)}" if m else None
 
 
+FORMULARIO = "novo-monitor.yml"  # .github/ISSUE_TEMPLATE/
+AVISOS_PEDIDOS = DADOS / "pedidos.json"
+
+
 def link_novo_monitor(repo: str) -> str:
-    """Página "novo arquivo" do GitHub, já com o modelo comentado no editor."""
-    modelo = MODELO.read_text(encoding="utf-8")
-    return (f"{repo}/new/main/monitores?filename=novo-monitor.toml&value="
-            + urllib.parse.quote(modelo))
+    """O formulário do GitHub (Issue Form): campos em palavras, sem código."""
+    return f"{repo}/issues/new?template={FORMULARIO}"
 
 
-def gerar_indice(itens: list[dict], destino: Path, repo: str | None = None) -> None:
+def link_editar(repo: str, id_: str, cfg: dict) -> str:
+    """Monitor criado pelo formulário reabre o formulário preenchido; o escrito à mão abre o arquivo."""
+    pedido = cfg.get("pedido")
+    if not pedido:
+        return f"{repo}/edit/main/monitores/{id_}.toml"
+    campos = {"template": FORMULARIO, "title": f"Monitor: {cfg.get('nome', id_)} (alteração)",
+              "nome": cfg.get("nome", ""), "termos": pedido.get("termos", ""), "precisa": pedido.get("precisa", ""),
+              "exclui": pedido.get("exclui", ""), "tamanho": pedido.get("tamanho", ""),
+              "pack": pedido.get("pack", ""), "monitor": id_}
+    return f"{repo}/issues/new?" + urllib.parse.urlencode({k: v for k, v in campos.items() if v})
+
+
+def gerar_indice(itens: list[dict], destino: Path, repo: str | None = None, avisos: list[str] = ()) -> None:
     e = html.escape
     cards = []
     for it in itens:
@@ -78,11 +92,12 @@ def gerar_indice(itens: list[dict], destino: Path, repo: str | None = None) -> N
         cards.append(f'<article class="card"><header><h2><a href="{e(it["id"])}.html">{e(it["nome"])}</a></h2></header>'
                      f'<div class="meta">última consulta {e(it["ultima"] or "—")}</div>{corpo}'
                      f'<a href="{e(it["id"])}.html">ver todas as ofertas →</a>'
-                     + (f' · <a href="{e(repo)}/edit/main/monitores/{e(it["id"])}.toml" target="_blank" '
+                     + (f' · <a href="{e(link_editar(repo, it["id"], it.get("cfg", {})))}" target="_blank" '
                         f'rel="noopener">editar</a>' if repo else "") + '</article>')
     novo = (f'<p><a class="botao" href="{e(link_novo_monitor(repo))}" target="_blank" rel="noopener">'
-            f'+ Novo monitor</a> <span class="det">abre o GitHub com um modelo comentado; salve e a próxima '
-            f'rodada do notebook já pesquisa em todas as lojas</span></p>') if repo else ""
+            f'+ Novo monitor</a> <span class="det">abre um formulário no GitHub; ao enviar, a próxima '
+            f'rodada do notebook cria o monitor e já pesquisa em todas as lojas</span></p>') if repo else ""
+    lista_avisos = "".join(f"<li>{e(a)}</li>" for a in avisos)
     destino.write_text(f"""<!doctype html><html lang="pt-BR"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex">
 <title>Monitor de preços</title><style>{ESTILO}
@@ -92,6 +107,7 @@ def gerar_indice(itens: list[dict], destino: Path, repo: str | None = None) -> N
 <p class="sub">Melhor oferta de cada monitor, com o frete para um CEP fixo · gerado em {datetime.now():%Y-%m-%d %H:%M}</p>
 <section class="grid">{"".join(cards)}</section>
 {novo}
+{f'<h3>Avisos</h3><ul class="avisos">{lista_avisos}</ul>' if lista_avisos else ''}
 </main></body></html>""", encoding="utf-8")
 
 
@@ -109,8 +125,8 @@ def gerar_site(monitores: list[dict], pasta: Path = SITE, repo: str | None = Non
         com_frete = [x for x in melhores if x.get("frete") is not None] or melhores
         melhor = min(com_frete, key=lambda x: x["total_pix"]) if com_frete else None
         itens.append({"id": m["id"], "nome": m["cfg"].get("nome", m["id"]), "melhor": melhor,
-                      "ultima": melhor["data"] if melhor else None})
-    gerar_indice(itens, pasta / "index.html", repo)
+                      "ultima": melhor["data"] if melhor else None, "cfg": m["cfg"]})
+    gerar_indice(itens, pasta / "index.html", repo, carregar_json(AVISOS_PEDIDOS, []))
 
 
 def git(*args, cwd: Path) -> str:
