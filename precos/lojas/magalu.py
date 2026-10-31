@@ -63,11 +63,11 @@ def ler_magalu(t: str):
     vend = (re.search(r"Vendido (?:e entregue )?por ([^\n]+?)(?: e entregue por [^\n]+)?\n", t) or [None, None])[1]
     if pix is None and cartao is None:
         return None
-    frete, prazo = ler_frete(t, max(pix or 0, cartao or 0))
+    frete, prazo = ler_frete(t, {pix, cartao} - {None})
     return pix, cartao, vend, frete, prazo
 
 
-def ler_frete(t: str, preco: float):
+def ler_frete(t: str, precos: set):
     """(frete, prazo) do bloco de entrega do produto, ou (None, "") se não deu.
 
     Há dois "Enviar para" na página: o da barra do topo e o do produto. O do
@@ -88,8 +88,9 @@ def ler_frete(t: str, preco: float):
     valores = re.findall(r"R\$\s*" + NUM, bloco)
     if valores:
         frete = num(valores[-1])
-        # trava: frete do tamanho do produto é leitura errada, não frete
-        return (frete, prazo) if not preco or frete < preco * 0.5 else (None, "")
+        # trava: frete IGUAL a um preço do produto é a assinatura do defeito antigo.
+        # Frete maior que o produto é normal em item barato (R$ 20 numa água de R$ 5).
+        return (frete, prazo) if frete not in precos else (None, "")
     if re.search(r"gr[áa]tis", bloco, re.I):
         return 0.0, prazo
     return None, prazo

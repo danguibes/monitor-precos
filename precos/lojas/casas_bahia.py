@@ -37,7 +37,7 @@ def ler_casas_bahia(t: str):
 def coletar(page, cfg, produtos, data, filtros, erros, max_por_modelo=3):
     base = "https://www.casasbahia.com.br"
     cep = re.sub(r"\D", "", cfg["cep"])
-    ofertas = []
+    ofertas, sem_leitura = [], 0
     for prod in produtos:
         termo = re.sub(r"\s+", "-", prod["busca"].strip().lower())
         if not ir(page, f"{base}/{termo}/b", espera=4):
@@ -61,6 +61,7 @@ def coletar(page, cfg, produtos, data, filtros, erros, max_por_modelo=3):
                 cands.append((url, tit))
         for url, tit in cands[:max_por_modelo]:
             if not ir(page, url, espera=3):
+                sem_leitura += 1
                 continue
             try:
                 campo = page.locator("input[placeholder='_____-___']").first
@@ -74,8 +75,12 @@ def coletar(page, cfg, produtos, data, filtros, erros, max_por_modelo=3):
                 continue
             d = ler_casas_bahia(t_pag)
             if d is None:
+                sem_leitura += 1  # página do produto sem preço: em rodada longa, é o site limitando
                 continue
             titulo, preco, pix, vend, frete, prazo = d
             ofertas.append(oferta("Casas Bahia", prod["modelo"], titulo or tit, vend, preco, pix,
                                   frete, prazo, url, data))
+    if sem_leitura:
+        erros.append(f"Casas Bahia: {sem_leitura} página(s) de produto sem preço — o site pode estar "
+                     "limitando acessos; isoladas, as mesmas páginas leem normalmente")
     return ofertas

@@ -39,9 +39,11 @@ def test_magalu_frete_nao_calculado_fica_sem_frete():
     t = ("R$ 2.279,05\n\nno Pix\nOu R$ 2.399,00 em 10x de R$ 239,90 sem juros\n\nVer opções de pagamento\n\n"
          "Enviar para [endereço]\nAlterar\n\nNão foi possível calcular o frete. Tente novamente.\n\n"
          "Adicionar à sacola\nComprar agora\n")
-    assert ler_frete(t, 2399.0) == (None, "")
+    assert ler_frete(t, {2279.05, 2399.0}) == (None, "")
 
 
-def test_magalu_trava_frete_do_tamanho_do_produto():
+def test_magalu_trava_frete_igual_ao_preco_mas_aceita_frete_maior_que_item_barato():
     t = "Enviar para [endereço]\nAlterar\nReceba amanhã\nR$ 1.525,26\nAdicionar à sacola\n"
-    assert ler_frete(t, 1525.26) == (None, "")
+    assert ler_frete(t, {1449.0, 1525.26}) == (None, "")  # o caso real do HB150 em 30/10
+    agua = "Enviar para [endereço]\nAlterar\nReceba amanhã\nR$ 20,99\nAdicionar à sacola\n"
+    assert ler_frete(agua, {4.99}) == (20.99, "amanhã")

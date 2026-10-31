@@ -42,18 +42,22 @@ def ler_jsonld(blocos: list[str]):
 
 def ler_caixa(t: str):
     """(preço no cartão, vendedor, prazo, frete grátis?) da caixa de compra do texto da página."""
-    i_compra = t.find("Comprar agora")
-    if i_compra < 0:
+    # Âncora: o link de entrega fica dentro da caixa nos dois layouts — o de
+    # eletro ("Comprar agora") e o de mercado, que só tem "Adicionar ao carrinho".
+    ancora = t.find("Mais detalhes e formas de entrega")
+    if ancora < 0:
+        ancora = t.find("Comprar agora")
+    if ancora < 0:
         return None, None, "", False
-    i_pix = t.rfind("no Pix", 0, i_compra)
-    caixa = t[i_pix if i_pix >= 0 else max(0, i_compra - 600): i_compra]
+    i_pix = t.rfind("no Pix", max(0, ancora - 900), ancora)
+    caixa = t[i_pix if i_pix >= 0 else max(0, ancora - 300): ancora]
     plano = re.sub(r"\s+", " ", caixa)
     mc = re.search(r"ou R\$ ?([\d.]+)(?: ?, ?(\d{2}))? em \d+x", plano)
     cartao = num(f"{mc.group(1)},{mc.group(2) or '00'}") if mc else None
-    mp = re.search(r"((?:Chegará|Receba|Chega)[^\n]*)", caixa)
-    prazo = mp.group(1).strip() if mp else ""
-    gratis = bool(re.search(r"(Frete|Chegará|Chega|Envio) gr[áa]tis", caixa, re.I))
-    mv = re.search(r"(?:Loja oficial|Vendido por)\s*\n\s*([^\n]+)", t[i_compra: i_compra + 600])
+    prazos = re.findall(r"((?:Chegará|Receba|Chega)[^\n]*)", caixa)
+    prazo = prazos[-1].strip() if prazos else ""  # o último antes do link é o da caixa
+    gratis = bool(re.search(r"(Frete|Chegará|Chega|Envio) gr[áa]tis", prazo or caixa[-200:], re.I))
+    mv = re.search(r"(?:Loja oficial|Vendido por)\s*\n\s*([^\n]+)", t[ancora: ancora + 900])
     return cartao, (mv.group(1).strip() if mv else None), prazo, gratis
 
 

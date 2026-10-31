@@ -36,7 +36,7 @@ def test_mercado_livre_frete_gratis():
 
 
 def test_mercado_livre_fixture_nao_leva_o_cep_do_destino():
-    for nome in ("fei27t-frete-pago", "hb150-frete-gratis"):
+    for nome in ("fei27t-frete-pago", "hb150-frete-gratis", "agua-mercado"):
         for bloco in ld(nome):
             destino = json.loads(bloco)["offers"]["shippingDetails"].get("shippingDestination", {})
             assert destino.get("postalCode", "00000000") == "00000000"
@@ -44,3 +44,10 @@ def test_mercado_livre_fixture_nao_leva_o_cep_do_destino():
 
 def test_mercado_livre_sem_jsonld_de_oferta():
     assert ler_jsonld(['{"@type": "BreadcrumbList"}', "não é json"]) is None
+
+
+def test_mercado_livre_layout_de_mercado_sem_comprar_agora():
+    """Item de mercado só tem "Adicionar ao carrinho"; a caixa se acha pelo link de entrega."""
+    assert ler_jsonld(ld("agua-mercado")) == {"preco": 24.17, "frete": 20.99, "dias": 2}
+    cartao, vend, prazo, gratis = ler_caixa(txt("agua-mercado"))
+    assert (vend, prazo, gratis) == ("Premium", "Chegará amanhã sábado", False)

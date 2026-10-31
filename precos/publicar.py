@@ -12,6 +12,8 @@ A coleta é sempre nesta máquina — os logins só existem aqui. Ao fim da roda
 from __future__ import annotations
 
 import html
+import os
+import stat
 import re
 import shutil
 import subprocess
@@ -96,7 +98,8 @@ def gerar_indice(itens: list[dict], destino: Path, repo: str | None = None) -> N
 def gerar_site(monitores: list[dict], pasta: Path = SITE, repo: str | None = None) -> None:
     from .base import carregar_json
     if pasta.exists():
-        shutil.rmtree(pasta)
+        # o .git da publicação anterior tem arquivos somente leitura no Windows
+        shutil.rmtree(pasta, onexc=lambda f, caminho, _: (os.chmod(caminho, stat.S_IWRITE), f(caminho)))
     pasta.mkdir(parents=True)
     itens = []
     for m in monitores:
