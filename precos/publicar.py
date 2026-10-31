@@ -15,6 +15,7 @@ import html
 import re
 import shutil
 import subprocess
+import urllib.parse
 from datetime import datetime
 from pathlib import Path
 
@@ -44,7 +45,27 @@ def varrer(pasta: Path, proibidos: list[str]) -> list[str]:
     return achados
 
 
-def gerar_indice(itens: list[dict], destino: Path) -> None:
+MODELO = RAIZ / "modelos" / "monitor.toml"
+
+
+def repo_web() -> str | None:
+    """https://github.com/dono/repo a partir do remote, ou None fora de um clone do GitHub."""
+    try:
+        url = git("remote", "get-url", "origin", cwd=RAIZ)
+    except RuntimeError:
+        return None
+    m = re.match(r"https://github\.com/([^/]+/[^/]+?)(\.git)?$", url)
+    return f"https://github.com/{m.group(1)}" if m else None
+
+
+def link_novo_monitor(repo: str) -> str:
+    """Página "novo arquivo" do GitHub, já com o modelo comentado no editor."""
+    modelo = MODELO.read_text(encoding="utf-8")
+    return (f"{repo}/new/main/monitores?filename=novo-monitor.toml&value="
+            + urllib.parse.quote(modelo))
+
+
+def gerar_indice(itens: list[dict], destino: Path, repo: str | None = None) -> None:
     e = html.escape
     cards = []
     for it in itens:
@@ -54,17 +75,25 @@ def gerar_indice(itens: list[dict], destino: Path) -> None:
             '<div class="det">Sem oferta na última rodada.</div>'
         cards.append(f'<article class="card"><header><h2><a href="{e(it["id"])}.html">{e(it["nome"])}</a></h2></header>'
                      f'<div class="meta">última consulta {e(it["ultima"] or "—")}</div>{corpo}'
-                     f'<a href="{e(it["id"])}.html">ver todas as ofertas →</a></article>')
+                     f'<a href="{e(it["id"])}.html">ver todas as ofertas →</a>'
+                     + (f' · <a href="{e(repo)}/edit/main/monitores/{e(it["id"])}.toml" target="_blank" '
+                        f'rel="noopener">editar</a>' if repo else "") + '</article>')
+    novo = (f'<p><a class="botao" href="{e(link_novo_monitor(repo))}" target="_blank" rel="noopener">'
+            f'+ Novo monitor</a> <span class="det">abre o GitHub com um modelo comentado; salve e a próxima '
+            f'rodada do notebook já pesquisa em todas as lojas</span></p>') if repo else ""
     destino.write_text(f"""<!doctype html><html lang="pt-BR"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex">
-<title>Monitor de preços</title><style>{ESTILO}</style></head><body><main>
+<title>Monitor de preços</title><style>{ESTILO}
+.botao{{display:inline-block;background:var(--ac);color:var(--card);padding:8px 14px;border-radius:10px;text-decoration:none;font-weight:600;margin-top:18px}}
+</style></head><body><main>
 <h1>Monitor de preços</h1>
 <p class="sub">Melhor oferta de cada monitor, com o frete para um CEP fixo · gerado em {datetime.now():%Y-%m-%d %H:%M}</p>
 <section class="grid">{"".join(cards)}</section>
+{novo}
 </main></body></html>""", encoding="utf-8")
 
 
-def gerar_site(monitores: list[dict], pasta: Path = SITE) -> None:
+def gerar_site(monitores: list[dict], pasta: Path = SITE, repo: str | None = None) -> None:
     from .base import carregar_json
     if pasta.exists():
         shutil.rmtree(pasta)
@@ -78,7 +107,7 @@ def gerar_site(monitores: list[dict], pasta: Path = SITE) -> None:
         melhor = min(com_frete, key=lambda x: x["total_pix"]) if com_frete else None
         itens.append({"id": m["id"], "nome": m["cfg"].get("nome", m["id"]), "melhor": melhor,
                       "ultima": melhor["data"] if melhor else None})
-    gerar_indice(itens, pasta / "index.html")
+    gerar_indice(itens, pasta / "index.html", repo)
 
 
 def git(*args, cwd: Path) -> str:
@@ -99,7 +128,7 @@ def enviar(pasta: Path = SITE) -> str:
 
 
 def publicar(monitores: list[dict], local: dict, log) -> bool:
-    gerar_site(monitores)
+    gerar_site(monitores, repo=repo_web())
     achados = varrer(SITE, termos_proibidos(local))
     if achados:
         log("Publicação BARRADA: dado pessoal no site gerado -> " + "; ".join(achados[:5]))

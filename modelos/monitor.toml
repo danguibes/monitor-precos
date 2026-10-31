@@ -1,0 +1,27 @@
+# Novo monitor. Troque o nome do arquivo (ex.: detergente.toml), o título, os
+# termos e as regras, e salve. Na próxima rodada do notebook ele já é pesquisado
+# em TODAS as lojas de lojas.toml — monitor não escolhe lojas.
+#
+# As regras usam regex: [áa] aceita com e sem acento, | é "ou", \s é espaço.
+# Se o arquivo quebrar, o Actions do GitHub avisa (aba Actions, teste vermelho).
+
+nome = "Meu monitor"
+titulo = "Meu monitor · o que estou procurando"
+modo = "descoberta"           # busca aberta: entra todo anúncio que passa nas regras
+intervalo_minimo_horas = 12   # no máximo uma consulta a cada tantas horas
+
+# Termos amplos e não exatos: cada loja busca de um jeito, e as regras abaixo
+# é que separam o que interessa.
+termos = [
+  "termo amplo",
+  "outro jeito de escrever",
+]
+
+[regras]
+# todas precisam aparecer no título do anúncio
+incluir = ['palavra obrigat[óo]ria']
+# nenhuma pode aparecer
+excluir = ['kit|combo', 'usado|recondicionado']
+# opcionais — apague a linha se não servir:
+# volume_ml = [400, 600]    # volume de UMA unidade, em ml
+# montar_pack = 6           # compara o custo de receber 6 unidades, frete uma vez

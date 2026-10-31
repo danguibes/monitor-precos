@@ -28,6 +28,38 @@ th,td{text-align:left;padding:6px 8px;border-bottom:1px solid var(--ln)} .n{text
 """
 
 
+ORDENAR = r"""<script>
+// Clique no cabeçalho ordena a coluna; outro clique inverte. "—" e vazio vão para o fim.
+document.querySelectorAll("table").forEach(tb => {
+  const ths = [...tb.querySelectorAll("thead th")];
+  ths.forEach((th, i) => {
+    th.style.cursor = "pointer"; th.title = "ordenar por esta coluna";
+    th.addEventListener("click", () => {
+      const asc = th.dataset.ord !== "asc";
+      ths.forEach(x => { delete x.dataset.ord; x.textContent = x.textContent.replace(/ [▲▼]$/, ""); });
+      th.dataset.ord = asc ? "asc" : "desc"; th.textContent += asc ? " ▲" : " ▼";
+      const valor = r => {
+        const t = (r.cells[i] ? r.cells[i].textContent : "").trim();
+        if (t === "" || t === "—") return null;
+        if (/^(R\$\s*)?-?[\d.]+(,\d+)?/.test(t)) {
+          const n = parseFloat(t.replace(/^R\$\s*/, "").replace(/\./g, "").replace(",", "."));
+          if (!isNaN(n)) return n;
+        }
+        return t.toLowerCase();
+      };
+      const corpo = tb.tBodies[0];
+      [...corpo.rows].sort((a, b) => {
+        const x = valor(a), y = valor(b);
+        if (x === null) return 1; if (y === null) return -1;
+        if (typeof x !== typeof y) return typeof x === "number" ? -1 : 1;
+        return (x < y ? -1 : x > y ? 1 : 0) * (asc ? 1 : -1);
+      }).forEach(r => corpo.appendChild(r));
+    });
+  });
+});
+</script>"""
+
+
 def litros_oferta(produto: str, pack: int | None):
     """Com pack montado, o volume total é pack × o volume de uma unidade."""
     if pack:
@@ -158,7 +190,7 @@ def gerar_relatorio(cfg, erros: list[str], destino=RELATORIO, origem=HISTORICO, 
 <tbody>{"".join(linhas_tab) or f'<tr><td colspan="{colunas}">Nenhuma oferta encontrada.</td></tr>'}</tbody></table></div>
 {f'<h3>Avisos desta rodada</h3><ul class="avisos">{avisos}</ul>' if avisos else ''}
 <p class="avisos">{rodape_final}</p>
-</main></body></html>"""
+</main>{ORDENAR}</body></html>"""
     destino.parent.mkdir(exist_ok=True)
     destino.write_text(pagina, encoding="utf-8")
     return res

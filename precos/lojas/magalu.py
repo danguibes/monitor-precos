@@ -60,21 +60,39 @@ def ler_magalu(t: str):
     t = t[:fim] if fim > 0 else t
     pix = num((re.search(r"R\$\s*" + NUM + r"\s*\n+\s*no Pix", t, re.I) or [None, None])[1])
     cartao = num((re.search(r"Ou R\$\s*" + NUM + r" em", t) or [None, None])[1])
-    vend = (re.search(r"Vendido (?:e entregue )?por ([^\n]+)", t) or [None, None])[1]
-    frete, prazo = None, ""
-    ini = t.find("Enviar para")
-    if ini >= 0:
-        bloco = t[ini: ini + 400]
-        m = re.search(r"R\$\s*" + NUM, bloco)
-        if m:
-            frete = num(m.group(1))
-        elif re.search(r"gr[áa]tis", bloco, re.I):
-            frete = 0.0
-        mp = re.search(r"Receba (até [^\n]+)", bloco)
-        prazo = mp.group(1) if mp else ""
+    vend = (re.search(r"Vendido (?:e entregue )?por ([^\n]+?)(?: e entregue por [^\n]+)?\n", t) or [None, None])[1]
     if pix is None and cartao is None:
         return None
+    frete, prazo = ler_frete(t, max(pix or 0, cartao or 0))
     return pix, cartao, vend, frete, prazo
+
+
+def ler_frete(t: str, preco: float):
+    """(frete, prazo) do bloco de entrega do produto, ou (None, "") se não deu.
+
+    Há dois "Enviar para" na página: o da barra do topo e o do produto. O do
+    produto é o último antes de "Adicionar à sacola", e a taxa é o R$ que fecha
+    esse bloco ("Receba até ... / R$ 49,90 / Adicionar à sacola"). Ler a partir
+    do primeiro era o defeito: os 400 caracteres depois da barra do topo já
+    alcançavam o preço do produto, que era gravado como frete.
+    """
+    fim = t.find("Adicionar à sacola")
+    ini = t.rfind("Enviar para", 0, fim) if fim > 0 else -1
+    if ini < 0:
+        return None, ""
+    bloco = t[ini:fim]
+    mp = re.search(r"(Receba [^\n]+)", bloco)
+    prazo = mp.group(1).replace("Receba ", "") if mp else ""
+    if "calcular o frete" in bloco:  # "Não foi possível calcular o frete. Tente novamente."
+        return None, ""
+    valores = re.findall(r"R\$\s*" + NUM, bloco)
+    if valores:
+        frete = num(valores[-1])
+        # trava: frete do tamanho do produto é leitura errada, não frete
+        return (frete, prazo) if not preco or frete < preco * 0.5 else (None, "")
+    if re.search(r"gr[áa]tis", bloco, re.I):
+        return 0.0, prazo
+    return None, prazo
 
 
 def coletar(page, cfg, produtos, data, filtros, erros, max_por_modelo=3):
@@ -95,6 +113,13 @@ def coletar(page, cfg, produtos, data, filtros, erros, max_por_modelo=3):
                     erros.append("Magalu: não consegui fixar o CEP (rode --configurar)")
                     return ofertas
             t_pag = texto(page)
+            if "calcular o frete" in t_pag:  # falha intermitente da página: o próprio link dela refaz
+                try:
+                    page.get_by_text("Tente novamente").first.click(timeout=5000)
+                    page.wait_for_selector("text=Receba", timeout=10000)
+                    t_pag = texto(page)
+                except Exception:
+                    pass  # segue sem frete: a oferta fica "frete não informado"
             if prod.get("padrao") and not re.search(prod["padrao"], t_pag[:6000], re.I):
                 continue  # página não é do modelo buscado
             d = ler_magalu(t_pag)

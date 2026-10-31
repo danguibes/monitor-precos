@@ -40,3 +40,23 @@ def test_site_tem_indice_e_um_relatorio_por_monitor_sem_cep(tmp_path):
     assert sorted(a.name for a in site.iterdir()) == ["index.html", "teste.html"]
     assert "R$ 110,00" in (site / "index.html").read_text(encoding="utf-8")
     assert varrer(site, termos_proibidos({"cep": CEP})) == []
+
+
+def test_indice_tem_novo_monitor_e_editar_quando_ha_repositorio(tmp_path):
+    from precos.publicar import gerar_indice, link_novo_monitor
+    item = {"id": "agua", "nome": "Água", "melhor": None, "ultima": None}
+    gerar_indice([item], tmp_path / "i.html", "https://github.com/dono/repo")
+    pagina = (tmp_path / "i.html").read_text(encoding="utf-8")
+    assert "+ Novo monitor" in pagina and "/edit/main/monitores/agua.toml" in pagina
+    assert link_novo_monitor("https://github.com/dono/repo").startswith(
+        "https://github.com/dono/repo/new/main/monitores?filename=novo-monitor.toml&value=%23")
+    gerar_indice([item], tmp_path / "sem.html")  # sem repositório, sem botão
+    assert "Novo monitor" not in (tmp_path / "sem.html").read_text(encoding="utf-8")
+
+
+def test_modelo_de_monitor_e_valido_e_nao_fica_em_monitores():
+    import tomllib
+    from precos.publicar import MODELO
+    m = tomllib.loads(MODELO.read_text(encoding="utf-8"))
+    assert m["modo"] == "descoberta" and m["termos"] and "lojas" not in m
+    assert MODELO.parent.name != "monitores"  # senão viraria um monitor de verdade

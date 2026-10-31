@@ -1,11 +1,60 @@
-"""Mercado Livre: a listagem exige login no perfil do monitor; o preço vem do JSON-LD."""
+"""Mercado Livre: a listagem exige login no perfil do monitor.
+
+Preço e frete vêm do JSON-LD da página do produto: `offers.price` é o preço
+da caixa de compra (no Pix) e `offers.shippingDetails.shippingRate.value` é o
+frete para o endereço da conta logada. O texto da página só completa o que o
+JSON-LD não tem — preço no cartão, vendedor e prazo —, e sempre recortado na
+caixa de compra: a página lista outros anúncios ("Produtos relacionados"), e
+ler o frete do texto inteiro pegava o "Frete grátis" deles.
+"""
 from __future__ import annotations
 
 import json
 import re
 
-from ..base import NUM, num, oferta
+from ..base import num, oferta
 from ..navegador import ir, texto
+
+
+def ler_jsonld(blocos: list[str]):
+    """{"preco", "frete", "dias"} da oferta principal, ou None."""
+    for bloco in blocos:
+        try:
+            j = json.loads(bloco)
+        except ValueError:
+            continue
+        ofs = (j.get("offers") if isinstance(j, dict) else None) or {}
+        if isinstance(ofs, list):
+            ofs = ofs[0] if ofs else {}
+        if not ofs.get("price"):
+            continue
+        envio = ofs.get("shippingDetails") or {}
+        if isinstance(envio, list):
+            envio = envio[0] if envio else {}
+        taxa = (envio.get("shippingRate") or {}).get("value")
+        tempo = envio.get("deliveryTime") or {}
+        dias = [(tempo.get(k) or {}).get("maxValue") for k in ("handlingTime", "transitTime")]
+        return {"preco": float(ofs["price"]),
+                "frete": float(taxa) if taxa is not None else None,
+                "dias": sum(d for d in dias if d) or None}
+    return None
+
+
+def ler_caixa(t: str):
+    """(preço no cartão, vendedor, prazo, frete grátis?) da caixa de compra do texto da página."""
+    i_compra = t.find("Comprar agora")
+    if i_compra < 0:
+        return None, None, "", False
+    i_pix = t.rfind("no Pix", 0, i_compra)
+    caixa = t[i_pix if i_pix >= 0 else max(0, i_compra - 600): i_compra]
+    plano = re.sub(r"\s+", " ", caixa)
+    mc = re.search(r"ou R\$ ?([\d.]+)(?: ?, ?(\d{2}))? em \d+x", plano)
+    cartao = num(f"{mc.group(1)},{mc.group(2) or '00'}") if mc else None
+    mp = re.search(r"((?:Chegará|Receba|Chega)[^\n]*)", caixa)
+    prazo = mp.group(1).strip() if mp else ""
+    gratis = bool(re.search(r"(Frete|Chegará|Chega|Envio) gr[áa]tis", caixa, re.I))
+    mv = re.search(r"(?:Loja oficial|Vendido por)\s*\n\s*([^\n]+)", t[i_compra: i_compra + 600])
+    return cartao, (mv.group(1).strip() if mv else None), prazo, gratis
 
 
 def coletar(page, cfg, produtos, data, filtros, erros, max_por_modelo=4):
@@ -33,38 +82,21 @@ def coletar(page, cfg, produtos, data, filtros, erros, max_por_modelo=4):
         for url, tit in cands[:max_por_modelo]:
             if not ir(page, url, espera=3):
                 continue
-            preco = None
             try:
-                for bloco in page.eval_on_selector_all(
-                        "script[type='application/ld+json']", "es => es.map(e => e.textContent)"):
-                    j = json.loads(bloco)
-                    ofs = (j.get("offers") if isinstance(j, dict) else None) or {}
-                    if isinstance(ofs, list):
-                        ofs = ofs[0] if ofs else {}
-                    if ofs.get("price"):
-                        preco = float(ofs["price"])
-                        break
+                blocos = page.eval_on_selector_all(
+                    "script[type='application/ld+json']", "es => es.map(e => e.textContent)")
             except Exception:
-                pass
+                blocos = []
+            ld = ler_jsonld(blocos)
+            if ld is None:
+                continue
             t = texto(page)
             if prod.get("padrao") and not re.search(prod["padrao"], t[:6000] + tit, re.I):
                 continue
-            fim = t.find("Produtos relacionados")
-            t = t[:fim] if fim > 0 else t
-            pix = num((re.search(r"R\$\s*" + NUM + r"\s*(?:\n\s*)?no Pix", t, re.I) or [None, None])[1])
-            vend = (re.search(r"Vendido por ([^\n]+)", t) or [None, None])[1]
-            frete, prazo = None, ""
-            m = re.search(r"((?:Chegará|Receba|Envio|Frete)[^\n]{0,80})(?:\n[^\n]{0,80}){0,2}", t)
-            if m:
-                bloco = m.group(0)
-                if re.search(r"gr[áa]tis", bloco, re.I):
-                    frete = 0.0
-                else:
-                    mv = re.search(r"R\$\s*(\d{1,3}(?:\.\d{3})*(?:,\d{2})?)", bloco)
-                    frete = num(mv.group(1) + ("" if "," in mv.group(1) else ",00")) if mv else None
-                prazo = bloco.split("\n")[0][:60]
-            if preco is None:
-                continue
-            ofertas.append(oferta("Mercado Livre", prod["modelo"], tit, vend, preco, pix,
-                                  frete, prazo, url, data))
+            cartao, vend, prazo, gratis = ler_caixa(t)
+            frete = ld["frete"] if ld["frete"] is not None else (0.0 if gratis else None)
+            if not prazo and ld["dias"]:
+                prazo = f"até {ld['dias']} dias"
+            ofertas.append(oferta("Mercado Livre", prod["modelo"], tit, vend, cartao or ld["preco"],
+                                  ld["preco"], frete, prazo, url, data))
     return ofertas
