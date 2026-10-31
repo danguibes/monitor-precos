@@ -1,0 +1,21 @@
+# Criado pelo formulário, pedido #2. Para mudar, use o link "editar" da página:
+# ele reabre o formulário preenchido. Editar este arquivo à mão também funciona.
+
+nome = "Papel higiênico folha dupla"
+titulo = "Papel higiênico folha dupla"
+modo = "descoberta"
+intervalo_minimo_horas = 12
+termos = ["papel higiênico folha dupla", "papel higiênico folha tripla"]
+
+[regras]
+incluir = ["p[aáàâã]p[eéèê]l\\s*h[iíì]g[iíì][eéèê]n[iíì][cç][oóòôõ]"]
+excluir = []
+montar_pack = 12
+
+[pedido]
+numero = 2
+termos = "papel higiênico folha dupla\npapel higiênico folha tripla"
+precisa = "papel higiênico"
+exclui = ""
+tamanho = ""
+pack = "12"
