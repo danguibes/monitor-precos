@@ -92,3 +92,29 @@ def test_montar_pack_soma_o_produto_e_cobra_o_frete_uma_vez():
     assert montar_pack(pack6, 6) is pack6
     kit4 = oferta("X", "M", "Kit 4 Água com Gás 1,5L", "", 20.0, None, 0.0, "", "x", "d")
     assert montar_pack(kit4, 6) is None
+
+
+import pytest as _pt
+from precos.unidades import quantidade_explicita as _qe, unidades_na_oferta as _uno
+
+
+@_pt.mark.parametrize("titulo, n", [
+    ("Lenço Umedecido Neve Care On The Go Pacote 16 Folhas", 16),
+    ("Toalha Umedecida Cotondela Baby 50 un", 50),
+    ("Lenço Umedecido Huggies Tripla Proteção - 88 Unidades", 88),
+    ("Kit 4 Pacotes Lenço Umedecido Huggies com 48 Unidades", 192),
+    ("Lenço Umedecido Pampers 3 pacotes 48 unidades", 144),
+    ("Papel Higiênico Folha Dupla Neve 12 Rolos", 12),       # "folha dupla" não é contagem
+    ("Lenço Umedecido Huggies", None),
+])
+def test_contagem_de_lencos(titulo, n):
+    assert _qe(titulo) == n
+
+
+def test_unidades_na_oferta_por_monitor():
+    lenco = {"modo": "descoberta", "regras": {"incluir": [], "excluir": []}}
+    assert _uno("Toalha Umedecida 50 un", lenco) == 50 and _uno("Lenço Umedecido Huggies", lenco) is None
+    agua = {"modo": "descoberta", "regras": {"volume_ml": [1400, 1600], "montar_pack": 6}}
+    assert _uno("Água com Gás 1,5L", agua) == 9.0
+    papel = {"modo": "descoberta", "regras": {"montar_pack": 12}}
+    assert _uno("2 × Papel Higiênico 6 Rolos", papel) == 12

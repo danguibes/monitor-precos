@@ -19,13 +19,21 @@ _QTD = [
     r"\bc/\s*(\d{1,3})\b",
     r"\b(\d{1,3})\s*(?:unidades|unids?\.?|un\.?|garrafas)(?=\W|$)",
     r"\b(\d{1,3})\s*x\s*\d",  # 6x1,5L
+    r"\b(\d{1,3})\s*(?:folhas|fls)\b",  # lenço umedecido: "Pacote 16 Folhas" (por último: papel tem "folha dupla")
 ]
+# "Kit 4 Pacotes com 48 Unidades" são 192 unidades, não 4 nem 48
+_PACOTES = re.compile(r"\b(?:kit\s+(?:c/\s*|com\s+)?)?(\d{1,2})\s*(?:pacotes|pcts?\.?|embalagens)\b")
 _VOL = re.compile(r"(\d+(?:[.,]\d+)?)\s*(ml|litros?|lts?|l)(?![a-z])", re.I)
 
 
 def quantidade_explicita(titulo: str) -> int | None:
     """A contagem escrita no título, ou None se não há nenhuma (não presume 1)."""
     t = titulo.lower()
+    m = _PACOTES.search(t)
+    if m:  # N pacotes × a contagem de dentro de cada um, procurada no resto do título
+        dentro = quantidade_explicita(t[:m.start()] + " " + t[m.end():])
+        if dentro and dentro != int(m.group(1)):
+            return int(m.group(1)) * dentro
     for padrao in _QTD:
         m = re.search(padrao, t)
         if m and 0 < int(m.group(1)) <= 200:
@@ -72,6 +80,33 @@ def montar_pack(o: dict, pack: int) -> dict | None:
         o["total_pix"], o["total_cartao"] = o["preco_pix"], o["preco"]
     o["produto"] = f"{f} × {o['produto']}"
     return o
+
+
+def unidade_de_comparacao(cfg: dict) -> str | None:
+    """"litro" (o monitor tem volume_ml), "unidade" (o resto) ou None (monitor acompanhado, como o freezer)."""
+    if cfg.get("modo") != "descoberta":
+        return None
+    return "litro" if (cfg.get("regras") or {}).get("volume_ml") else "unidade"
+
+
+def sufixo(cfg: dict) -> str:
+    return "/L" if unidade_de_comparacao(cfg) == "litro" else "/" + cfg.get("unidade_nome", "un.")
+
+
+def unidades_na_oferta(produto: str, cfg: dict) -> float | None:
+    """Litros ou unidades que a oferta entrega; None se o título não diz.
+
+    Com montar_pack o anúncio já foi convertido no pack inteiro. Sem ele, a
+    contagem precisa estar ESCRITA no título: pacotes de 16, 20 e 50 lenços só
+    se comparam por unidade, e "sem número" não pode virar 1.
+    """
+    pack = (cfg.get("regras") or {}).get("montar_pack")
+    if unidade_de_comparacao(cfg) == "litro":
+        v = volume_ml(produto)
+        if not v:
+            return None
+        return (pack or quantidade(produto)) * v / 1000
+    return pack or quantidade_explicita(produto)
 
 
 def litros(titulo: str) -> float | None:

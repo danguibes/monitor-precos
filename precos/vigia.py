@@ -6,7 +6,9 @@ issues abertas do repositório:
 
   - "atualizar" (o botão da página abre uma issue com esse rótulo): roda todos
     os monitores agora, publica, comenta a hora e fecha a issue;
-  - "novo-monitor": roda `monitor.py --pedidos`, que cria o monitor e já o pesquisa.
+  - "novo-monitor": roda `monitor.py --pedidos`, que cria o monitor e já o pesquisa;
+  - "gerenciar-monitor" (pausar, retomar, excluir): o mesmo `--pedidos`, que muda o
+    arquivo do monitor e republica a página.
 
 Só issues abertas pelo dono do repositório disparam alguma coisa; as de outras
 contas ficam como estão e só viram uma linha no log. Nada do texto da issue é
@@ -28,6 +30,7 @@ from .base import DADOS, RAIZ, SEM_JANELA
 
 ATUALIZAR = "atualizar"
 NOVO_MONITOR = "novo-monitor"
+GERENCIAR = "gerenciar-monitor"
 TRAVA = DADOS / "vigia.lock"
 
 
@@ -44,14 +47,14 @@ def pendencias(issues: list[dict], dono: str) -> tuple[list[int], bool, list[str
     atualizar, pedido, avisos = [], False, []
     for i in issues:
         rotulos = {r["name"] for r in i.get("labels", [])}
-        if not rotulos & {ATUALIZAR, NOVO_MONITOR}:
+        if not rotulos & {ATUALIZAR, NOVO_MONITOR, GERENCIAR}:
             continue
         if i["author"]["login"] != dono:
             avisos.append(f"issue #{i['number']} de @{i['author']['login']} ignorada (só o dono dispara)")
             continue
         if ATUALIZAR in rotulos:
             atualizar.append(i["number"])
-        if NOVO_MONITOR in rotulos:
+        if rotulos & {NOVO_MONITOR, GERENCIAR}:
             pedido = True
     return atualizar, pedido, avisos
 

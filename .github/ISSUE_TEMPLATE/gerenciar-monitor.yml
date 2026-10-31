@@ -1,0 +1,30 @@
+name: Pausar, retomar ou excluir monitor
+description: Use os links "pausar", "retomar" e "excluir" de cada monitor na página; eles preenchem tudo.
+title: "Monitor: "
+labels: ["gerenciar-monitor"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Com o notebook ligado, em até 5 minutos ele atende, republica a página e fecha esta issue.
+        **Pausar** deixa o monitor na página, sem novas consultas. **Excluir** tira o arquivo do
+        monitor (o histórico de preços fica no notebook, e o arquivo volta pelo histórico do git).
+        Só pedidos abertos pelo dono do repositório são atendidos.
+  - type: dropdown
+    id: acao
+    attributes:
+      label: Ação
+      options:
+        - Pausar
+        - Retomar
+        - Excluir
+    validations:
+      required: true
+  - type: input
+    id: monitor
+    attributes:
+      label: Monitor
+      description: O identificador do monitor (o nome do arquivo em monitores/, sem .toml).
+      placeholder: agua-com-gas
+    validations:
+      required: true

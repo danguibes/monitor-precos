@@ -7,4 +7,4 @@ abrir_relatorio = "quando_baixar"  # quando_baixar, sempre ou nunca
 navegador_visivel = false          # true mostra a janela durante a coleta
 publicar = true                    # publica os relatórios, sem o CEP, no GitHub Pages
 vigia_minutos = 5                  # de quanto em quanto tempo o notebook olha o GitHub
-                                   # (botão "Atualizar agora" e pedidos de monitor)
+                                   # (botão "Atualizar agora" e pedidos de monitor); 0 desliga

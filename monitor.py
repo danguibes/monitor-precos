@@ -134,24 +134,26 @@ def atualizar_do_github() -> None:
         log(f"git pull falhou (segue com o que há aqui): {r.stderr.strip()[:200]}")
 
 
-def atender_pedidos() -> list[str]:
-    """Pedidos do formulário do GitHub viram monitores antes de a rodada carregar a lista.
+def atender_pedidos() -> tuple[list[str], bool]:
+    """Pedidos do GitHub antes de a rodada carregar a lista: monitores novos, e pausar, retomar, excluir.
 
-    Devolve os ids criados ou alterados: eles rodam já, sem esperar o intervalo.
+    Devolve (ids criados ou alterados, que rodam já sem esperar o intervalo; se algum
+    monitor foi pausado, retomado ou excluído, o que pede republicar a página).
     """
     from precos import pedidos
     from precos.base import salvar_json
     from precos.publicar import AVISOS_PEDIDOS, repo_web
     repo = repo_web()
     if not repo:
-        return []
+        return [], False
     try:
         avisos, prontos = pedidos.atender(repo.removeprefix("https://github.com/"), log)
+        avisos_g, mudou = pedidos.atender_gerencia(repo.removeprefix("https://github.com/"), log)
     except Exception as exc:  # um pedido estranho nunca derruba a coleta
         log(f"Pedidos: ERRO {exc!r}")
-        return []
-    salvar_json(AVISOS_PEDIDOS, avisos)
-    return prontos
+        return [], False
+    salvar_json(AVISOS_PEDIDOS, avisos + avisos_g)
+    return prontos, mudou
 
 
 def publicar_se_ligado(monitores, argv) -> None:
@@ -172,7 +174,10 @@ def vigiar() -> int:
         log("Vigia: sem repositório do GitHub; nada a vigiar.")
         return 1
     cfg = mon.ler_toml(mon.CONFIG_GERAL, obrigatorio=False)
-    laco(repo.removeprefix("https://github.com/"), float(cfg.get("vigia_minutos", 5)), log)
+    minutos = float(cfg.get("vigia_minutos", 5))
+    if minutos <= 0:
+        return 0  # vigia desligado no config.toml
+    laco(repo.removeprefix("https://github.com/"), minutos, log)
     return 0
 
 
@@ -181,10 +186,10 @@ def main(argv):
         return vigiar()
     if "--logon" in argv:
         atualizar_do_github()
-    novos = []
+    novos, mudou = [], False
     if {"--logon", "--todos", "--pedidos"} & set(argv):
-        novos = atender_pedidos()
-        if "--pedidos" in argv and not novos:
+        novos, mudou = atender_pedidos()
+        if "--pedidos" in argv and not novos and not mudou:
             return 0
     try:
         monitores = mon.carregar(precisa_cep="--relatorio" not in argv)
@@ -206,7 +211,10 @@ def main(argv):
         publicar_se_ligado(monitores, [])
         return 0
 
-    escolhidos = escolher(monitores, argv)
+    # pausado continua na página (publicar recebe todos), mas fica fora das rodadas;
+    # só o --monitor <id> explícito ainda o consulta
+    ativos = [m for m in monitores if not m["cfg"].get("pausado")]
+    escolhidos = escolher(ativos if "--monitor" not in argv else monitores, argv)
     if "--relatorio" in argv:
         for m in escolhidos:
             gerar_relatorio(m["cfg"], [], m["relatorio"], m["historico"],
@@ -228,7 +236,7 @@ def main(argv):
             rodar(m, argv, aug)
         except Exception as exc:  # um monitor quebrado não impede os outros
             log(f"[{m['id']}] ERRO: {exc!r}")
-    if escolhidos:
+    if escolhidos or mudou:
         publicar_se_ligado(monitores, argv)
     return 0
 

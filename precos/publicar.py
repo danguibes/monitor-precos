@@ -23,7 +23,7 @@ from pathlib import Path
 
 from .base import DADOS, RAIZ, SEM_JANELA, brl
 from .historico_pagina import gerar_historico
-from .relatorio import ESTILO, gerar_relatorio, html_augustinus
+from .relatorio import ESTILO, gerar_relatorio, selo_augustinus
 
 SITE = DADOS / "site"
 
@@ -75,6 +75,12 @@ def link_atualizar(repo: str) -> str:
     return f"{repo}/issues/new?template=atualizar.yml"
 
 
+def link_gerenciar(repo: str, id_: str, nome: str, acao: str) -> str:
+    """Pausar, retomar ou excluir: o formulário já vem com a ação e o monitor preenchidos."""
+    campos = {"template": "gerenciar-monitor.yml", "title": f"{acao}: {nome}", "acao": acao, "monitor": id_}
+    return f"{repo}/issues/new?" + urllib.parse.urlencode(campos)
+
+
 def link_editar(repo: str, id_: str, cfg: dict) -> str:
     """Monitor criado pelo formulário reabre o formulário preenchido; o escrito à mão abre o arquivo."""
     pedido = cfg.get("pedido")
@@ -93,15 +99,24 @@ def gerar_indice(itens: list[dict], destino: Path, repo: str | None = None, avis
     for it in itens:
         mel = it["melhor"]
         corpo = (f'<div class="total">{brl(mel["total_pix"])}</div>'
-                 f'{html_augustinus(mel, it.get("referencia"), it.get("cfg", {}))}'
+                 f'{selo_augustinus(mel, it.get("referencia"), it.get("cfg", {}))}'
                  f'<div class="det">{e(mel["produto"][:90])} · {e(mel["loja"])}</div>') if mel else \
             '<div class="det">Sem oferta na última rodada.</div>'
-        cards.append(f'<article class="card"><header><h2><a href="{e(it["id"])}.html">{e(it["nome"])}</a></h2></header>'
+        pausado = (it.get("cfg") or {}).get("pausado")
+        gerir = ""
+        if repo:
+            link = lambda acao: e(link_gerenciar(repo, it["id"], it["nome"], acao))
+            gerir = (f'<div class="det acoes"><a href="{e(link_editar(repo, it["id"], it.get("cfg", {})))}" '
+                     f'target="_blank" rel="noopener">editar</a> · '
+                     f'<a href="{link("Retomar" if pausado else "Pausar")}" target="_blank" rel="noopener">'
+                     f'{"retomar" if pausado else "pausar"}</a> · '
+                     f'<a href="{link("Excluir")}" target="_blank" rel="noopener">excluir</a></div>')
+        etiqueta = '<span class="pausado">pausado</span>' if pausado else ""
+        cards.append(f'<article class="card{" card-pausado" if pausado else ""}"><header><h2>'
+                     f'<a href="{e(it["id"])}.html">{e(it["nome"])}</a></h2>{etiqueta}</header>'
                      f'<div class="meta">última consulta {e(it["ultima"] or "—")}</div>{corpo}'
                      f'<a href="{e(it["id"])}.html">ver todas as ofertas →</a> · '
-                     f'<a href="{e(it["id"])}-historico.html">histórico</a>'
-                     + (f' · <a href="{e(link_editar(repo, it["id"], it.get("cfg", {})))}" target="_blank" '
-                        f'rel="noopener">editar</a>' if repo else "") + '</article>')
+                     f'<a href="{e(it["id"])}-historico.html">histórico</a>{gerir}</article>')
     novo = (f'<p><a class="botao" href="{e(link_novo_monitor(repo))}" target="_blank" rel="noopener">'
             f'+ Novo monitor</a> <span class="det">abre um formulário no GitHub; com o notebook ligado, '
             f'em até 5 minutos ele cria o monitor e já pesquisa em todas as lojas</span></p>'
@@ -113,6 +128,8 @@ def gerar_indice(itens: list[dict], destino: Path, repo: str | None = None, avis
 <meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex">
 <title>Monitor de preços</title><style>{ESTILO}
 .botao{{display:inline-block;background:var(--ac);color:var(--card);padding:8px 14px;border-radius:10px;text-decoration:none;font-weight:600;margin-top:18px}}
+.acoes{{margin-top:8px}} .card-pausado{{opacity:.6}}
+.pausado{{border:1px solid var(--mut);color:var(--mut);border-radius:99px;font-size:11px;padding:1px 8px}}
 .botao.secundario{{background:transparent;color:var(--ac);border:1.5px solid var(--ac);margin-top:4px}}
 </style></head><body><main>
 <h1>Monitor de preços</h1>

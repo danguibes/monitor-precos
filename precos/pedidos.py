@@ -18,16 +18,19 @@ import re
 import subprocess
 import tomllib
 import unicodedata
+from pathlib import Path
 
 from .base import RAIZ, SEM_JANELA
 from .monitores import PASTA_MONITORES, ConfiguracaoInvalida, validar_monitor
 from .unidades import volume_ml
 
 ROTULO = "novo-monitor"
+GERENCIAR = "gerenciar-monitor"  # .github/ISSUE_TEMPLATE/gerenciar-monitor.yml: pausar, retomar, excluir
+ACOES = ("pausar", "retomar", "excluir")
 CAMPOS = {  # rótulo do campo no formulário -> chave
     "Nome": "nome", "Como procurar": "termos", "Precisa conter": "precisa", "Não pode conter": "exclui",
     "Tamanho de uma unidade": "tamanho", "Comparar o custo de quantas unidades": "pack",
-    "Frequência": "frequencia", "Monitor a alterar": "monitor",
+    "Frequência": "frequencia", "Monitor a alterar": "monitor", "Monitor": "monitor", "Ação": "acao",
 }
 ACENTOS = {"a": "[aáàâã]", "e": "[eéèê]", "i": "[iíì]", "o": "[oóòôõ]", "u": "[uúùü]", "c": "[cç]"}
 
@@ -129,6 +132,77 @@ def montar_toml(r: dict, numero: int) -> tuple[str, str]:
     except ConfiguracaoInvalida as e:
         raise PedidoInvalido(str(e))
     return id_, conteudo
+
+
+# ---------------------------------------------------------------- pausar, retomar, excluir
+def acao_do_pedido(r: dict, titulo: str) -> str:
+    """A ação vem do campo do formulário; se ele não veio preenchido, do título ("Pausar: Água")."""
+    acao = (r.get("acao") or titulo.split(":")[0]).strip().lower()
+    if acao not in ACOES:
+        raise PedidoInvalido(f"ação '{acao}' desconhecida — use Pausar, Retomar ou Excluir")
+    return acao
+
+
+def marcar_pausa(texto: str, pausado: bool) -> str:
+    """Põe ou tira `pausado = true` no topo do .toml, antes da primeira tabela, sem mexer no resto."""
+    linhas = [l for l in texto.splitlines() if not re.match(r"\s*pausado\s*=", l)]
+    if pausado:
+        i = next((n for n, l in enumerate(linhas) if l.lstrip().startswith("[")), len(linhas))
+        linhas[i:i] = ["pausado = true  # pelo link \"pausar\" da página; \"retomar\" tira", ""]
+    return "\n".join(linhas).rstrip("\n") + "\n"
+
+
+def gerenciar(issue: dict) -> tuple[str, str]:
+    """Aplica a ação no arquivo do monitor. Devolve (caminho relativo, frase para a resposta)."""
+    r = ler_corpo(issue["body"])
+    acao = acao_do_pedido(r, issue.get("title", ""))
+    id_ = (r.get("monitor") or "").strip()
+    arq = PASTA_MONITORES / f"{id_}.toml"
+    if not re.fullmatch(r"[a-z0-9][a-z0-9-]*", id_) or not arq.exists():
+        raise PedidoInvalido(f"não existe monitor '{id_}'")
+    if acao == "excluir":
+        arq.unlink()
+        return arq.relative_to(RAIZ).as_posix(), "excluído. O histórico de preços continua no notebook"
+    texto = arq.read_text(encoding="utf-8")
+    arq.write_text(marcar_pausa(texto, acao == "pausar"), encoding="utf-8")
+    return arq.relative_to(RAIZ).as_posix(), "pausado: some das rodadas e fica na página" if acao == "pausar" \
+        else "retomado: volta a ser consultado na próxima rodada"
+
+
+def atender_gerencia(repo: str, log) -> tuple[list[str], bool]:
+    """Pausar, retomar e excluir. Devolve (avisos de terceiros, se algo mudou)."""
+    dono = repo.split("/")[0]
+    try:
+        abertos = json.loads(gh("issue", "list", "-R", repo, "--label", GERENCIAR, "--state", "open",
+                                "--json", "number,title,body,author", "--limit", "30"))
+    except (RuntimeError, ValueError) as e:
+        log(f"Pedidos: não consegui ler as issues ({e})")
+        return [], False
+    avisos, mudou = [], False
+    for issue in abertos:
+        n, autor = issue["number"], issue["author"]["login"]
+        if autor != dono:
+            avisos.append(f"Pedido #{n} aberto por @{autor} foi ignorado: só pedidos de @{dono} são atendidos.")
+            continue
+        try:
+            rel, frase = gerenciar(issue)
+        except PedidoInvalido as e:
+            responder(repo, n, f"Não deu: **{e}**. Corrija o pedido (editar a issue) e ele é lido de novo.",
+                      fechar=False)
+            log(f"Pedido #{n}: {e}")
+            continue
+        try:
+            git("add", "-A", "--", rel)
+            git("commit", "-q", "-m", f"Monitor {Path(rel).stem} {frase.split(':')[0].split('.')[0]} pelo pedido #{n}",
+                "--", rel)
+            git("push", "-q")
+        except RuntimeError as e:
+            log(f"Pedido #{n}: mudou aqui mas não subiu ({e}); fica para a próxima rodada")
+            continue
+        responder(repo, n, f"Monitor `{Path(rel).stem}` {frase}. A página já foi republicada.", fechar=True)
+        log(f"Pedido #{n}: monitor {Path(rel).stem} {frase.split(':')[0]}")
+        mudou = True
+    return avisos, mudou
 
 
 # ---------------------------------------------------------------- GitHub

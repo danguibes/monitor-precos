@@ -15,7 +15,7 @@ from precos.base import oferta
 RAIZ = Path(__file__).parent.parent
 AGUA = tomllib.loads((RAIZ / "monitores" / "agua-com-gas.toml").read_text(encoding="utf-8"))
 PAPEL = {"modo": "descoberta", "termos": ["x"], "titulo": "x",
-         "regras": {"incluir": ["p[aá]p[eé]l\\s*h[ií]g[ií][eé]n[ií][cç][oó]"], "excluir": [], "montar_pack": 12}}
+         "regras": {"incluir": ["p[aá]p[eé]l\\s*h[ií]g[ií][eéê]n[ií][cç][oó]"], "excluir": [], "montar_pack": 12}}
 HOJE = date(2026, 10, 31)
 
 
@@ -43,7 +43,7 @@ def test_agua_cortada_no_cupom_nao_vira_15_litros():
 def test_referencia_da_agua_so_com_gas_e_so_o_que_tem_medida():
     ref = referencia([MINALBA, SEM_GAS, CORTADA, SANITARIA], AGUA, HOJE)
     assert ref["compras"] == 1 and ref["unidade"] == "litro"
-    assert ref["mediana"] == round(3.59 / 1.5, 4) and ref["conceito_id"] == "c-agua"
+    assert ref["mediana"] == round(3.59 / 1.5, 4) and ref["conceitos"][0]["id"] == "c-agua"
 
 
 @pytest.mark.parametrize("desc, qtd_cat, emb, preco, por_rolo", [
@@ -97,7 +97,25 @@ def test_sem_regra_incluir_a_compra_precisa_dos_termos():
     assert referencia([lenco, toalha_de_papel], LENCO, HOJE)["compras"] == 1
 
 
-def test_sem_unidade_declarada_nao_ha_referencia():
-    sem_unidade = dict(LENCO, regras={"incluir": [], "excluir": []})
+def test_sem_pack_compara_lenco_com_lenco():
+    """Pacotes de 16, 48 e 88: a referência e a oferta contam lenços, nunca pacotes."""
+    sem_pack = dict(LENCO, regras={"incluir": [], "excluir": []})
     lenco = compra("LENCO UMED HUGGIES C/48", 12.0, "Lenço umedecido Huggies", emb=48)
-    assert referencia([lenco], sem_unidade, HOJE) is None
+    ref = referencia([lenco], sem_pack, HOJE)
+    assert ref["unidade"] == "unidade" and ref["mediana"] == 0.25
+    pacote_88 = oferta("X", "X", "Lenço Umedecido Huggies - 88 Unidades", "", 15.0, 15.0, 0.0, "", "x", "d")
+    assert comparar(pacote_88, ref, sem_pack)["nivel"] == "forte"      # R$ 0,17 por lenço
+    sem_contagem = oferta("Y", "Y", "Lenço Umedecido Huggies", "", 1.0, 1.0, 0.0, "", "x", "d")
+    assert comparar(sem_contagem, ref, sem_pack) is None              # R$ 1,00 não é "por lenço"
+
+
+def test_link_abre_o_conceito_com_o_nome_do_monitor_e_nao_o_da_ultima_compra():
+    cfg = dict(PAPEL, nome="Papel higiênico folha dupla")
+    generico = [dict(compra("P H MAX 30M L12 P11", 19.9, "Papel higiênico", dia=f"2026-0{m}-01"), conceito_id="gen")
+                for m in (5, 6, 9)]
+    dupla = dict(compra("P HIG NEVE C L12 P11", 15.5, "Papel higiênico folha dupla", dia="2026-04-01"), conceito_id="fd")
+    neutro = dict(compra("PAPEL HIG NEVE F DUPLA 30M C/4 NEUTRO", 11.0, "Papel Higiênico Folha Dupla Neutro"),
+                  conceito_id="fdn")
+    cs = referencia(generico + [dupla, neutro], cfg, HOJE)["conceitos"]
+    assert [c["id"] for c in cs] == ["fd", "fdn", "gen"]           # o nome do monitor primeiro, o genérico por último
+    assert cs[2]["compras"] == 3 and cs[0]["mediana"] == round(15.5 / 12, 4)

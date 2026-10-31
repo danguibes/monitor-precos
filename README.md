@@ -47,6 +47,8 @@ caminho absoluto e, sem isso, o monitor para de rodar no logon sem avisar.
 | `py monitor.py --sem-navegador` | só as lojas por API (rápido) |
 | `py monitor.py --publicar` | só republica os relatórios no GitHub Pages |
 | `py monitor.py --nao-publicar` | coleta sem publicar |
+| `py monitor.py --pedidos` | atende os pedidos do formulário e roda já os monitores criados |
+| `py monitor.py --vigiar` | o vigia: olha o GitHub a cada `vigia_minutos` (o lançador chama depois do `--logon`) |
 | `py instalar.py --remover` | tira o lançador da pasta Inicializar |
 
 ## Monitores: o rol de produtos
@@ -54,14 +56,37 @@ caminho absoluto e, sem isso, o monitor para de rodar no logon sem avisar.
 **O jeito fácil é o formulário.** O botão "+ Novo monitor" da página abre um
 formulário no GitHub (funciona no celular): nome, como procurar, o que precisa
 e o que não pode conter, tamanho, quantas unidades comparar. Tudo em palavras —
-"com gás ou gaseificada" vira a regra, acento e maiúscula não importam. Na
-próxima rodada o notebook lê o pedido, cria `monitores/<id>.toml`, valida, faz
+"com gás ou gaseificada" vira a regra, acento e maiúscula não importam. Com o
+notebook ligado, em até 5 minutos o vigia percebe o pedido; o notebook lê o pedido, cria `monitores/<id>.toml`, valida, faz
 commit só desse arquivo, responde no pedido e o fecha; se algo não fizer
 sentido, responde o problema e deixa o pedido aberto. **Só pedidos do dono do
 repositório são atendidos**; os de outra conta ficam intocados e aparecem como
 aviso na página inicial. O "editar" de cada monitor criado assim reabre o
-formulário preenchido. Para atender os pedidos sem esperar a rodada:
+formulário preenchido. Para atender os pedidos na hora, pelo notebook:
 `py monitor.py --pedidos`.
+
+## Atualizar agora, e o vigia
+
+O botão **"↻ Atualizar agora"** da página abre uma issue com o rótulo
+`atualizar`. Depois da rodada do logon, o lançador deixa um **vigia** rodando:
+a cada `vigia_minutos` (config.toml, padrão 5) ele faz **uma** consulta às
+issues abertas do repositório.
+
+- `atualizar` do dono: roda todos os monitores (sem abrir o relatório), publica,
+  comenta a hora na issue e a fecha.
+- `novo-monitor` do dono: roda `--pedidos`, que cria o monitor e já o pesquisa.
+- Issue de outra conta: não dispara nada; vira uma linha no `monitor.log`.
+
+Custo: um processo `pythonw` de ~25 MB, que dorme entre as consultas (288
+chamadas por dia, contra o limite de 5.000 por hora da API do GitHub) e não
+impede o notebook de suspender. O texto da issue nunca é lido; só o rótulo e o
+autor. Sem rede, cada falha vira uma linha no log e ele tenta de novo depois. Um
+segundo vigia não sobe (trava em `dados/vigia.lock`). Com o notebook desligado,
+o pedido espera o próximo logon.
+
+Para parar o vigia até o próximo logon, encerre o `pythonw.exe` cuja linha de
+comando tem `--vigiar` (Gerenciador de Tarefas → Detalhes, coluna "Linha de
+comando"). Para não ligá-lo mais: `vigia_minutos = 0` no config.toml.
 
 Cada monitor é um arquivo em `monitores/`, em TOML (aceita comentários), e
 também pode ser escrito à mão — o modelo comentado está em `modelos/monitor.toml`.
@@ -118,6 +143,19 @@ nenhuma das APIs**, então uma oferta barata pode exigir completar a cesta.
 
 Ofertas sem frete conhecido ficam na tabela, mas não ganham o card de melhor oferta.
 
+## Unidade de comparação
+
+Cada monitor compara numa unidade só, a mesma na página e no Augustinus:
+
+- **litro**, quando o monitor tem `volume_ml` (água);
+- **unidade**, nos outros casos. Com `montar_pack`, o anúncio vira o pack
+  inteiro, e o total já é comparável (papel: 12 rolos). **Sem pack, os pacotes
+  variam** (lenço: 16, 50, 88), então a melhor oferta de cada loja é a de
+  **menor total por unidade**, e o anúncio que não diz quantas unidades traz não
+  ganha. A contagem vem do título: "50 un", "16 folhas", "Kit 4 pacotes com 48"
+  (= 192). O nome da unidade é "un." por padrão (`unidade_nome = "rolo"` no toml
+  muda).
+
 ## Comparação com o Augustinus
 
 A cada rodada, o monitor lê uma vez o que a casa pagou no supermercado, pelo
@@ -125,16 +163,24 @@ Augustinus (a view `monitor.compras_da_casa`, com um papel de banco que só lê
 ela). Para cada monitor ele calcula a **mediana do último ano** na unidade do
 monitor:
 
-- **litro** quando o monitor tem `volume_ml`. O volume vem do catálogo do
-  Augustinus, nunca do texto do cupom ("AGUA MINMINALBA 15L" é 1,5 L).
-- **unidade** (rolo, lata) nos outros casos. A contagem vem do cupom ("C/4",
-  "11RL", "L16P15"), e a compra que não traz contagem fica de fora.
-- Compra a peso nunca entra. Monitor acompanhado (o freezer) não tem referência.
+- **litro**: o volume vem do catálogo do Augustinus, nunca do texto do cupom
+  ("AGUA MINMINALBA 15L" é 1,5 L).
+- **unidade**: a contagem vem do cupom ("C/4", "11RL", "L16P15"), e a compra
+  que não traz contagem fica de fora.
+- Sem regra "precisa conter", a compra precisa ter todas as palavras de um dos
+  termos de busca. Compra a peso nunca entra. Monitor acompanhado (o freezer)
+  não tem referência.
 
-O card ganha **"▼ abaixo do que você paga"** quando a oferta, já com frete, sai
-pelo menos 10% abaixo da mediana (dá para ajustar com `limiar_augustinus = 0.15`
-no toml). Quando só o produto sai abaixo e o frete come a diferença, aparece uma
-linha discreta. O selo leva ao histórico do item no Augustinus, que pede login.
+**No topo à direita**, uma vez por página: quanto a casa paga (a mediana), a
+melhor oferta daqui na mesma unidade, com o frete, e um link para cada conceito
+do Augustinus por trás da conta. Quando as compras se espalham por vários
+conceitos (papel: "folha dupla", "folha dupla neutro" e o genérico), aparecem
+até três, com o de nome mais parecido com o monitor primeiro. Os links pedem
+login.
+
+No card, só a marca **"▼ abaixo do que você paga"**, quando a oferta, já com
+frete, sai pelo menos 10% abaixo da mediana (`limiar_augustinus = 0.15` no toml
+muda o corte).
 
 Credenciais na seção `[augustinus]` do `local.toml` (host, porta, usuario,
 senha, banco, app). Sem essa seção, ou com o banco fora do ar, o monitor segue
@@ -159,6 +205,8 @@ precos/                 o código
   relatorio.py          HTML (a versão local e a pública, sem CEP)
   publicar.py           GitHub Pages: gera, varre e empurra para gh-pages
   pedidos.py            o formulário "Novo monitor": pedido do GitHub vira monitores/<id>.toml
+  vigia.py              o botão "Atualizar agora" e os pedidos, atendidos em até 5 minutos
+  augustinus.py         o que a casa paga, para o selo "abaixo do que você paga"
   navegador.py          o Chrome do monitor
   lojas/<loja>.py       um módulo por loja
 tests/                  testes offline

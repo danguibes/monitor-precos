@@ -15,11 +15,12 @@ A conta é sempre na unidade do monitor, e é aqui que se erra calado:
     "11RL", "L16P15"), e só se estiver escrita. O catálogo do papel se contradiz
     (quantidade 4 E embalagem 4). Sem contagem → fora.
   * compra a peso (KG) nunca entra; monitor acompanhado (freezer) não tem referência.
-  * o monitor precisa DECLARAR a unidade (volume_ml ou montar_pack): sem isso
-    nem as ofertas dele são normalizadas, e "um lenço" contra "um pacote" seria
-    comparar coisas diferentes. E sem regra `incluir`, a compra precisa conter
-    todas as palavras de um dos termos de busca — senão a casa inteira entra
-    (visto em 31/10: o lenço, que a casa nunca comprou, ganhou 46 compras).
+  * a unidade é a mesma do relatório (unidades.unidade_de_comparacao): sem
+    montar_pack, a oferta conta pela contagem escrita no título ("50 un",
+    "16 folhas"), e a compra pela do cupom — lenço contra lenço, nunca pacote
+    contra pacote. Sem regra `incluir`, a compra precisa conter todas as
+    palavras de um dos termos de busca — senão a casa inteira entra (visto em
+    31/10: o lenço, que a casa nunca comprou, ganhou 46 compras).
 
 A referência é a mediana do último ano; o destaque é forte quando a oferta, JÁ
 COM FRETE, sai pelo menos `limiar` abaixo dela, e fraco quando só o produto sai
@@ -33,7 +34,7 @@ from datetime import date, timedelta
 
 from .base import RAIZ
 from .filtros import filtro_por_regras
-from .unidades import quantidade, quantidade_explicita, volume_ml
+from .unidades import quantidade_explicita, unidade_de_comparacao, unidades_na_oferta
 
 CA = RAIZ / "certificados" / "supabase-prod-ca-2021.crt"
 LIMIAR_PADRAO = 0.10
@@ -54,13 +55,7 @@ def ler_compras(aug: dict) -> list[dict]:
     return [dict(zip(CAMPOS, l)) for l in linhas]
 
 
-def unidade_do_monitor(cfg: dict) -> str | None:
-    if cfg.get("modo") != "descoberta":
-        return None
-    regras = cfg.get("regras") or {}
-    if regras.get("volume_ml"):
-        return "litro"
-    return "unidade" if regras.get("montar_pack") else None
+unidade_do_monitor = unidade_de_comparacao
 
 
 def _palavras(t: str) -> list[str]:
@@ -128,32 +123,46 @@ def referencia(compras: list[dict], cfg: dict, hoje: date | None = None, dias: i
             continue
         ppu = preco_por_unidade(c, unidade)
         if ppu:
-            pontos.append((d, ppu, c.get("conceito_id"), c.get("descricao")))
+            pontos.append((d, ppu, str(c.get("conceito_id") or ""), c.get("produto") or ""))
     if not pontos:
         return None
     pontos.sort()
     return {"unidade": unidade, "mediana": round(statistics.median(p[1] for p in pontos), 4),
             "minimo": round(min(p[1] for p in pontos), 4), "compras": len(pontos),
-            "ultima": pontos[-1][0].isoformat(), "conceito_id": str(pontos[-1][2] or ""),
+            "ultima": pontos[-1][0].isoformat(), "conceitos": conceitos(pontos, cfg),
             "limiar": float(cfg.get("limiar_augustinus", LIMIAR_PADRAO))}
 
 
-def unidades_da_oferta(oferta: dict, cfg: dict, unidade: str) -> float | None:
-    """Quantos litros (ou unidades) a oferta entrega — na mesma conta do relatório."""
-    pack = (cfg.get("regras") or {}).get("montar_pack")
-    if unidade == "litro":
-        v = volume_ml(oferta["produto"])
-        if not v:
-            return None
-        return (pack or quantidade(oferta["produto"])) * v / 1000
-    return pack or quantidade(oferta["produto"])
+def conceitos(pontos: list[tuple], cfg: dict, limite: int = 3) -> list[dict]:
+    """Os conceitos do Augustinus por trás da referência, o mais parecido com o monitor primeiro.
+
+    A ordem não é a da compra mais recente: no papel ela caía em "Papel
+    higiênico", o conceito genérico, e não em "Papel higiênico folha dupla", que
+    existe e é o nome do monitor. Conta as palavras em comum, desconta as que o
+    conceito tem a mais ("Neutro") e desempata pelo número de compras. Cada um
+    leva a própria mediana, para a página mostrar mais de um quando houver dúvida.
+    """
+    alvo = set(_palavras(cfg.get("nome") or cfg.get("titulo") or ""))
+    grupos: dict[str, dict] = {}
+    for _, ppu, conceito, nome in pontos:
+        if conceito:
+            g = grupos.setdefault(conceito, {"id": conceito, "nome": nome, "precos": []})
+            g["precos"].append(ppu)
+
+    def nota(g):
+        ps = set(_palavras(g["nome"]))
+        return (len(ps & alvo), -len(ps - alvo), len(g["precos"]))
+
+    return [{"id": g["id"], "nome": g["nome"], "compras": len(g["precos"]),
+             "mediana": round(statistics.median(g["precos"]), 4)}
+            for g in sorted(grupos.values(), key=nota, reverse=True)[:limite]]
 
 
 def comparar(oferta: dict, ref: dict | None, cfg: dict) -> dict | None:
     """{"nivel": "forte"|"fraco", "com_frete", "so_produto", "mediana"} ou None."""
     if not ref or not oferta:
         return None
-    n = unidades_da_oferta(oferta, cfg, ref["unidade"])
+    n = unidades_na_oferta(oferta["produto"], cfg)
     if not n:
         return None
     alvo = ref["mediana"] * (1 - ref["limiar"])

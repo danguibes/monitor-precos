@@ -22,7 +22,7 @@ def test_relatorio_mostra_queda(tmp_path):
     res = gerar_relatorio(CFG, [], destino, arq)
     assert houve_queda(res)
     html = destino.read_text(encoding="utf-8")
-    assert "▼ R$ 100,00" in html and "R$ 9,00/litro" in html
+    assert "▼ R$ 100,00" in html and "R$ 9,00/L" in html
 
 
 def test_descarte_das_linhas_dos_defeitos_corrigidos(tmp_path):

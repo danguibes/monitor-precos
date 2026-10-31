@@ -5,8 +5,7 @@ import html
 
 from .base import HISTORICO, RELATORIO, brl
 from .historico import ler_historico
-from .unidades import litros as litros_do_titulo
-from .unidades import volume_ml
+from .unidades import sufixo, unidade_de_comparacao, unidades_na_oferta
 
 
 ESTILO = """:root{--bg:#f6f5f2;--card:#fff;--tx:#1d1d1b;--mut:#6b6a66;--ln:#e3e1dc;--ok:#1f7a4d;--bad:#b3261e;--ac:#2f5d8a}
@@ -25,7 +24,11 @@ a{color:var(--ac)} table{width:100%;border-collapse:collapse;font-size:13px;marg
 th,td{text-align:left;padding:6px 8px;border-bottom:1px solid var(--ln)} .n{text-align:right;white-space:nowrap}
 .tab{overflow-x:auto;background:var(--card);border:1px solid var(--ln);border-radius:12px;margin-top:22px;padding:6px 8px}
 .avisos{color:var(--mut);font-size:13px}
-.selo-aug{display:inline-block;background:var(--ok);color:var(--card);border-radius:99px;font-size:12px;font-weight:600;padding:3px 10px;margin:6px 0 2px;text-decoration:none}
+.selo-aug{display:inline-block;background:var(--ok);color:var(--card);border-radius:99px;font-size:12px;font-weight:600;padding:2px 9px;margin:4px 0 2px}
+.topo{display:flex;flex-wrap:wrap;gap:12px 24px;align-items:flex-start;justify-content:space-between;margin-bottom:20px}
+.topo .sub{margin:0}
+.aug{background:var(--card);border:1px solid var(--ln);border-radius:12px;padding:10px 14px;font-size:13px;max-width:380px;flex:1 1 280px}
+.aug b{font-size:15px} .aug ul{margin:6px 0 0;padding-left:18px} .aug li{margin:2px 0}
 """
 
 
@@ -61,14 +64,6 @@ document.querySelectorAll("table").forEach(tb => {
 </script>"""
 
 
-def litros_oferta(produto: str, pack: int | None):
-    """Com pack montado, o volume total é pack × o volume de uma unidade."""
-    if pack:
-        v = volume_ml(produto)
-        return pack * v / 1000 if v else None
-    return litros_do_titulo(produto)
-
-
 def sparkline(valores: list[float], largura=160, altura=36) -> str:
     if len(valores) < 2:
         return ""
@@ -86,8 +81,25 @@ def sparkline(valores: list[float], largura=160, altura=36) -> str:
             f'fill="currentColor"/></svg>')
 
 
+def por_unidade(cfg) -> bool:
+    """Sem pack montado, pacotes de tamanhos diferentes só se comparam por unidade (lenço: 16, 50, 88)."""
+    return unidade_de_comparacao(cfg) is not None and not (cfg.get("regras") or {}).get("montar_pack")
+
+
+def valor(l, cfg):
+    """O que decide "a melhor oferta": o total, ou o total por unidade quando os pacotes variam."""
+    if not por_unidade(cfg):
+        return l["total_pix"]
+    n = unidades_na_oferta(l["produto"], cfg)
+    return l["total_pix"] / n if n else None
+
+
 def analisar(historico, cfg):
-    """Para cada modelo: melhor oferta da última rodada, da anterior e mínimo histórico."""
+    """Para cada modelo: melhor oferta da última rodada, da anterior e mínimo histórico.
+
+    Com pacotes de tamanhos diferentes a conta é por unidade, e o anúncio sem
+    contagem no título não ganha (como o sem frete): não dá para dizer quanto custa cada um.
+    """
     rodadas = sorted({l["data"] for l in historico})
     ultima = rodadas[-1] if rodadas else None
     anterior = rodadas[-2] if len(rodadas) > 1 else None
@@ -98,44 +110,63 @@ def analisar(historico, cfg):
         grupos = cfg["produtos"]
     for prod in grupos:
         m = prod["modelo"]
-        linhas = [l for l in historico if l["modelo"] == m and l["total_pix"] is not None]
+        linhas = [dict(l, valor=valor(l, cfg)) for l in historico if l["modelo"] == m and l["total_pix"] is not None]
         atual = [l for l in linhas if l["data"] == ultima]
         antes = [l for l in linhas if l["data"] == anterior]
         # ofertas sem frete informado (Shopee, às vezes ML) não "ganham" o ranking
-        com_frete = lambda ls: [l for l in ls if l.get("frete") is not None]
-        atual_cf, antes_cf, linhas_cf = com_frete(atual), com_frete(antes), com_frete(linhas)
-        melhor = min(atual_cf or atual, key=lambda l: l["total_pix"]) if atual else None
-        melhor_antes = min((l["total_pix"] for l in (antes_cf or antes)), default=None)
-        minimo = min(linhas_cf or linhas, key=lambda l: l["total_pix"]) if linhas else None
+        com_frete = lambda ls: [l for l in ls if l.get("frete") is not None and l["valor"] is not None]
+        contaveis = lambda ls: [l for l in ls if l["valor"] is not None]
+        atual_v = com_frete(atual) or contaveis(atual)
+        antes_v = com_frete(antes) or contaveis(antes)
+        linhas_v = com_frete(linhas) or contaveis(linhas)
+        melhor = min(atual_v, key=lambda l: l["valor"]) if atual_v else None
+        melhor_antes = min((l["valor"] for l in antes_v), default=None)
+        minimo = min(linhas_v, key=lambda l: l["valor"]) if linhas_v else None
         por_dia = {}
-        for l in linhas_cf or linhas:
+        for l in linhas_v:
             d = l["data"][:10]
-            por_dia[d] = min(por_dia.get(d, 1e12), l["total_pix"])
+            por_dia[d] = min(por_dia.get(d, 1e12), l["valor"])
         serie = [por_dia[d] for d in sorted(por_dia)]
         res.append({"prod": prod, "melhor": melhor, "antes": melhor_antes,
-                    "minimo": minimo, "serie": serie, "ofertas": sorted(atual, key=lambda l: l["total_pix"])})
+                    "minimo": minimo, "serie": serie,
+                    "ofertas": sorted(atual, key=lambda l: (l["valor"] is None, l["valor"] or 0, l["total_pix"]))})
     return ultima, res
 
 
-def html_augustinus(oferta, ref, cfg) -> str:
-    """Selo "abaixo do que você paga", com a conta e o link para o histórico do item no Augustinus."""
+def selo_augustinus(oferta, ref, cfg) -> str:
+    """Só a marca, no card: a conta e o link ficam uma vez no quadro do topo."""
     from .augustinus import comparar
     cmp = comparar(oferta, ref, cfg)
-    if not cmp:
+    return '<div><span class="selo-aug">▼ abaixo do que você paga</span></div>' if cmp and cmp["nivel"] == "forte" else ""
+
+
+def quadro_augustinus(ref, cfg, melhores) -> str:
+    """O que a casa paga, uma vez por página: a mediana na unidade do monitor, a melhor oferta
+    daqui na mesma unidade e um link para cada conceito do Augustinus (mais de um quando as
+    compras se espalham por vários, como o papel)."""
+    from .augustinus import comparar
+    if unidade_de_comparacao(cfg) is None:
         return ""
     e = html.escape
-    un = "/L" if ref["unidade"] == "litro" else "/" + cfg.get("unidade_nome", "un.")
-    pago = f'você paga {brl(cmp["mediana"])}{un} (mediana de {ref["compras"]} compra(s) no Augustinus)'
-    link = f'{ref["app"]}/#/precos/{ref["conceito_id"]}' if ref.get("app") and ref.get("conceito_id") else ""
-    abre = f'<a class="selo-aug" href="{e(link)}" target="_blank" rel="noopener">' if link else '<span class="selo-aug">'
-    fecha = "</a>" if link else "</span>"
-    if cmp["nivel"] == "forte":
-        return (f'<div>{abre}▼ abaixo do que você paga{fecha}</div>'
-                f'<div class="det">{brl(cmp["com_frete"])}{un} entregue · {e(pago)}</div>')
-    return (f'<div class="det">O produto sai {brl(cmp["so_produto"])}{un}, abaixo dos {brl(cmp["mediana"])}{un} '
-            f'que você paga, mas o frete come a diferença'
-            + (f' · <a href="{e(link)}" target="_blank" rel="noopener">ver no Augustinus</a>' if link else "")
-            + '.</div>')
+    if not ref:
+        return ('<aside class="aug"><b>Augustinus</b>'
+                '<div class="det">Nenhuma compra deste item no último ano.</div></aside>')
+    un = sufixo(cfg)
+    itens = []
+    for c in ref.get("conceitos") or []:
+        nome = f'{e(c["nome"])} · {c["compras"]} compra(s) · {brl(c["mediana"])}{un}'
+        itens.append(f'<li><a href="{e(ref["app"])}/#/precos/{e(c["id"])}" target="_blank" rel="noopener">{nome}</a></li>'
+                     if ref.get("app") else f"<li>{nome}</li>")
+    aqui = ""
+    cands = [(m, comparar(m, ref, cfg)) for m in melhores if m]
+    cands = [(m, c) for m, c in cands if c and c["com_frete"] is not None]
+    if cands:
+        m, c = min(cands, key=lambda mc: mc[1]["com_frete"])
+        aqui = (f'<div>Melhor aqui: <b>{brl(c["com_frete"])}{un}</b> entregue ({e(m["loja"])}), '
+                f'{1 - c["com_frete"] / ref["mediana"]:.0%} abaixo.</div>')
+    return (f'<aside class="aug"><div>No Augustinus você paga <b>{brl(ref["mediana"])}{un}</b> '
+            f'<span class="det">mediana de {ref["compras"]} compra(s) no último ano</span></div>{aqui}'
+            f'<ul>{"".join(itens)}</ul></aside>')
 
 
 def gerar_relatorio(cfg, erros: list[str], destino=RELATORIO, origem=HISTORICO, publico=False,
@@ -143,33 +174,36 @@ def gerar_relatorio(cfg, erros: list[str], destino=RELATORIO, origem=HISTORICO, 
     """publico=True é a cópia do GitHub Pages: sem o CEP, com noindex e com volta para o índice."""
     historico = ler_historico(origem)
     descoberta = cfg.get("modo") == "descoberta"
-    pack = (cfg.get("regras") or {}).get("montar_pack")
     ultima, res = analisar(historico, cfg)
     e = html.escape
     cards, linhas_tab = [], []
-    ordem = sorted(res, key=lambda r: r["melhor"]["total_pix"] if r["melhor"] else 1e12)
+    un = sufixo(cfg) if descoberta else "/L"
+    ordem = sorted(res, key=lambda r: r["melhor"]["valor"] if r["melhor"] else 1e12)
     for r in ordem:
         p, mel = r["prod"], r["melhor"]
         if mel:
-            lt = litros_oferta(mel["produto"], pack) if descoberta else p.get("litros")
-            litro = mel["total_pix"] / lt if lt else None
+            if descoberta:
+                n = unidades_na_oferta(mel["produto"], cfg)
+                por_un = mel["total_pix"] / n if n else None
+            else:
+                por_un = mel["total_pix"] / p["litros"] if p.get("litros") else None
             delta = ""
             if r["antes"] is not None:
-                d = mel["total_pix"] - r["antes"]
-                if abs(d) >= 0.01:
+                d = mel["valor"] - r["antes"]
+                if abs(d) >= (0.001 if por_unidade(cfg) else 0.01):
                     cls = "desce" if d < 0 else "sobe"
                     seta = "▼" if d < 0 else "▲"
-                    delta = f'<span class="{cls}">{seta} {brl(abs(d))}</span>'
-            eh_min = r["minimo"] and mel["total_pix"] <= r["minimo"]["total_pix"]
+                    delta = f'<span class="{cls}">{seta} {brl(abs(d))}{un if por_unidade(cfg) else ""}</span>'
+            eh_min = r["minimo"] and mel["valor"] <= r["minimo"]["valor"]
             selo = '<span class="selo">menor preço já visto</span>' if eh_min and len(r["serie"]) > 1 else ""
             corpo = (f'<div class="total">{brl(mel["total_pix"])} {delta}</div>'
-                     f'{html_augustinus(mel, referencia, cfg)}'
+                     f'{selo_augustinus(mel, referencia, cfg)}'
                      f'<div class="det">{brl(mel["preco_pix"])}{"" if descoberta else " no Pix"} + '
                      f'{"frete não informado" if mel["frete"] is None else brl(mel["frete"]) + " de frete"}'
                      f' · {e(mel["loja"])} ({e(mel["vendedor"])}) · {e(mel["prazo"])}</div>'
                      f'<div class="det">Cartão: {brl(mel["total_cartao"])} · '
-                     f'{brl(litro)}/litro · mínimo histórico {brl(r["minimo"]["total_pix"])} '
-                     f'em {e(r["minimo"]["data"][:10])}</div>'
+                     f'<b>{brl(por_un)}{un}</b> entregue · mínimo histórico '
+                     f'{brl(r["minimo"]["valor"])}{un if por_unidade(cfg) else ""} em {e(r["minimo"]["data"][:10])}</div>'
                      f'<div class="spark">{sparkline(r["serie"])}</div>'
                      f'<a href="{e(mel["link"])}" target="_blank" rel="noopener">abrir na loja →</a>')
         else:
@@ -181,9 +215,9 @@ def gerar_relatorio(cfg, erros: list[str], destino=RELATORIO, origem=HISTORICO, 
                      f'<div class="meta">{meta}</div>{corpo}</article>')
         for o in r["ofertas"]:
             if descoberta:
-                lt = litros_oferta(o["produto"], pack)
+                n = unidades_na_oferta(o["produto"], cfg)
                 primeira = (f'<td>{e(o["produto"])}</td><td>{e(o["loja"])}</td><td>{e(o["vendedor"])}</td>'
-                            f'<td class="n">{brl(o["total_pix"] / lt if lt and o["total_pix"] else None)}</td>')
+                            f'<td class="n">{brl(o["total_pix"] / n if n and o["total_pix"] else None)}</td>')
             else:
                 primeira = f'<td>{e(o["modelo"])}</td><td>{e(o["loja"])}</td><td>{e(o["vendedor"])}</td>'
             linhas_tab.append(
@@ -193,12 +227,14 @@ def gerar_relatorio(cfg, erros: list[str], destino=RELATORIO, origem=HISTORICO, 
                 f'<td>{e(o["prazo"])}</td><td><a href="{e(o["link"])}" target="_blank" rel="noopener">link</a></td></tr>')
     avisos = "".join(f"<li>{e(x)}</li>" for x in erros)
     titulo = cfg.get("titulo")
-    cabeca = ('<th>Produto</th><th>Loja</th><th>Vendedor</th><th class="n">Total/litro</th><th class="n">Preço</th>'
+    cabeca = (f'<th>Produto</th><th>Loja</th><th>Vendedor</th><th class="n">Total{un}</th><th class="n">Preço</th>'
               if descoberta else '<th>Modelo</th><th>Loja</th><th>Vendedor</th><th class="n">Pix</th>')
     colunas = 10 if descoberta else 9
     rodape = ("Edite o arquivo do monitor em monitores/ para mudar termos e regras; as lojas ficam em lojas.toml."
               if descoberta else "Edite monitores/freezer.toml para mudar modelos; as lojas ficam em lojas.toml.")
     cep = "de casa" if publico else cfg["cep"]
+    ordenado = (f"total com frete por unidade ({un})" if por_unidade(cfg)
+                else "total com frete" if descoberta else "total no Pix")
     extra_head = '<meta name="robots" content="noindex">' if publico else ""
     volta = '<p class="sub"><a href="index.html">← todos os monitores</a></p>' if publico else ""
     rodape_final = "Coletado numa máquina pessoal; preço e frete para um CEP fixo." if publico else         f"Histórico completo em historico.csv (abre no Excel). {rodape}"
@@ -206,8 +242,9 @@ def gerar_relatorio(cfg, erros: list[str], destino=RELATORIO, origem=HISTORICO, 
 <meta name="viewport" content="width=device-width,initial-scale=1">{extra_head}<title>{e("Monitor · " + titulo) if titulo else "Monitor de Freezer"}</title>
 <style>
 {ESTILO}</style></head><body><main>
-{volta}<h1>{e(titulo or "Monitor de freezer")}</h1>
-<p class="sub">Preço + frete para o CEP {e(cep)} · última consulta {e(ultima or "—")} · ordenado pelo total {"com frete" if descoberta else "no Pix"} · <a href="{e(link_historico)}">histórico →</a></p>
+{volta}<div class="topo"><div><h1>{e(titulo or "Monitor de freezer")}</h1>
+<p class="sub">Preço + frete para o CEP {e(cep)} · última consulta {e(ultima or "—")} · ordenado pelo {ordenado} · <a href="{e(link_historico)}">histórico →</a></p></div>
+{quadro_augustinus(referencia, cfg, [r["melhor"] for r in res])}</div>
 <section class="grid">{"".join(cards)}</section>
 <div class="tab"><table><thead><tr>{cabeca}
 <th class="n">Frete</th><th class="n">Total Pix</th><th class="n">Total cartão</th><th>Prazo</th><th></th></tr></thead>
