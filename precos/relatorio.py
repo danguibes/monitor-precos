@@ -3,7 +3,7 @@ from __future__ import annotations
 
 import html
 
-from .base import HISTORICO, RELATORIO, brl
+from .base import HISTORICO, RELATORIO, brl, brl_un
 from .historico import ler_historico
 from .unidades import sufixo, unidade_de_comparacao, unidades_na_oferta
 
@@ -26,8 +26,8 @@ th,td{text-align:left;padding:6px 8px;border-bottom:1px solid var(--ln)} .n{text
 .avisos{color:var(--mut);font-size:13px}
 .selo-aug{display:inline-block;background:var(--ok);color:var(--card);border-radius:99px;font-size:12px;font-weight:600;padding:2px 9px;margin:4px 0 2px}
 .topo{display:flex;flex-wrap:wrap;gap:12px 24px;align-items:flex-start;justify-content:space-between;margin-bottom:20px}
-.topo .sub{margin:0}
-.aug{background:var(--card);border:1px solid var(--ln);border-radius:12px;padding:10px 14px;font-size:13px;max-width:380px;flex:1 1 280px}
+.topo .sub{margin:0} .topo>div{flex:1 1 340px}
+.aug{background:var(--card);border:1px solid var(--ln);border-radius:12px;padding:10px 14px;font-size:13px;flex:0 1 360px}
 .aug b{font-size:15px} .aug ul{margin:6px 0 0;padding-left:18px} .aug li{margin:2px 0}
 """
 
@@ -154,7 +154,7 @@ def quadro_augustinus(ref, cfg, melhores) -> str:
     un = sufixo(cfg)
     itens = []
     for c in ref.get("conceitos") or []:
-        nome = f'{e(c["nome"])} · {c["compras"]} compra(s) · {brl(c["mediana"])}{un}'
+        nome = f'{e(c["nome"])} · {c["compras"]} compra(s) · {brl_un(c["mediana"])}{un}'
         itens.append(f'<li><a href="{e(ref["app"])}/#/precos/{e(c["id"])}" target="_blank" rel="noopener">{nome}</a></li>'
                      if ref.get("app") else f"<li>{nome}</li>")
     aqui = ""
@@ -162,9 +162,9 @@ def quadro_augustinus(ref, cfg, melhores) -> str:
     cands = [(m, c) for m, c in cands if c and c["com_frete"] is not None]
     if cands:
         m, c = min(cands, key=lambda mc: mc[1]["com_frete"])
-        aqui = (f'<div>Melhor aqui: <b>{brl(c["com_frete"])}{un}</b> entregue ({e(m["loja"])}), '
+        aqui = (f'<div>Melhor aqui: <b>{brl_un(c["com_frete"])}{un}</b> entregue ({e(m["loja"])}), '
                 f'{1 - c["com_frete"] / ref["mediana"]:.0%} abaixo.</div>')
-    return (f'<aside class="aug"><div>No Augustinus você paga <b>{brl(ref["mediana"])}{un}</b> '
+    return (f'<aside class="aug"><div>No Augustinus você paga <b>{brl_un(ref["mediana"])}{un}</b> '
             f'<span class="det">mediana de {ref["compras"]} compra(s) no último ano</span></div>{aqui}'
             f'<ul>{"".join(itens)}</ul></aside>')
 
@@ -193,7 +193,7 @@ def gerar_relatorio(cfg, erros: list[str], destino=RELATORIO, origem=HISTORICO, 
                 if abs(d) >= (0.001 if por_unidade(cfg) else 0.01):
                     cls = "desce" if d < 0 else "sobe"
                     seta = "▼" if d < 0 else "▲"
-                    delta = f'<span class="{cls}">{seta} {brl(abs(d))}{un if por_unidade(cfg) else ""}</span>'
+                    delta = f'<span class="{cls}">{seta} {brl_un(abs(d)) if por_unidade(cfg) else brl(abs(d))}{un if por_unidade(cfg) else ""}</span>'
             eh_min = r["minimo"] and mel["valor"] <= r["minimo"]["valor"]
             selo = '<span class="selo">menor preço já visto</span>' if eh_min and len(r["serie"]) > 1 else ""
             corpo = (f'<div class="total">{brl(mel["total_pix"])} {delta}</div>'
@@ -202,8 +202,8 @@ def gerar_relatorio(cfg, erros: list[str], destino=RELATORIO, origem=HISTORICO, 
                      f'{"frete não informado" if mel["frete"] is None else brl(mel["frete"]) + " de frete"}'
                      f' · {e(mel["loja"])} ({e(mel["vendedor"])}) · {e(mel["prazo"])}</div>'
                      f'<div class="det">Cartão: {brl(mel["total_cartao"])} · '
-                     f'<b>{brl(por_un)}{un}</b> entregue · mínimo histórico '
-                     f'{brl(r["minimo"]["valor"])}{un if por_unidade(cfg) else ""} em {e(r["minimo"]["data"][:10])}</div>'
+                     f'<b>{brl_un(por_un)}{un}</b> entregue · mínimo histórico '
+                     f'{brl_un(r["minimo"]["valor"]) if por_unidade(cfg) else brl(r["minimo"]["valor"])}{un if por_unidade(cfg) else ""} em {e(r["minimo"]["data"][:10])}</div>'
                      f'<div class="spark">{sparkline(r["serie"])}</div>'
                      f'<a href="{e(mel["link"])}" target="_blank" rel="noopener">abrir na loja →</a>')
         else:
@@ -217,7 +217,7 @@ def gerar_relatorio(cfg, erros: list[str], destino=RELATORIO, origem=HISTORICO, 
             if descoberta:
                 n = unidades_na_oferta(o["produto"], cfg)
                 primeira = (f'<td>{e(o["produto"])}</td><td>{e(o["loja"])}</td><td>{e(o["vendedor"])}</td>'
-                            f'<td class="n">{brl(o["total_pix"] / n if n and o["total_pix"] else None)}</td>')
+                            f'<td class="n">{brl_un(o["total_pix"] / n if n and o["total_pix"] else None)}</td>')
             else:
                 primeira = f'<td>{e(o["modelo"])}</td><td>{e(o["loja"])}</td><td>{e(o["vendedor"])}</td>'
             linhas_tab.append(

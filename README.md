@@ -65,6 +65,15 @@ aviso na página inicial. O "editar" de cada monitor criado assim reabre o
 formulário preenchido. Para atender os pedidos na hora, pelo notebook:
 `py monitor.py --pedidos`.
 
+**Pausar, retomar e excluir** ficam no card de cada monitor, na página inicial.
+Cada link abre um formulário já preenchido (rótulo `gerenciar-monitor`), e o
+vigia o atende como um pedido. **Pausado** (`pausado = true` no toml) continua na
+página, apagado e com a etiqueta "pausado", com os últimos preços, mas fica fora
+das rodadas: só `py monitor.py --monitor <id>` ainda o consulta. **Excluir** apaga
+`monitores/<id>.toml` num commit; o histórico em `dados/<id>/` fica no notebook,
+e o arquivo volta pelo histórico do git. (`desligado = true` some da página
+também, e só se põe à mão.)
+
 ## Atualizar agora, e o vigia
 
 O botão **"↻ Atualizar agora"** da página abre uma issue com o rótulo

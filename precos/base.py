@@ -85,11 +85,16 @@ def num(txt: str | None) -> float | None:
         return None
 
 
-def brl(v) -> str:
+def brl(v, casas: int = 2) -> str:
     if v in (None, ""):
         return "—"
-    s = f"{float(v):,.2f}"
+    s = f"{float(v):,.{casas}f}"
     return "R$ " + s.replace(",", "X").replace(".", ",").replace("X", ".")
+
+
+def brl_un(v) -> str:
+    """Preço por unidade: abaixo de R$ 1 (lenço a R$ 0,086) duas casas apagariam a diferença."""
+    return brl(v, 3 if v not in (None, "") and abs(float(v)) < 1 else 2)
 
 
 def prazo_legivel(est: str | None) -> str:

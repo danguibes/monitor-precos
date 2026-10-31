@@ -27,6 +27,9 @@ def test_voltagem():
 def test_filtro_descarta_garantia_e_acessorio():
     assert not eh_freezer("GARANTIA ESTENDIDA Freezer FEI27T")
     assert not eh_freezer("Cesto para freezer")
+    assert not eh_freezer("Termostato Freezer Consul Cvu20 Cvu18 W11283283 Original")
+    assert not eh_freezer("Gaxeta Borracha Porta Freezer Electrolux FEI27T")
+    assert eh_freezer("Freezer Vertical Consul 1 Porta 254L CVU26MB")
     filtro = criar_filtro({"voltagem": "127"})
     prod = {"padrao": "FEI27T"}
     assert filtro("Freezer Vertical Electrolux FEI27T 127V", prod)

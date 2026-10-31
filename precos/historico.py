@@ -20,7 +20,15 @@ DESCARTES = [
     ("Atacadão consultado pelo vendedor genérico, e não pela loja física do CEP — oferta "
      "que o site não vendia (corrigido em 31/10, 13:00)",
      lambda l: l["loja"] == "Atacadão" and l["data"] < "2026-10-31 13:00"),
+    ("peça de freezer com o modelo no título, como \"Termostato Freezer Consul Cvu20 Cvu18\" "
+     "(filtro corrigido em 31/10, 20:30)",
+     lambda l: "freezer" in (l.get("produto") or "").lower() and not _eh_freezer(l["produto"])),
 ]
+
+
+def _eh_freezer(nome):
+    from .filtros import eh_freezer
+    return eh_freezer(nome)
 
 
 def descartar(linhas):
