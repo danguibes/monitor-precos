@@ -31,6 +31,7 @@ from pathlib import Path
 from precos import monitores as mon
 from precos.base import carregar_json, log, salvar_json
 from precos.historico import gravar_historico
+from precos.historico_pagina import gerar_historico
 from precos.relatorio import gerar_relatorio, houve_queda
 
 
@@ -85,6 +86,7 @@ def rodar(m, argv) -> None:
     salvar_json(m["estado"], estado)
 
     res = gerar_relatorio(cfg, erros, m["relatorio"], m["historico"])
+    gerar_historico(cfg, m["relatorio"].parent / "historico.html", m["historico"], volta=m["relatorio"].name)
     regra = cfg.get("abrir_relatorio", "quando_baixar")
     if not modo_logon or regra == "sempre" or (regra == "quando_baixar" and houve_queda(res)):
         abrir(m["relatorio"])
@@ -161,6 +163,8 @@ def main(argv):
     if "--relatorio" in argv:
         for m in escolhidos:
             gerar_relatorio(m["cfg"], [], m["relatorio"], m["historico"])
+            gerar_historico(m["cfg"], m["relatorio"].parent / "historico.html", m["historico"],
+                            volta=m["relatorio"].name)
             abrir(m["relatorio"])
         return 0
 

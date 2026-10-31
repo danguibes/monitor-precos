@@ -22,6 +22,7 @@ from datetime import datetime
 from pathlib import Path
 
 from .base import DADOS, RAIZ, brl
+from .historico_pagina import gerar_historico
 from .relatorio import ESTILO, gerar_relatorio
 
 SITE = DADOS / "site"
@@ -91,7 +92,8 @@ def gerar_indice(itens: list[dict], destino: Path, repo: str | None = None, avis
             '<div class="det">Sem oferta na última rodada.</div>'
         cards.append(f'<article class="card"><header><h2><a href="{e(it["id"])}.html">{e(it["nome"])}</a></h2></header>'
                      f'<div class="meta">última consulta {e(it["ultima"] or "—")}</div>{corpo}'
-                     f'<a href="{e(it["id"])}.html">ver todas as ofertas →</a>'
+                     f'<a href="{e(it["id"])}.html">ver todas as ofertas →</a> · '
+                     f'<a href="{e(it["id"])}-historico.html">histórico</a>'
                      + (f' · <a href="{e(link_editar(repo, it["id"], it.get("cfg", {})))}" target="_blank" '
                         f'rel="noopener">editar</a>' if repo else "") + '</article>')
     novo = (f'<p><a class="botao" href="{e(link_novo_monitor(repo))}" target="_blank" rel="noopener">'
@@ -120,7 +122,10 @@ def gerar_site(monitores: list[dict], pasta: Path = SITE, repo: str | None = Non
     itens = []
     for m in monitores:
         avisos = carregar_json(m["estado"], {}).get("avisos", [])
-        res = gerar_relatorio(m["cfg"], avisos, pasta / f"{m['id']}.html", m["historico"], publico=True)
+        res = gerar_relatorio(m["cfg"], avisos, pasta / f"{m['id']}.html", m["historico"], publico=True,
+                              link_historico=f"{m['id']}-historico.html")
+        gerar_historico(m["cfg"], pasta / f"{m['id']}-historico.html", m["historico"],
+                        volta=f"{m['id']}.html", publico=True)
         melhores = [r["melhor"] for r in res if r["melhor"]]
         com_frete = [x for x in melhores if x.get("frete") is not None] or melhores
         melhor = min(com_frete, key=lambda x: x["total_pix"]) if com_frete else None

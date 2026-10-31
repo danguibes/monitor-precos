@@ -37,7 +37,7 @@ def test_site_tem_indice_e_um_relatorio_por_monitor_sem_cep(tmp_path):
     monitores = [{"id": "teste", "cfg": CFG, "historico": hist, "estado": tmp_path / "estado.json"}]
     site = tmp_path / "site"
     gerar_site(monitores, site)
-    assert sorted(a.name for a in site.iterdir()) == ["index.html", "teste.html"]
+    assert sorted(a.name for a in site.iterdir()) == ["index.html", "teste-historico.html", "teste.html"]
     assert "R$ 110,00" in (site / "index.html").read_text(encoding="utf-8")
     assert varrer(site, termos_proibidos({"cep": CEP})) == []
 

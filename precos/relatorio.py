@@ -116,7 +116,8 @@ def analisar(historico, cfg):
     return ultima, res
 
 
-def gerar_relatorio(cfg, erros: list[str], destino=RELATORIO, origem=HISTORICO, publico=False):
+def gerar_relatorio(cfg, erros: list[str], destino=RELATORIO, origem=HISTORICO, publico=False,
+                    link_historico="historico.html"):
     """publico=True é a cópia do GitHub Pages: sem o CEP, com noindex e com volta para o índice."""
     historico = ler_historico(origem)
     descoberta = cfg.get("modo") == "descoberta"
@@ -183,7 +184,7 @@ def gerar_relatorio(cfg, erros: list[str], destino=RELATORIO, origem=HISTORICO, 
 <style>
 {ESTILO}</style></head><body><main>
 {volta}<h1>{e(titulo or "Monitor de freezer")}</h1>
-<p class="sub">Preço + frete para o CEP {e(cep)} · última consulta {e(ultima or "—")} · ordenado pelo total {"com frete" if descoberta else "no Pix"}</p>
+<p class="sub">Preço + frete para o CEP {e(cep)} · última consulta {e(ultima or "—")} · ordenado pelo total {"com frete" if descoberta else "no Pix"} · <a href="{e(link_historico)}">histórico →</a></p>
 <section class="grid">{"".join(cards)}</section>
 <div class="tab"><table><thead><tr>{cabeca}
 <th class="n">Frete</th><th class="n">Total Pix</th><th class="n">Total cartão</th><th>Prazo</th><th></th></tr></thead>
