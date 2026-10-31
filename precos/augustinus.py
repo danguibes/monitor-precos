@@ -15,6 +15,11 @@ A conta é sempre na unidade do monitor, e é aqui que se erra calado:
     "11RL", "L16P15"), e só se estiver escrita. O catálogo do papel se contradiz
     (quantidade 4 E embalagem 4). Sem contagem → fora.
   * compra a peso (KG) nunca entra; monitor acompanhado (freezer) não tem referência.
+  * o monitor precisa DECLARAR a unidade (volume_ml ou montar_pack): sem isso
+    nem as ofertas dele são normalizadas, e "um lenço" contra "um pacote" seria
+    comparar coisas diferentes. E sem regra `incluir`, a compra precisa conter
+    todas as palavras de um dos termos de busca — senão a casa inteira entra
+    (visto em 31/10: o lenço, que a casa nunca comprou, ganhou 46 compras).
 
 A referência é a mediana do último ano; o destaque é forte quando a oferta, JÁ
 COM FRETE, sai pelo menos `limiar` abaixo dela, e fraco quando só o produto sai
@@ -52,7 +57,24 @@ def ler_compras(aug: dict) -> list[dict]:
 def unidade_do_monitor(cfg: dict) -> str | None:
     if cfg.get("modo") != "descoberta":
         return None
-    return "litro" if (cfg.get("regras") or {}).get("volume_ml") else "unidade"
+    regras = cfg.get("regras") or {}
+    if regras.get("volume_ml"):
+        return "litro"
+    return "unidade" if regras.get("montar_pack") else None
+
+
+def _palavras(t: str) -> list[str]:
+    import re
+    import unicodedata
+    t = "".join(c for c in unicodedata.normalize("NFD", t.lower()) if unicodedata.category(c) != "Mn")
+    return re.findall(r"[a-z0-9]+", t)
+
+
+def casa_com_termos(texto: str, termos: list[str]) -> bool:
+    """Todas as palavras (de 3+ letras) de algum termo aparecem no texto, sem acento."""
+    tem = set(_palavras(texto))
+    return any(ps and all(p in tem for p in ps)
+               for ps in ([p for p in _palavras(t) if len(p) >= 3] for t in termos))
 
 
 def _num(v):
@@ -81,7 +103,10 @@ def casa_com_o_monitor(c: dict, cfg: dict) -> bool:
     faixa = regras.pop("volume_ml", None)
     regras.pop("montar_pack", None)
     regras.pop("quantidade", None)
-    if not filtro_por_regras(regras)(f"{c.get('produto') or ''} {c.get('descricao') or ''}"):
+    texto = f"{c.get('produto') or ''} {c.get('descricao') or ''}"
+    if not filtro_por_regras(regras)(texto):
+        return False
+    if not regras.get("incluir") and not casa_com_termos(c.get("produto") or "", cfg.get("termos") or []):
         return False
     if faixa:
         base, emb = _num(c.get("quantidade_base")), _num(c.get("embalagem")) or 1

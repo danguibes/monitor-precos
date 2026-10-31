@@ -83,3 +83,21 @@ def test_comparar_forte_fraco_e_nada():
     assert comparar(cara, ref, AGUA) is None
     sem_frete = oferta("Z", "Z", "Água com Gás 1,5L com 6 Unidades", "", 17.0, 17.0, None, "", "x", "d")
     assert comparar(sem_frete, ref, AGUA)["nivel"] == "fraco"         # frete desconhecido nunca é "forte"
+
+
+LENCO = {"modo": "descoberta", "termos": ["lenço umedecido", "toalha umedecida"], "titulo": "x",
+         "regras": {"incluir": [], "excluir": [], "montar_pack": 4}}
+
+
+def test_sem_regra_incluir_a_compra_precisa_dos_termos():
+    """Sem 'Precisa conter', o filtro aceita tudo: a casa inteira virava referência do lenço."""
+    toalha_de_papel = compra("T SCALA MEGA C/3R", 13.9, "Papel toalha", emb=3)
+    assert referencia([toalha_de_papel, MINALBA], LENCO, HOJE) is None
+    lenco = compra("LENCO UMED HUGGIES C/48", 12.0, "Lenço umedecido Huggies", emb=48)
+    assert referencia([lenco, toalha_de_papel], LENCO, HOJE)["compras"] == 1
+
+
+def test_sem_unidade_declarada_nao_ha_referencia():
+    sem_unidade = dict(LENCO, regras={"incluir": [], "excluir": []})
+    lenco = compra("LENCO UMED HUGGIES C/48", 12.0, "Lenço umedecido Huggies", emb=48)
+    assert referencia([lenco], sem_unidade, HOJE) is None

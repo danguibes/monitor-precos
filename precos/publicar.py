@@ -21,7 +21,7 @@ import urllib.parse
 from datetime import datetime
 from pathlib import Path
 
-from .base import DADOS, RAIZ, brl
+from .base import DADOS, RAIZ, SEM_JANELA, brl
 from .historico_pagina import gerar_historico
 from .relatorio import ESTILO, gerar_relatorio, html_augustinus
 
@@ -70,6 +70,11 @@ def link_novo_monitor(repo: str) -> str:
     return f"{repo}/issues/new?template={FORMULARIO}"
 
 
+def link_atualizar(repo: str) -> str:
+    """Abre a issue "Atualizar agora"; o vigia no notebook a atende e fecha."""
+    return f"{repo}/issues/new?template=atualizar.yml"
+
+
 def link_editar(repo: str, id_: str, cfg: dict) -> str:
     """Monitor criado pelo formulário reabre o formulário preenchido; o escrito à mão abre o arquivo."""
     pedido = cfg.get("pedido")
@@ -98,13 +103,17 @@ def gerar_indice(itens: list[dict], destino: Path, repo: str | None = None, avis
                      + (f' · <a href="{e(link_editar(repo, it["id"], it.get("cfg", {})))}" target="_blank" '
                         f'rel="noopener">editar</a>' if repo else "") + '</article>')
     novo = (f'<p><a class="botao" href="{e(link_novo_monitor(repo))}" target="_blank" rel="noopener">'
-            f'+ Novo monitor</a> <span class="det">abre um formulário no GitHub; ao enviar, a próxima '
-            f'rodada do notebook cria o monitor e já pesquisa em todas as lojas</span></p>') if repo else ""
+            f'+ Novo monitor</a> <span class="det">abre um formulário no GitHub; com o notebook ligado, '
+            f'em até 5 minutos ele cria o monitor e já pesquisa em todas as lojas</span></p>'
+            f'<p><a class="botao secundario" href="{e(link_atualizar(repo))}" target="_blank" rel="noopener">'
+            f'↻ Atualizar agora</a> <span class="det">abre um pedido no GitHub; com o notebook ligado, '
+            f'em até 5 minutos ele roda todos os monitores e republica esta página</span></p>') if repo else ""
     lista_avisos = "".join(f"<li>{e(a)}</li>" for a in avisos)
     destino.write_text(f"""<!doctype html><html lang="pt-BR"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex">
 <title>Monitor de preços</title><style>{ESTILO}
 .botao{{display:inline-block;background:var(--ac);color:var(--card);padding:8px 14px;border-radius:10px;text-decoration:none;font-weight:600;margin-top:18px}}
+.botao.secundario{{background:transparent;color:var(--ac);border:1.5px solid var(--ac);margin-top:4px}}
 </style></head><body><main>
 <h1>Monitor de preços</h1>
 <p class="sub">Melhor oferta de cada monitor, com o frete para um CEP fixo · gerado em {datetime.now():%Y-%m-%d %H:%M}</p>
@@ -137,7 +146,8 @@ def gerar_site(monitores: list[dict], pasta: Path = SITE, repo: str | None = Non
 
 
 def git(*args, cwd: Path) -> str:
-    r = subprocess.run(["git", *args], cwd=cwd, capture_output=True, text=True, encoding="utf-8")
+    r = subprocess.run(["git", *args], cwd=cwd, capture_output=True, text=True, encoding="utf-8",
+                       creationflags=SEM_JANELA)
     if r.returncode:
         raise RuntimeError(f"git {' '.join(args)}: {r.stderr.strip()[:300]}")
     return r.stdout.strip()

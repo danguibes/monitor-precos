@@ -19,7 +19,7 @@ import subprocess
 import tomllib
 import unicodedata
 
-from .base import RAIZ
+from .base import RAIZ, SEM_JANELA
 from .monitores import PASTA_MONITORES, ConfiguracaoInvalida, validar_monitor
 from .unidades import volume_ml
 
@@ -133,14 +133,16 @@ def montar_toml(r: dict, numero: int) -> tuple[str, str]:
 
 # ---------------------------------------------------------------- GitHub
 def gh(*args) -> str:
-    r = subprocess.run(["gh", *args], cwd=RAIZ, capture_output=True, text=True, encoding="utf-8")
+    r = subprocess.run(["gh", *args], cwd=RAIZ, capture_output=True, text=True, encoding="utf-8",
+                       creationflags=SEM_JANELA)
     if r.returncode:
         raise RuntimeError(f"gh {args[0]} {args[1] if len(args) > 1 else ''}: {r.stderr.strip()[:200]}")
     return r.stdout
 
 
 def git(*args) -> str:
-    r = subprocess.run(["git", *args], cwd=RAIZ, capture_output=True, text=True, encoding="utf-8")
+    r = subprocess.run(["git", *args], cwd=RAIZ, capture_output=True, text=True, encoding="utf-8",
+                       creationflags=SEM_JANELA)
     if r.returncode:
         raise RuntimeError(f"git {args[0]}: {r.stderr.strip()[:200]}")
     return r.stdout
@@ -164,7 +166,7 @@ def atender(repo: str, log) -> tuple[list[str], list[str]]:
                                 "--json", "number,title,body,author", "--limit", "30"))
     except (RuntimeError, ValueError) as e:
         log(f"Pedidos: não consegui ler as issues ({e})")
-        return []
+        return [], []
     avisos, prontos = [], []
     for issue in abertos:
         n, autor = issue["number"], issue["author"]["login"]

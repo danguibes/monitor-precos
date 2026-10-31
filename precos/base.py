@@ -2,12 +2,17 @@
 from __future__ import annotations
 
 import json
+import os
+import subprocess
 import re
 import time
 import urllib.error
 import urllib.request
 from datetime import datetime
 from pathlib import Path
+
+# git e gh chamados de dentro do pythonw (logon, vigia) não piscam uma janela de console
+SEM_JANELA = subprocess.CREATE_NO_WINDOW if os.name == "nt" else 0
 
 RAIZ = Path(__file__).resolve().parent.parent
 DADOS = RAIZ / "dados"  # tudo o que é gerado mora aqui, e a pasta inteira fica fora do git

@@ -49,13 +49,19 @@ def rodar(*args) -> int:
 
 def lancador() -> str:
     # Roda o monitor no mesmo processo, sem console (extensão .pyw → pythonw).
+    # Primeiro a rodada do logon; depois o vigia fica olhando o GitHub até desligar.
+    # Mudou este texto? `py instalar.py --lancador` regrava o da pasta Inicializar.
     return (
         "import runpy, sys\n"
         f"pasta = {str(PASTA)!r}\n"
         "sys.path.insert(0, pasta)\n"
-        "sys.argv = [pasta + r'\\monitor.py', '--logon']\n"
         "import os; os.chdir(pasta)\n"
-        "runpy.run_path(pasta + r'\\monitor.py', run_name='__main__')\n"
+        "for modo in ('--logon', '--vigiar'):\n"
+        "    sys.argv = [pasta + r'\\monitor.py', modo]\n"
+        "    try:\n"
+        "        runpy.run_path(pasta + r'\\monitor.py', run_name='__main__')\n"
+        "    except SystemExit:\n"
+        "        pass\n"
     )
 
 

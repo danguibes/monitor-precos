@@ -16,6 +16,9 @@ Uso:
   py monitor.py --publicar   -> só republica os relatórios no GitHub Pages
   py monitor.py --pedidos    -> atende os pedidos do formulário e roda já os monitores criados
   py monitor.py --nao-publicar -> coleta sem publicar
+  py monitor.py --vigiar     -> fica olhando o GitHub: botão "Atualizar agora" e pedidos de monitor
+                                (o lançador do logon chama isto depois da rodada)
+  py monitor.py --sem-abrir  -> não abre o relatório ao fim (o vigia usa)
 
 Tudo o que é gerado (histórico, relatório, log, perfil do navegador) fica em dados/.
 """
@@ -29,7 +32,7 @@ from datetime import datetime, timedelta
 from pathlib import Path
 
 from precos import monitores as mon
-from precos.base import carregar_json, log, salvar_json
+from precos.base import SEM_JANELA, carregar_json, log, salvar_json
 from precos.historico import gravar_historico
 from precos.historico_pagina import gerar_historico
 from precos.relatorio import gerar_relatorio, houve_queda
@@ -115,6 +118,8 @@ def rodar(m, argv, aug=None) -> None:
                           referencia=estado.get("referencia_augustinus"))
     gerar_historico(cfg, m["relatorio"].parent / "historico.html", m["historico"], volta=m["relatorio"].name)
     regra = cfg.get("abrir_relatorio", "quando_baixar")
+    if "--sem-abrir" in argv:
+        return
     if not modo_logon or regra == "sempre" or (regra == "quando_baixar" and houve_queda(res)):
         abrir(m["relatorio"])
 
@@ -123,7 +128,8 @@ def atualizar_do_github() -> None:
     """No logon, puxa o que foi editado no GitHub (um monitor novo, uma regra) antes de rodar."""
     import subprocess
     from precos.base import RAIZ
-    r = subprocess.run(["git", "pull", "--ff-only", "-q"], cwd=RAIZ, capture_output=True, text=True)
+    r = subprocess.run(["git", "pull", "--ff-only", "-q"], cwd=RAIZ, capture_output=True, text=True,
+                       creationflags=SEM_JANELA)
     if r.returncode:
         log(f"git pull falhou (segue com o que há aqui): {r.stderr.strip()[:200]}")
 
@@ -158,7 +164,21 @@ def publicar_se_ligado(monitores, argv) -> None:
         log(f"Publicação: ERRO {exc!r}")
 
 
+def vigiar() -> int:
+    from precos.publicar import repo_web
+    from precos.vigia import vigiar as laco
+    repo = repo_web()
+    if not repo:
+        log("Vigia: sem repositório do GitHub; nada a vigiar.")
+        return 1
+    cfg = mon.ler_toml(mon.CONFIG_GERAL, obrigatorio=False)
+    laco(repo.removeprefix("https://github.com/"), float(cfg.get("vigia_minutos", 5)), log)
+    return 0
+
+
 def main(argv):
+    if "--vigiar" in argv:
+        return vigiar()
     if "--logon" in argv:
         atualizar_do_github()
     novos = []
