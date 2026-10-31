@@ -43,6 +43,13 @@ def test_quantidade_e_volume(titulo, qtd, ml):
     ("Papel Higiênico Folha Dupla Pacote com 12 Unidades", 12),
     ("Papel Higiênico Folha Simples 1 Rolo 300m", 1),
     ("Refrigerante Guaraná 350ml 12 latas", 12),
+    # como os cupons fiscais abreviam (descrições reais do Augustinus)
+    ("PAPEL HIG NEVE F DUPLA 30M C/4 NEUTRO", 4),
+    ("PAPEL HIG MIMO F DUPLA 30M L16P15", 16),
+    ("PAPEL HIGIENNEVE 11RL", 11),
+    ("P H MAX 30M L12 P11", 12),
+    ("Neve 30mts C4", 4),
+    ("PH MAX PURE 30M C/40", 40),
 ])
 def test_quantidade_em_rolos_latas_e_leve_pague(titulo, qtd):
     assert quantidade(titulo) == qtd

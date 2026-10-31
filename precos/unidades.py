@@ -9,6 +9,9 @@ import re
 
 _QTD = [
     r"\bleve\s+(\d{1,3})\s+pague\b",  # "Leve 16 Pague 15": vêm 16
+    r"\bl\s?(\d{1,3})\s?p\s?\d{1,3}\b",  # cupom fiscal: "L16P15", "L12 P11" = leve 16 (12), pague 15 (11)
+    r"\bc(\d{1,3})(?=\s|$)",           # cupom fiscal: "Neve 30mts C4" = com 4
+    r"\b(\d{1,3})\s*rls?\b",           # cupom fiscal: "11RL" = 11 rolos
     r"\bcom\s+(\d{1,3})\s+(?:unidades?|rolos?|latas?)\b",
     r"\b(\d{1,3})\s*(?:rolos?|latas)\b",  # papel higiênico, refrigerante
     r"\bkit\s+(?:c/\s*|com\s+)?(\d{1,3})\b",
@@ -20,13 +23,19 @@ _QTD = [
 _VOL = re.compile(r"(\d+(?:[.,]\d+)?)\s*(ml|litros?|lts?|l)(?![a-z])", re.I)
 
 
-def quantidade(titulo: str) -> int:
+def quantidade_explicita(titulo: str) -> int | None:
+    """A contagem escrita no título, ou None se não há nenhuma (não presume 1)."""
     t = titulo.lower()
     for padrao in _QTD:
         m = re.search(padrao, t)
         if m and 0 < int(m.group(1)) <= 200:
             return int(m.group(1))
-    return 1
+    return None
+
+
+def quantidade(titulo: str) -> int:
+    """Sem contagem no título, o anúncio é de uma unidade."""
+    return quantidade_explicita(titulo) or 1
 
 
 def volume_ml(titulo: str) -> float | None:

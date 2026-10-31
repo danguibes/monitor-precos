@@ -23,7 +23,7 @@ from pathlib import Path
 
 from .base import DADOS, RAIZ, brl
 from .historico_pagina import gerar_historico
-from .relatorio import ESTILO, gerar_relatorio
+from .relatorio import ESTILO, gerar_relatorio, html_augustinus
 
 SITE = DADOS / "site"
 
@@ -88,6 +88,7 @@ def gerar_indice(itens: list[dict], destino: Path, repo: str | None = None, avis
     for it in itens:
         mel = it["melhor"]
         corpo = (f'<div class="total">{brl(mel["total_pix"])}</div>'
+                 f'{html_augustinus(mel, it.get("referencia"), it.get("cfg", {}))}'
                  f'<div class="det">{e(mel["produto"][:90])} · {e(mel["loja"])}</div>') if mel else \
             '<div class="det">Sem oferta na última rodada.</div>'
         cards.append(f'<article class="card"><header><h2><a href="{e(it["id"])}.html">{e(it["nome"])}</a></h2></header>'
@@ -121,16 +122,17 @@ def gerar_site(monitores: list[dict], pasta: Path = SITE, repo: str | None = Non
     pasta.mkdir(parents=True)
     itens = []
     for m in monitores:
-        avisos = carregar_json(m["estado"], {}).get("avisos", [])
-        res = gerar_relatorio(m["cfg"], avisos, pasta / f"{m['id']}.html", m["historico"], publico=True,
-                              link_historico=f"{m['id']}-historico.html")
+        estado = carregar_json(m["estado"], {})
+        ref = estado.get("referencia_augustinus")
+        res = gerar_relatorio(m["cfg"], estado.get("avisos", []), pasta / f"{m['id']}.html", m["historico"],
+                              publico=True, link_historico=f"{m['id']}-historico.html", referencia=ref)
         gerar_historico(m["cfg"], pasta / f"{m['id']}-historico.html", m["historico"],
                         volta=f"{m['id']}.html", publico=True)
         melhores = [r["melhor"] for r in res if r["melhor"]]
         com_frete = [x for x in melhores if x.get("frete") is not None] or melhores
         melhor = min(com_frete, key=lambda x: x["total_pix"]) if com_frete else None
         itens.append({"id": m["id"], "nome": m["cfg"].get("nome", m["id"]), "melhor": melhor,
-                      "ultima": melhor["data"] if melhor else None, "cfg": m["cfg"]})
+                      "ultima": melhor["data"] if melhor else None, "cfg": m["cfg"], "referencia": ref})
     gerar_indice(itens, pasta / "index.html", repo, carregar_json(AVISOS_PEDIDOS, []))
 
 

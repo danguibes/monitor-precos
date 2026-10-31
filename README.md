@@ -118,6 +118,28 @@ nenhuma das APIs**, então uma oferta barata pode exigir completar a cesta.
 
 Ofertas sem frete conhecido ficam na tabela, mas não ganham o card de melhor oferta.
 
+## Comparação com o Augustinus
+
+A cada rodada, o monitor lê uma vez o que a casa pagou no supermercado, pelo
+Augustinus (a view `monitor.compras_da_casa`, com um papel de banco que só lê
+ela). Para cada monitor ele calcula a **mediana do último ano** na unidade do
+monitor:
+
+- **litro** quando o monitor tem `volume_ml`. O volume vem do catálogo do
+  Augustinus, nunca do texto do cupom ("AGUA MINMINALBA 15L" é 1,5 L).
+- **unidade** (rolo, lata) nos outros casos. A contagem vem do cupom ("C/4",
+  "11RL", "L16P15"), e a compra que não traz contagem fica de fora.
+- Compra a peso nunca entra. Monitor acompanhado (o freezer) não tem referência.
+
+O card ganha **"▼ abaixo do que você paga"** quando a oferta, já com frete, sai
+pelo menos 10% abaixo da mediana (dá para ajustar com `limiar_augustinus = 0.15`
+no toml). Quando só o produto sai abaixo e o frete come a diferença, aparece uma
+linha discreta. O selo leva ao histórico do item no Augustinus, que pede login.
+
+Credenciais na seção `[augustinus]` do `local.toml` (host, porta, usuario,
+senha, banco, app). Sem essa seção, ou com o banco fora do ar, o monitor segue
+normalmente e mantém a última referência.
+
 ## Arquivos
 
 ```

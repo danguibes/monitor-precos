@@ -68,7 +68,32 @@ def vencido(m) -> bool:
     return True
 
 
-def rodar(m, argv) -> None:
+def ler_augustinus():
+    """As compras da casa no Augustinus, uma vez por rodada; None se não há acesso (o monitor segue)."""
+    aug = mon.ler_toml(mon.LOCAL, obrigatorio=False).get("augustinus")
+    if not aug:
+        return None
+    from precos.augustinus import ler_compras
+    try:
+        compras = ler_compras(aug)
+    except Exception as exc:  # banco fora do ar ou senha trocada: fica a referência anterior
+        log(f"Augustinus: não li as compras ({exc!r}); mantenho a referência anterior.")
+        return None
+    log(f"Augustinus: {len(compras)} compras lidas.")
+    return {"compras": compras, "app": aug.get("app", "")}
+
+
+def atualizar_referencia(m, estado, aug) -> None:
+    from precos.augustinus import referencia
+    if aug is None:
+        return
+    ref = referencia(aug["compras"], m["cfg"])
+    if ref:
+        ref["app"] = aug["app"]
+    estado["referencia_augustinus"] = ref
+
+
+def rodar(m, argv, aug=None) -> None:
     cfg, estado = m["cfg"], carregar_json(m["estado"], {})
     modo_logon = "--logon" in argv
 
@@ -83,9 +108,11 @@ def rodar(m, argv) -> None:
         gravar_historico(ofertas, m["historico"])
         estado["ultima_execucao"] = datetime.now().isoformat(timespec="seconds")
     estado["avisos"] = erros  # a página publicada mostra os avisos da última rodada
+    atualizar_referencia(m, estado, aug)
     salvar_json(m["estado"], estado)
 
-    res = gerar_relatorio(cfg, erros, m["relatorio"], m["historico"])
+    res = gerar_relatorio(cfg, erros, m["relatorio"], m["historico"],
+                          referencia=estado.get("referencia_augustinus"))
     gerar_historico(cfg, m["relatorio"].parent / "historico.html", m["historico"], volta=m["relatorio"].name)
     regra = cfg.get("abrir_relatorio", "quando_baixar")
     if not modo_logon or regra == "sempre" or (regra == "quando_baixar" and houve_queda(res)):
@@ -162,7 +189,8 @@ def main(argv):
     escolhidos = escolher(monitores, argv)
     if "--relatorio" in argv:
         for m in escolhidos:
-            gerar_relatorio(m["cfg"], [], m["relatorio"], m["historico"])
+            gerar_relatorio(m["cfg"], [], m["relatorio"], m["historico"],
+                            referencia=carregar_json(m["estado"], {}).get("referencia_augustinus"))
             gerar_historico(m["cfg"], m["relatorio"].parent / "historico.html", m["historico"],
                             volta=m["relatorio"].name)
             abrir(m["relatorio"])
@@ -174,9 +202,10 @@ def main(argv):
         escolhidos = [m for m in escolhidos if m["id"] in novos or vencido(m)]
         if escolhidos:
             time.sleep(45)  # dá tempo da rede subir depois do login
+    aug = ler_augustinus() if escolhidos else None
     for m in escolhidos:
         try:
-            rodar(m, argv)
+            rodar(m, argv, aug)
         except Exception as exc:  # um monitor quebrado não impede os outros
             log(f"[{m['id']}] ERRO: {exc!r}")
     if escolhidos:

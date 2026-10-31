@@ -1,1 +1,2 @@
 playwright
+pg8000

@@ -25,6 +25,7 @@ a{color:var(--ac)} table{width:100%;border-collapse:collapse;font-size:13px;marg
 th,td{text-align:left;padding:6px 8px;border-bottom:1px solid var(--ln)} .n{text-align:right;white-space:nowrap}
 .tab{overflow-x:auto;background:var(--card);border:1px solid var(--ln);border-radius:12px;margin-top:22px;padding:6px 8px}
 .avisos{color:var(--mut);font-size:13px}
+.selo-aug{display:inline-block;background:var(--ok);color:var(--card);border-radius:99px;font-size:12px;font-weight:600;padding:3px 10px;margin:6px 0 2px;text-decoration:none}
 """
 
 
@@ -116,8 +117,29 @@ def analisar(historico, cfg):
     return ultima, res
 
 
+def html_augustinus(oferta, ref, cfg) -> str:
+    """Selo "abaixo do que você paga", com a conta e o link para o histórico do item no Augustinus."""
+    from .augustinus import comparar
+    cmp = comparar(oferta, ref, cfg)
+    if not cmp:
+        return ""
+    e = html.escape
+    un = "/L" if ref["unidade"] == "litro" else "/" + cfg.get("unidade_nome", "un.")
+    pago = f'você paga {brl(cmp["mediana"])}{un} (mediana de {ref["compras"]} compra(s) no Augustinus)'
+    link = f'{ref["app"]}/#/precos/{ref["conceito_id"]}' if ref.get("app") and ref.get("conceito_id") else ""
+    abre = f'<a class="selo-aug" href="{e(link)}" target="_blank" rel="noopener">' if link else '<span class="selo-aug">'
+    fecha = "</a>" if link else "</span>"
+    if cmp["nivel"] == "forte":
+        return (f'<div>{abre}▼ abaixo do que você paga{fecha}</div>'
+                f'<div class="det">{brl(cmp["com_frete"])}{un} entregue · {e(pago)}</div>')
+    return (f'<div class="det">O produto sai {brl(cmp["so_produto"])}{un}, abaixo dos {brl(cmp["mediana"])}{un} '
+            f'que você paga, mas o frete come a diferença'
+            + (f' · <a href="{e(link)}" target="_blank" rel="noopener">ver no Augustinus</a>' if link else "")
+            + '.</div>')
+
+
 def gerar_relatorio(cfg, erros: list[str], destino=RELATORIO, origem=HISTORICO, publico=False,
-                    link_historico="historico.html"):
+                    link_historico="historico.html", referencia=None):
     """publico=True é a cópia do GitHub Pages: sem o CEP, com noindex e com volta para o índice."""
     historico = ler_historico(origem)
     descoberta = cfg.get("modo") == "descoberta"
@@ -141,6 +163,7 @@ def gerar_relatorio(cfg, erros: list[str], destino=RELATORIO, origem=HISTORICO, 
             eh_min = r["minimo"] and mel["total_pix"] <= r["minimo"]["total_pix"]
             selo = '<span class="selo">menor preço já visto</span>' if eh_min and len(r["serie"]) > 1 else ""
             corpo = (f'<div class="total">{brl(mel["total_pix"])} {delta}</div>'
+                     f'{html_augustinus(mel, referencia, cfg)}'
                      f'<div class="det">{brl(mel["preco_pix"])}{"" if descoberta else " no Pix"} + '
                      f'{"frete não informado" if mel["frete"] is None else brl(mel["frete"]) + " de frete"}'
                      f' · {e(mel["loja"])} ({e(mel["vendedor"])}) · {e(mel["prazo"])}</div>'

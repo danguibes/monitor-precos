@@ -108,9 +108,9 @@ def main():
     print("[0/5] CEP de entrega...")
     criar_local()
 
-    print("[1/5] Instalando o Playwright...")
+    print("[1/5] Instalando o Playwright e o pg8000...")
     if rodar("-m", "pip", "install", "--upgrade", "--quiet", "-r", PASTA / "requirements.txt") != 0:
-        sys.exit("Falhou o pip install playwright.")
+        sys.exit("Falhou o pip install (playwright, pg8000).")
 
     print("[2/5] Navegador...")
     if tem_chrome():

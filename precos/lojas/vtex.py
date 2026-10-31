@@ -49,7 +49,7 @@ def vendedores_da_regiao(host: str, cep: str, sc: str, cache: dict) -> dict[str,
 def loja_do_cep(host: str, cep: str, regiao: dict, cache: dict) -> str | None:
     """A loja física que o site usa para o CEP: a da região com o ponto mais perto.
 
-    O site do Atacadão mostra "Entregue pela Indianópolis" e só vende por ela;
+    O site do Atacadão mostra "Entregue pela <loja do bairro>" e só vende por ela;
     outra loja da região com estoque não serve. Os pontos vêm com a distância
     (pickup-points) e o id começa pelo do vendedor ("atacadaobr698_...").
     """
