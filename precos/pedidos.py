@@ -152,8 +152,12 @@ def responder(repo: str, numero: int, texto: str, fechar: bool) -> None:
         gh("issue", "close", str(numero), "-R", repo)
 
 
-def atender(repo: str, log) -> list[str]:
-    """Atende os pedidos abertos. Devolve os avisos (pedidos de terceiros) para a página."""
+def atender(repo: str, log) -> tuple[list[str], list[str]]:
+    """Atende os pedidos abertos.
+
+    Devolve (avisos, prontos): os avisos de pedidos de terceiros, para a página,
+    e os ids dos monitores criados ou alterados, que rodam já nesta rodada.
+    """
     dono = repo.split("/")[0]
     try:
         abertos = json.loads(gh("issue", "list", "-R", repo, "--label", ROTULO, "--state", "open",
@@ -161,7 +165,7 @@ def atender(repo: str, log) -> list[str]:
     except (RuntimeError, ValueError) as e:
         log(f"Pedidos: não consegui ler as issues ({e})")
         return []
-    avisos = []
+    avisos, prontos = [], []
     for issue in abertos:
         n, autor = issue["number"], issue["author"]["login"]
         if autor != dono:
@@ -195,8 +199,9 @@ def atender(repo: str, log) -> list[str]:
             log(f"Pedido #{n}: o arquivo foi gerado mas não subiu ({e}); fica para a próxima rodada")
             continue
         responder(repo, n, f"Monitor **{r['nome']}** {'alterado' if alterando else 'criado'} em `{rel}`. "
-                           "A primeira rodada é esta; a página se atualiza quando ela terminar.", fechar=True)
+                           "A primeira consulta começa agora, em todas as lojas; a página se atualiza quando ela terminar.", fechar=True)
         log(f"Pedido #{n}: monitor {id_} {'alterado' if alterando else 'criado'}")
+        prontos.append(id_)
     for a in avisos:
         log("Pedidos: " + a)
-    return avisos
+    return avisos, prontos

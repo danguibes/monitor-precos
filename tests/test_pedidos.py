@@ -121,7 +121,8 @@ def test_atender_ignora_terceiros_e_cria_o_do_dono(tmp_path, monkeypatch):
     monkeypatch.setattr(pedidos, "PASTA_MONITORES", tmp_path)
     monkeypatch.setattr(pedidos, "RAIZ", tmp_path.parent)
     logs = []
-    avisos = pedidos.atender("dono/repo", logs.append)
+    avisos, prontos = pedidos.atender("dono/repo", logs.append)
+    assert prontos == ["agua-com-gas-1-5-l-teste"]  # roda já, na mesma rodada
 
     assert avisos == ["Pedido #3 aberto por @estranho foi ignorado: só pedidos de @dono são atendidos."]
     assert not any(c[1:3] in (("issue", "comment"), ("issue", "close")) and c[3] == "3" for c in chamadas)

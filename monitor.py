@@ -14,7 +14,7 @@ Uso:
   py monitor.py --configurar viladasfrutas -> o mesmo, só com as páginas que contêm o termo
   py monitor.py --sem-navegador -> só as lojas por API (rápido)
   py monitor.py --publicar   -> só republica os relatórios no GitHub Pages
-  py monitor.py --pedidos    -> só atende os pedidos do formulário (novo monitor)
+  py monitor.py --pedidos    -> atende os pedidos do formulário e roda já os monitores criados
   py monitor.py --nao-publicar -> coleta sem publicar
 
 Tudo o que é gerado (histórico, relatório, log, perfil do navegador) fica em dados/.
@@ -99,20 +99,24 @@ def atualizar_do_github() -> None:
         log(f"git pull falhou (segue com o que há aqui): {r.stderr.strip()[:200]}")
 
 
-def atender_pedidos() -> None:
-    """Pedidos do formulário do GitHub viram monitores antes de a rodada carregar a lista."""
+def atender_pedidos() -> list[str]:
+    """Pedidos do formulário do GitHub viram monitores antes de a rodada carregar a lista.
+
+    Devolve os ids criados ou alterados: eles rodam já, sem esperar o intervalo.
+    """
     from precos import pedidos
     from precos.base import salvar_json
     from precos.publicar import AVISOS_PEDIDOS, repo_web
     repo = repo_web()
     if not repo:
-        return
+        return []
     try:
-        avisos = pedidos.atender(repo.removeprefix("https://github.com/"), log)
+        avisos, prontos = pedidos.atender(repo.removeprefix("https://github.com/"), log)
     except Exception as exc:  # um pedido estranho nunca derruba a coleta
         log(f"Pedidos: ERRO {exc!r}")
-        return
+        return []
     salvar_json(AVISOS_PEDIDOS, avisos)
+    return prontos
 
 
 def publicar_se_ligado(monitores, argv) -> None:
@@ -128,9 +132,10 @@ def publicar_se_ligado(monitores, argv) -> None:
 def main(argv):
     if "--logon" in argv:
         atualizar_do_github()
+    novos = []
     if {"--logon", "--todos", "--pedidos"} & set(argv):
-        atender_pedidos()
-        if "--pedidos" in argv:
+        novos = atender_pedidos()
+        if "--pedidos" in argv and not novos:
             return 0
     try:
         monitores = mon.carregar(precisa_cep="--relatorio" not in argv)
@@ -159,8 +164,10 @@ def main(argv):
             abrir(m["relatorio"])
         return 0
 
-    if "--logon" in argv:
-        escolhidos = [m for m in escolhidos if vencido(m)]
+    if "--pedidos" in argv:  # criado ou alterado pelo formulário: a primeira consulta é já
+        escolhidos = [m for m in monitores if m["id"] in novos]
+    if "--logon" in argv:  # o monitor recém-pedido roda mesmo dentro do intervalo
+        escolhidos = [m for m in escolhidos if m["id"] in novos or vencido(m)]
         if escolhidos:
             time.sleep(45)  # dá tempo da rede subir depois do login
     for m in escolhidos:
