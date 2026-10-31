@@ -37,6 +37,33 @@ def simular(host: str, sc: str, sku: str, vendedor: str, cep: str):
     return None
 
 
+def vendedores_da_regiao(host: str, cep: str, sc: str, cache: dict) -> dict[str, str]:
+    """{id: nome} das lojas físicas que atendem o CEP, pela API de regiões da VTEX (vazio se não regionaliza)."""
+    if host not in cache:
+        status, reg = http_json(f"https://{host}/api/checkout/pub/regions?country=BRA&postalCode={cep}&sc={sc}")
+        cache[host] = {s["id"]: s.get("name") or s["id"] for s in (reg[0].get("sellers") or [])} \
+            if status == 200 and isinstance(reg, list) and reg else {}
+    return cache[host]
+
+
+def loja_do_cep(host: str, cep: str, regiao: dict, cache: dict) -> str | None:
+    """A loja física que o site usa para o CEP: a da região com o ponto mais perto.
+
+    O site do Atacadão mostra "Entregue pela Indianópolis" e só vende por ela;
+    outra loja da região com estoque não serve. Os pontos vêm com a distância
+    (pickup-points) e o id começa pelo do vendedor ("atacadaobr698_...").
+    """
+    if len(regiao) == 1:
+        return next(iter(regiao))
+    if host not in cache:
+        _, d = http_json(f"https://{host}/api/checkout/pub/pickup-points?postalCode={cep}&countryCode=BRA")
+        pontos = sorted((d or {}).get("items", []) if isinstance(d, dict) else [],
+                        key=lambda p: p.get("distance", 1e9))
+        cache[host] = next((v for p in pontos for v in regiao
+                            if (p.get("pickupPoint") or {}).get("id", "").startswith(v + "_")), None)
+    return cache[host]
+
+
 def simular_com_canal(host, sku, vendedor, cep, cache_sc: dict):
     """Descobre (e guarda) o canal de vendas (sc) que a loja usa."""
     ordem = ([cache_sc[host]] if host in cache_sc else []) + \
@@ -84,6 +111,7 @@ def coletar(cfg: dict, estado: dict, produtos=None, filtro=None):
     cep = re.sub(r"\D", "", cfg["cep"])
     volt = str(cfg.get("voltagem", "127"))
     cache_sc = estado.setdefault("canal_vendas", {})
+    cache_regiao, cache_loja, sem_loja = {}, {}, set()
     agora = datetime.now().strftime("%Y-%m-%d %H:%M")
     ofertas, erros = [], []
 
@@ -112,7 +140,22 @@ def coletar(cfg: dict, estado: dict, produtos=None, filtro=None):
                             continue
                     elif not padrao.search(texto) or not voltagem_ok(texto, volt):
                         continue
-                    for vend in item.get("sellers", []):
+                    vendedores = item.get("sellers", [])
+                    regiao = vendedores_da_regiao(host, cep, cache_sc.get(host, "1"), cache_regiao)
+                    if regiao and vendedores and all(v["sellerId"] == "1" for v in vendedores):
+                        # Loja que vende pelas lojas físicas da região (Atacadão, Mambo, Oba): o
+                        # vendedor "1" do catálogo diz que tem, e o site não vende por ele. Vale
+                        # só a loja que o site usa para o CEP — sem estoque nela, não há oferta.
+                        loja_cep = loja_do_cep(host, cep, regiao, cache_loja)
+                        if not loja_cep:
+                            if host not in sem_loja:
+                                sem_loja.add(host)
+                                erros.append(f"{nome_loja}: não identifiquei a loja física do CEP; fica sem oferta")
+                            continue
+                        # o nome da loja física (o bairro) não vai para a oferta: a página é pública
+                        vendedores = [{"sellerId": loja_cep, "sellerName": nome_loja,
+                                       "commertialOffer": {"AvailableQuantity": 1}}]
+                    for vend in vendedores:
                         oferta = vend.get("commertialOffer") or {}
                         if not oferta.get("AvailableQuantity"):
                             continue

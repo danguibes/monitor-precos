@@ -35,3 +35,21 @@ def test_vtex_so_available_vira_oferta():
     sim["items"][0]["availability"] = "withoutStock"
     dados, motivo = ler_simulacao(sim)
     assert dados is None and "withoutStock" in motivo
+
+
+def test_vtex_loja_do_cep_e_a_da_regiao_com_ponto_mais_perto(monkeypatch):
+    """Atacadão: o site só vende pela loja do CEP. Ponto mais perto que não está na
+    região (só retirada) é ignorado; vale a loja da região mais perto."""
+    from precos.lojas import vtex
+    pontos = {"items": [
+        {"distance": 2.99, "pickupPoint": {"id": "loja718_autoservico_x"}},   # não está na região
+        {"distance": 3.10, "pickupPoint": {"id": "loja698_autoservico_x"}},
+        {"distance": 6.91, "pickupPoint": {"id": "loja133_autoservico_x"}},
+    ]}
+    monkeypatch.setattr(vtex, "http_json", lambda url, corpo=None: (200, pontos))
+    regiao = {"loja133": "Loja B", "loja698": "Loja A"}
+    assert vtex.loja_do_cep("x", "00000000", regiao, {}) == "loja698"
+    assert vtex.loja_do_cep("x", "00000000", {"unica": "Loja U"}, {}) == "unica"  # Mambo, Oba
+    assert vtex.loja_do_cep("y", "00000000", {"outra": "X"}, {}) == "outra"
+    monkeypatch.setattr(vtex, "http_json", lambda url, corpo=None: (200, {"items": []}))
+    assert vtex.loja_do_cep("z", "00000000", regiao, {}) is None  # sem ponto: sem oferta, com aviso
