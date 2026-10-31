@@ -14,7 +14,8 @@ api = ["Pão de Açúcar"]
 
 # Lojas pelo navegador do monitor (coletor em precos/lojas/)
 # Mercado Livre e Vila das Frutas precisam de login: py monitor.py --configurar
-navegador = ["Carrefour", "Magalu", "Casas Bahia", "Mercado Livre", "Vila das Frutas"]
+# Amazon: sem login; o coletor põe o CEP pelo "Atualizar CEP" da página
+navegador = ["Carrefour", "Magalu", "Casas Bahia", "Mercado Livre", "Vila das Frutas", "Amazon"]
 
 # Lojas VTEX, pela API pública, sem navegador
 [[vtex]]

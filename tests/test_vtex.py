@@ -27,3 +27,11 @@ def test_vtex_fastshop_sem_estoque():
     dados, motivo = ler_simulacao(carregar("fastshop-fei27t-sem-estoque"))
     assert dados is None
     assert "não tem estoque" in motivo
+
+
+def test_vtex_so_available_vira_oferta():
+    """Item sem estoque que ainda traz opção de entrega não pode passar (antes passava)."""
+    sim = carregar("electrolux-fei27t-pix")
+    sim["items"][0]["availability"] = "withoutStock"
+    dados, motivo = ler_simulacao(sim)
+    assert dados is None and "withoutStock" in motivo

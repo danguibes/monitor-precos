@@ -54,6 +54,11 @@ def simular_com_canal(host, sku, vendedor, cep, cache_sc: dict):
 
 def ler_simulacao(sim: dict):
     item = sim["items"][0]
+    # "available", "withoutStock", "cannotBeDelivered"...: só a primeira vira oferta.
+    # Antes só se descartava item sem opção de entrega, e um sem estoque com entrega passava.
+    if item.get("availability", "available") != "available":
+        msgs = "; ".join(m.get("text", "") for m in sim.get("messages") or [])
+        return None, msgs or f"indisponível ({item.get('availability')})"
     preco = reais(item.get("sellingPrice") or item.get("price"))
     pix = None
     for op in (sim.get("paymentData") or {}).get("installmentOptions") or []:

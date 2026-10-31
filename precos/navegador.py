@@ -52,7 +52,8 @@ def texto(page) -> str:
 
 PAGINAS_CONFIGURAR = ["https://www.mercadolivre.com.br/", "https://shopee.com.br/buyer/login",
                       "https://www.magazineluiza.com.br/", "https://www.casasbahia.com.br/",
-                      "https://www.carrefour.com.br/", "https://www.viladasfrutas.com.br/"]
+                      "https://www.carrefour.com.br/", "https://www.viladasfrutas.com.br/",
+                      "https://www.amazon.com.br/"]
 
 
 def configurar(cfg, filtro: str = ""):

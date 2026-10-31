@@ -55,12 +55,18 @@ def _garante_cep(page, cep_fmt: str):
         return False
 
 
+# Avisos de produto que não está à venda, no topo da página (antes de "Adicionar à sacola").
+INDISPONIVEL = re.compile(r"produto indispon[íi]vel|indispon[íi]vel no momento|esgotado|avise-me quando chegar", re.I)
+
+
 def ler_magalu(t: str):
     fim = t.find("Quem viu este produto")
     t = t[:fim] if fim > 0 else t
     pix = num((re.search(r"R\$\s*" + NUM + r"\s*\n+\s*no Pix", t, re.I) or [None, None])[1])
     cartao = num((re.search(r"Ou R\$\s*" + NUM + r" em", t) or [None, None])[1])
     vend = (re.search(r"Vendido (?:e entregue )?por ([^\n]+?)(?: e entregue por [^\n]+)?\n", t) or [None, None])[1]
+    if INDISPONIVEL.search(t[:t.find("Adicionar à sacola")] if "Adicionar à sacola" in t else t[:3000]):
+        return None  # a página mostra o preço antigo, mas não vende
     if pix is None and cartao is None:
         return None
     frete, prazo = ler_frete(t, {pix, cartao} - {None})

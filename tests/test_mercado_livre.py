@@ -51,3 +51,9 @@ def test_mercado_livre_layout_de_mercado_sem_comprar_agora():
     assert ler_jsonld(ld("agua-mercado")) == {"preco": 24.17, "frete": 20.99, "dias": 2}
     cartao, vend, prazo, gratis = ler_caixa(txt("agua-mercado"))
     assert (vend, prazo, gratis) == ("Premium", "Chegará amanhã sábado", False)
+
+
+def test_mercado_livre_fora_de_estoque_nao_vira_oferta():
+    blocos = ld("fei27t-frete-pago")
+    j = json.loads(blocos[0]); j["offers"]["availability"] = "https://schema.org/OutOfStock"
+    assert ler_jsonld([json.dumps(j)]) is None

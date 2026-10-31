@@ -47,3 +47,10 @@ def test_magalu_trava_frete_igual_ao_preco_mas_aceita_frete_maior_que_item_barat
     assert ler_frete(t, {1449.0, 1525.26}) == (None, "")  # o caso real do HB150 em 30/10
     agua = "Enviar para [endereço]\nAlterar\nReceba amanhã\nR$ 20,99\nAdicionar à sacola\n"
     assert ler_frete(agua, {4.99}) == (20.99, "amanhã")
+
+
+def test_magalu_produto_indisponivel_nao_vira_oferta():
+    t = carregar("produto-frete-calculado.txt").replace("Vendido e entregue por Magalu",
+                                                         "Vendido e entregue por Magalu\nProduto indisponível")
+    assert ler_magalu(t) is None
+    assert ler_magalu(carregar("produto-frete-calculado.txt")) is not None  # o controle

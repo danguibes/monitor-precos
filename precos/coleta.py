@@ -4,7 +4,7 @@ from __future__ import annotations
 from datetime import datetime
 
 from .filtros import criar_filtro
-from .lojas import (carrefour, casas_bahia, magalu, mercado_livre, pao_de_acucar, shopee,
+from .lojas import (amazon, carrefour, casas_bahia, magalu, mercado_livre, pao_de_acucar, shopee,
                     vila_das_frutas, vtex)
 from .navegador import abrir_navegador
 from .unidades import montar_pack
@@ -16,6 +16,7 @@ COLETORES = {
     "Mercado Livre": mercado_livre.coletar,
     "Shopee": shopee.coletar,
     "Vila das Frutas": vila_das_frutas.coletar,
+    "Amazon": amazon.coletar,
 }
 # lojas com API própria (sem navegador e fora da VTEX)
 COLETORES_API = {

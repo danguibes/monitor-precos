@@ -28,6 +28,8 @@ def ler_jsonld(blocos: list[str]):
             ofs = ofs[0] if ofs else {}
         if not ofs.get("price"):
             continue
+        if not str(ofs.get("availability", "InStock")).endswith("InStock"):
+            return None  # OutOfStock, SoldOut...: a página mostra preço, mas não vende
         envio = ofs.get("shippingDetails") or {}
         if isinstance(envio, list):
             envio = envio[0] if envio else {}

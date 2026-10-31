@@ -29,6 +29,8 @@ def ler_casas_bahia(t: str):
             frete = 0.0
         mp = re.search(r"(até [^\n]+)", bloco)
         prazo = mp.group(1) if mp else ""
+    if re.search(r"produto indispon[íi]vel|indispon[íi]vel no momento|esgotado|avise-me quando chegar", t[:t.find("Receba em casa")] if "Receba em casa" in t else t[:4000], re.I):
+        return None  # preço na página, mas sem venda
     if preco is None and pix is None:
         return None
     return titulo, preco, pix, vend, frete, prazo
