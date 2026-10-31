@@ -67,6 +67,10 @@ def coletar(page, cfg, produtos, data, filtros, erros, max_por_modelo=4):
         termo = re.sub(r"\s+", "-", prod["busca"].strip().lower())
         if not ir(page, f"https://lista.mercadolivre.com.br/{termo}", espera=3):
             continue
+        if "captcha" in page.url:  # o monitor não contorna captcha: avisa e para
+            erros.append("Mercado Livre: pediu captcha (excesso de acessos?) — rode 'py monitor.py --configurar "
+                         "mercadolivre' e resolva na janela; até lá a loja fica sem ofertas")
+            return ofertas
         if "account-verification" in page.url or "login" in page.url:
             erros.append("Mercado Livre: pede login — rode 'py monitor.py --configurar' e entre na sua conta")
             return ofertas
