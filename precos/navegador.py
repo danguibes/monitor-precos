@@ -15,7 +15,7 @@ from .base import PERFIL
 # Sites em que o perfil do monitor entra com a SUA conta: um bloqueio ali não fica
 # na loja, chega à conta. Cada página deles espera `pausa_lojas_com_login` segundos
 # a mais (config.toml). O Mercado Livre já pediu captcha com quatro monitores.
-COM_LOGIN = ("mercadolivre.com.br", "viladasfrutas.com.br")
+COM_LOGIN = ("mercadolivre.com.br", "viladasfrutas.com.br", "rappi.com.br")
 _pausa_com_login = 6.0
 
 
@@ -63,7 +63,7 @@ def texto(page) -> str:
 PAGINAS_CONFIGURAR = ["https://www.mercadolivre.com.br/", "https://shopee.com.br/buyer/login",
                       "https://www.magazineluiza.com.br/", "https://www.casasbahia.com.br/",
                       "https://www.carrefour.com.br/", "https://www.viladasfrutas.com.br/",
-                      "https://www.amazon.com.br/"]
+                      "https://www.amazon.com.br/", "https://www.rappi.com.br/lojas/tipo/supermercados"]
 
 
 def configurar(cfg, filtro: str = ""):
@@ -78,8 +78,9 @@ def configurar(cfg, filtro: str = ""):
     for u in paginas[1:]:
         ctx.new_page().goto(u, wait_until="domcontentloaded")
     print("\nNo navegador que abriu:\n"
-          "  1. Mercado Livre, Shopee e Vila das Frutas: entre na sua conta (o ML usa o endereço\n"
-          "     padrão da conta para o frete; na Vila das Frutas, escolha Entrega e o endereço de casa).\n"
+          "  1. Mercado Livre, Shopee, Vila das Frutas e Rappi: entre na sua conta (o ML usa o endereço\n"
+          "     padrão da conta para o frete; na Vila das Frutas, escolha Entrega e o endereço de casa;\n"
+          "     no Rappi, o endereço de casa — é ele que escolhe a loja Assaí e a taxa).\n"
           f"  2. Magalu, Casas Bahia e Carrefour: informe o CEP {cfg['cep']} se pedirem.\n"
           "  3. Feche a janela do navegador quando terminar.\n")
     try:
