@@ -1,0 +1,20 @@
+# Criado pelo formulário, pedido #6. Para mudar, use o link "editar" da página:
+# ele reabre o formulário preenchido. Editar este arquivo à mão também funciona.
+
+nome = "Colchão Guldi Casal"
+titulo = "Colchão Guldi Casal"
+modo = "descoberta"
+intervalo_minimo_horas = 12
+termos = ["colchão guldi casal"]
+
+[regras]
+incluir = []
+excluir = []
+
+[pedido]
+numero = 6
+termos = "colchão guldi casal"
+precisa = ""
+exclui = ""
+tamanho = ""
+pack = ""
