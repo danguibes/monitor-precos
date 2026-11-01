@@ -210,7 +210,12 @@ def main(argv):
         configurar(monitores[0]["cfg"], filtro)
         return 0
 
-    if "--publicar" in argv:  # só republica, sem coletar
+    if "--publicar" in argv:  # só republica, sem coletar; a referência do Augustinus não depende da coleta
+        aug = ler_augustinus()
+        for m in monitores:
+            est = carregar_json(m["estado"], {})
+            atualizar_referencia(m, est, aug)
+            salvar_json(m["estado"], est)
         publicar_se_ligado(monitores, [])
         return 0
 

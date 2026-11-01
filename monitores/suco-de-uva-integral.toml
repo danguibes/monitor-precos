@@ -10,12 +10,12 @@ termos = ["suco de uva integral", "suco de uva"]
 [regras]
 incluir = ["\\b[uúùü]v[aáàâã]\\b"]
 volume_ml = [850, 2100]  # 1 L, 1,5 L e 2 L; compara por litro
-excluir = ["n[eéèê][cç]t[aáàâã]r", "r[eéèê]fr[eéèê]s[cç][oóòôõ]", "\\bp[oóòôõ]\\b", "[cç][oóòôõ]n[cç][eéèê]ntr[aáàâã]d[oóòôõ]", "r[eéèê]fr[iíì]g[eéèê]r[aáàâã]nt[eéèê]", "m[aáàâã][cç][aáàâã]|l[aáàâã]r[aáàâã]nj[aáàâã]|m[oóòôõ]r[aáàâã]ng[oóòôõ]|[aáàâã][cç][eéèê]r[oóòôõ]l[aáàâã]"]
+excluir = ["n[eéèê][cç]t[aáàâã]r", "r[eéèê]fr[eéèê]s[cç][oóòôõ]", "\\bp[oóòôõ]\\b", "\\bfr[uúùü]t\\b", "[cç][oóòôõ]n[cç][eéèê]ntr[aáàâã]d[oóòôõ]", "r[eéèê]fr[iíì]g[eéèê]r[aáàâã]nt[eéèê]", "m[aáàâã][cç][aáàâã]|l[aáàâã]r[aáàâã]nj[aáàâã]|m[oóòôõ]r[aáàâã]ng[oóòôõ]|[aáàâã][cç][eéèê]r[oóòôõ]l[aáàâã]"]
 
 [pedido]
 numero = 0
 termos = "suco de uva integral\nsuco de uva"
 precisa = "uva"
-exclui = "néctar\nrefresco\npó\nconcentrado\nrefrigerante\nmaçã ou laranja ou morango ou acerola"
+exclui = "néctar\nrefresco\npó\nconcentrado\nrefrigerante\nfrut\nmaçã ou laranja ou morango ou acerola"
 tamanho = ""
 pack = ""

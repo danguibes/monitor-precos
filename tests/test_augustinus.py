@@ -119,3 +119,18 @@ def test_link_abre_o_conceito_com_o_nome_do_monitor_e_nao_o_da_ultima_compra():
     cs = referencia(generico + [dupla, neutro], cfg, HOJE)["conceitos"]
     assert [c["id"] for c in cs] == ["fd", "fdn", "gen"]           # o nome do monitor primeiro, o genérico por último
     assert cs[2]["compras"] == 3 and cs[0]["mediana"] == round(15.5 / 12, 4)
+
+
+def test_consumo_e_economia_por_mes():
+    """Duas compras de 6 garrafas de 1,5 L em ~4 meses de cupons: 18 L e o que se gastou, por mês."""
+    from precos.augustinus import economia_mensal, entregue_por_unidade
+    antiga = dict(MINALBA, data_emissao="2026-07-03")
+    ref = referencia([antiga, MINALBA], AGUA, HOJE)
+    meses = (HOJE - date(2026, 7, 3)).days / (365 / 12)   # desde o primeiro cupom, não o ano cheio
+    assert ref["consumo_mes"] == round(18 / meses, 3) and ref["gasto_mes"] == round(3.59 * 12 / meses, 2)
+    o = oferta("Atacadão", "x", "Água Mineral Minalba com Gás 1,5 L Pack 6", "Atacadão", 15.0, 15.0, 3.0, "", "", "")
+    p = entregue_por_unidade(o, AGUA)
+    assert p == pytest.approx(o["total_pix"] / 9)
+    assert economia_mensal(ref, p) == round(ref["gasto_mes"] - ref["consumo_mes"] * p, 2)
+    assert economia_mensal(ref, 99.0) < 0                     # mais caro aqui: a conta diz, não esconde
+    assert entregue_por_unidade(dict(o, frete=None), AGUA) is None

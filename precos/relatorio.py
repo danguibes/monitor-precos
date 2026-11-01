@@ -209,7 +209,7 @@ def quadro_augustinus(ref, cfg, melhores) -> str:
     """O que a casa paga, uma vez por página: a mediana na unidade do monitor, a melhor oferta
     daqui na mesma unidade e um link para cada conceito do Augustinus (mais de um quando as
     compras se espalham por vários, como o papel)."""
-    from .augustinus import comparar
+    from .augustinus import economia_mensal, entregue_por_unidade
     if unidade_de_comparacao(cfg) is None:
         return ""
     e = html.escape
@@ -222,15 +222,25 @@ def quadro_augustinus(ref, cfg, melhores) -> str:
         nome = f'{e(c["nome"])} · {c["compras"]} compra(s) · {brl_un(c["mediana"])}{un}'
         itens.append(f'<li><a href="{e(ref["app"])}/#/precos/{e(c["id"])}" target="_blank" rel="noopener">{nome}</a></li>'
                      if ref.get("app") else f"<li>{nome}</li>")
-    aqui = ""
-    cands = [(m, comparar(m, ref, cfg)) for m in melhores if m]
-    cands = [(m, c) for m, c in cands if c and c["com_frete"] is not None]
+    aqui = mes = ""
+    cands = [(m, entregue_por_unidade(m, cfg)) for m in melhores if m]
+    cands = [(m, p) for m, p in cands if p]
     if cands:
-        m, c = min(cands, key=lambda mc: mc[1]["com_frete"])
-        aqui = (f'<div>Melhor aqui: <b>{brl_un(c["com_frete"])}{un}</b> entregue ({e(m["loja"])}), '
-                f'{1 - c["com_frete"] / ref["mediana"]:.0%} abaixo.</div>')
+        m, p = min(cands, key=lambda mp: mp[1])
+        dif = 1 - p / ref["mediana"]
+        aqui = (f'<div>Melhor aqui: <b>{brl_un(p)}{un}</b> entregue ({e(m["loja"])}), '
+                f'{abs(dif):.0%} {"abaixo" if dif >= 0 else "acima"}.</div>')
+        eco = economia_mensal(ref, p)
+        if eco is not None:
+            qtd = f'{ref["consumo_mes"]:.1f}'.replace(".", ",") if ref["unidade"] == "litro" else f'{ref["consumo_mes"]:.0f}'
+            conta = (f'economia de <b>{brl(eco)}/mês</b> (~{brl(eco * 12, 0)}/ano)' if eco > 0
+                     else f'sairia <b>{brl(-eco)}/mês mais caro</b>')
+            mes = (f'<div>Você leva ~{qtd}{un.replace("/", " ")}/mês e gasta {brl(ref["gasto_mes"])}/mês. '
+                   f'Pelo melhor daqui: {conta}.'
+                   f'<div class="det">Pelos cupons lidos desde {ref["desde"][8:10]}/{ref["desde"][5:7]}/{ref["desde"][:4]}; '
+                   f'compra sem cupom não entra, então o volume real pode ser maior.</div></div>')
     return (f'<aside class="aug"><div>No Augustinus você paga <b>{brl_un(ref["mediana"])}{un}</b> '
-            f'<span class="det">mediana de {ref["compras"]} compra(s) no último ano</span></div>{aqui}'
+            f'<span class="det">mediana de {ref["compras"]} compra(s) no último ano</span></div>{aqui}{mes}'
             f'<ul>{"".join(itens)}</ul></aside>')
 
 

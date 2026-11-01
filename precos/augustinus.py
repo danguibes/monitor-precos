@@ -92,6 +92,21 @@ def preco_por_unidade(c: dict, unidade: str) -> float | None:
     return preco / n if n else None
 
 
+def unidades_da_compra(c: dict, unidade: str) -> float | None:
+    """Litros ou unidades que a linha do cupom levou para casa (quantidade × o de uma embalagem)."""
+    q = _num(c.get("quantidade")) or 1
+    if unidade == "litro":
+        base = _num(c.get("quantidade_base"))
+        return q * base / 1000 if base and str(c.get("unidade_base") or "").lower() == "ml" else None
+    n = quantidade_explicita(c.get("descricao") or "")
+    return q * n if n else None
+
+
+def _dia(c: dict) -> date:
+    d = c["data_emissao"]
+    return d.date() if hasattr(d, "date") else date.fromisoformat(str(d)[:10])
+
+
 def casa_com_o_monitor(c: dict, cfg: dict) -> bool:
     """As palavras do monitor sobre o nome do catálogo + o texto do cupom; e o volume de UMA unidade."""
     regras = dict(cfg.get("regras") or {})
@@ -115,22 +130,48 @@ def referencia(compras: list[dict], cfg: dict, hoje: date | None = None, dias: i
     if not unidade:
         return None
     hoje = hoje or date.today()
-    pontos = []
+    pontos, levado, gasto = [], 0.0, 0.0
     for c in compras:
-        d = c["data_emissao"]
-        d = d.date() if hasattr(d, "date") else date.fromisoformat(str(d)[:10])
+        d = _dia(c)
         if d < hoje - timedelta(days=dias) or not casa_com_o_monitor(c, cfg):
             continue
         ppu = preco_por_unidade(c, unidade)
         if ppu:
             pontos.append((d, ppu, str(c.get("conceito_id") or ""), c.get("produto") or ""))
+            levado += unidades_da_compra(c, unidade) or 0
+            gasto += _num(c.get("valor_total")) or 0
     if not pontos:
         return None
     pontos.sort()
+    # o consumo se divide pelo tempo em que a casa registra cupons, não pelo ano cheio:
+    # quem começou a usar o Augustinus há 3 meses não compra 1/4 do que compra
+    inicio = max(hoje - timedelta(days=dias), min(_dia(c) for c in compras))
+    meses = max((hoje - inicio).days, 30) / (365 / 12)
     return {"unidade": unidade, "mediana": round(statistics.median(p[1] for p in pontos), 4),
             "minimo": round(min(p[1] for p in pontos), 4), "compras": len(pontos),
             "ultima": pontos[-1][0].isoformat(), "conceitos": conceitos(pontos, cfg),
-            "limiar": float(cfg.get("limiar_augustinus", LIMIAR_PADRAO))}
+            "limiar": float(cfg.get("limiar_augustinus", LIMIAR_PADRAO)),
+            "consumo_mes": round(levado / meses, 3), "gasto_mes": round(gasto / meses, 2),
+            "desde": inicio.isoformat()}
+
+
+def entregue_por_unidade(oferta: dict, cfg: dict) -> float | None:
+    """Total Pix com frete, na unidade do monitor; None sem frete conhecido ou sem contagem no título."""
+    n = unidades_na_oferta(oferta["produto"], cfg)
+    if not n or oferta.get("frete") is None or not oferta.get("total_pix"):
+        return None
+    return oferta["total_pix"] / n
+
+
+def economia_mensal(ref: dict | None, preco_entregue: float | None) -> float | None:
+    """Quanto o mês sairia mais barato comprando o mesmo volume pelo preço entregue daqui.
+
+    Negativo quando sai mais caro. Usa o que a casa GASTOU (valor_total dos cupons),
+    não a mediana: quem compra muito na promoção paga abaixo da própria mediana.
+    """
+    if not ref or not preco_entregue or not ref.get("consumo_mes"):
+        return None
+    return round(ref["gasto_mes"] - ref["consumo_mes"] * preco_entregue, 2)
 
 
 def conceitos(pontos: list[tuple], cfg: dict, limite: int = 3) -> list[dict]:
