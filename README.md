@@ -213,7 +213,27 @@ Credenciais na seção `[augustinus]` do `local.toml` (host, porta, usuario,
 senha, banco, app). Sem essa seção, ou com o banco fora do ar, o monitor segue
 normalmente e mantém a última referência.
 
-## Arquivos
+## Nuvem ou casa: o que foi medido (31/10/2026)
+
+`ferramentas/sonda_ip.py` (requisição simples) e `ferramentas/sonda_navegador.py`
+(o Chrome aberto como o monitor abre, perfil novo e sem login, duas passadas)
+rodaram daqui (Claro, residencial) e de um servidor do GitHub Actions (Microsoft,
+EUA), com CEP genérico. Pelo navegador:
+
+| loja | casa | nuvem |
+|---|---|---|
+| Amazon, Vila das Frutas | produtos | produtos |
+| Mercado Livre | produtos (sem login) | captcha |
+| Magalu | produtos | "Não é possível acessar a página" (403) |
+| Carrefour | produtos | "Acesso Bloqueado" (403) |
+| Casas Bahia | produtos; 403 na 2ª passada | página vazia |
+
+VTEX e Pão de Açúcar, por API, respondem igual nos dois. Mudaram dois fatores
+juntos (o IP e o sistema, Windows aqui e Linux lá), e a nuvem medida foi nos EUA,
+não em São Paulo. Sem as duas opções de `navegador.py` que escondem a automação,
+o Magalu recusa até daqui, e o Mercado Livre pede captcha.
+
+
 
 ```
 monitor.py              entrada
