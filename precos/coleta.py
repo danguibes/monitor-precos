@@ -4,8 +4,8 @@ from __future__ import annotations
 from datetime import datetime
 
 from .filtros import criar_filtro
-from .lojas import (amazon, carrefour, casas_bahia, magalu, mercado_livre, pao_de_acucar, shopee,
-                    vila_das_frutas, vtex)
+from .lojas import (amazon, carrefour, casas_bahia, magalu, mercado_livre, mercado_livre_api, pao_de_acucar,
+                    shopee, vila_das_frutas, vtex)
 from .navegador import abrir_navegador
 from .unidades import montar_pack
 
@@ -64,10 +64,26 @@ def coletar_tudo(cfg: dict, estado: dict, log, com_navegador: bool = True):
             r = COLETORES_API[loja](cfg, produtos, data, filtro, erros)
             log(f"    {len(r)} ofertas")
             ofertas += r
-    if com_navegador and cfg.get("lojas_navegador"):
+    # Monitor de marca: o catálogo do Mercado Livre pela API oficial, sem login nem captcha.
+    #   mercado_livre = "ambos": API e navegador (o catálogo não tem tudo: em 01/11 o
+    #                            colchão Emma avulso só estava fora dele);
+    #   mercado_livre = "api":   só a API — o Mercado Livre sai do navegador.
+    # Sem acesso à API, o navegador segue nesta rodada e a página avisa.
+    nav_lojas = list(cfg.get("lojas_navegador", []))
+    if cfg.get("mercado_livre") in ("api", "ambos") and "Mercado Livre" in nav_lojas:
+        log("  Mercado Livre (API)...")
+        try:
+            r = mercado_livre_api.coletar(cfg, produtos, data, filtro, erros)
+            log(f"    {len(r)} ofertas")
+            ofertas += r
+            if cfg["mercado_livre"] == "api":
+                nav_lojas.remove("Mercado Livre")
+        except mercado_livre_api.SemAcesso as e:
+            erros.append(f"Mercado Livre: API indisponível ({e}); consultado pelo navegador")
+    if com_navegador and nav_lojas:
         log("Consultando lojas pelo navegador...")
         try:
-            nav, erros_nav = coletar_navegador(cfg, produtos, data, filtro, log)
+            nav, erros_nav = coletar_navegador(dict(cfg, lojas_navegador=nav_lojas), produtos, data, filtro, log)
             ofertas += nav
             erros += erros_nav
         except ImportError:

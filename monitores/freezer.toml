@@ -7,6 +7,8 @@ modo = "acompanhado"
 voltagem = "127"  # 127 ou 220; bivolt sempre entra
 intervalo_minimo_horas = 6
 
+mercado_livre = "ambos"  # catálogo do Mercado Livre pela API oficial, além do navegador; "api" usa só a API
+
 [[produtos]]
 modelo = "Electrolux FEI27T"
 busca = "FEI27T"

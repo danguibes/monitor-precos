@@ -16,13 +16,45 @@ from ..base import num, oferta
 from ..navegador import ir, texto
 
 
-def ler_jsonld(blocos: list[str]):
-    """{"preco", "frete", "dias"} da oferta principal, ou None."""
+def _variante(grupo: dict, url: str, aceita):
+    """O Product de um ProductGroup que é o desta página.
+
+    Página com variantes (colchão: casal, queen, solteirão) traz o JSON-LD como
+    ProductGroup, com um preço por variante — até 01/11 o leitor só conhecia o
+    Product e os colchões davam zero ofertas, calados. Vale a variante com o id
+    (/p/MLB...) da página; senão a mais barata cujo nome passa nas regras do
+    monitor (que já tiram queen, king, solteiro); senão nenhuma — nunca o preço
+    de outro tamanho.
+    """
+    def oferta_de(v):
+        o = v.get("offers") or {}
+        return (o[0] if o else {}) if isinstance(o, list) else o
+
+    vs = [v for v in grupo.get("hasVariant") or [] if isinstance(v, dict) and oferta_de(v).get("price")]
+    pid = re.search(r"/p/(MLB\d+)", url or "")
+    if pid:
+        for v in vs:
+            if re.search(rf"/p/{pid.group(1)}\b", oferta_de(v).get("url") or v.get("url") or ""):
+                return v
+    ok = [v for v in vs if aceita and aceita(v.get("name") or "")]
+    return min(ok, key=lambda v: float(oferta_de(v)["price"])) if ok else None
+
+
+def ler_jsonld(blocos: list[str], url: str = "", aceita=None):
+    """{"preco", "frete", "dias", "nome"} da oferta principal, ou None.
+
+    `url` (a da página aberta) e `aceita` (o filtro do monitor sobre um título)
+    escolhem a variante quando o bloco é um ProductGroup.
+    """
     for bloco in blocos:
         try:
             j = json.loads(bloco)
         except ValueError:
             continue
+        if isinstance(j, dict) and j.get("@type") == "ProductGroup":
+            j = _variante(j, url, aceita)
+            if j is None:
+                continue
         ofs = (j.get("offers") if isinstance(j, dict) else None) or {}
         if isinstance(ofs, list):
             ofs = ofs[0] if ofs else {}
@@ -38,7 +70,8 @@ def ler_jsonld(blocos: list[str]):
         dias = [(tempo.get(k) or {}).get("maxValue") for k in ("handlingTime", "transitTime")]
         return {"preco": float(ofs["price"]),
                 "frete": float(taxa) if taxa is not None else None,
-                "dias": sum(d for d in dias if d) or None}
+                "dias": sum(d for d in dias if d) or None,
+                "nome": j.get("name") or "", "url": ofs.get("url") or j.get("url") or ""}
     return None
 
 
@@ -97,9 +130,17 @@ def coletar(page, cfg, produtos, data, filtros, erros, max_por_modelo=4):
                     "script[type='application/ld+json']", "es => es.map(e => e.textContent)")
             except Exception:
                 blocos = []
-            ld = ler_jsonld(blocos)
+            aceita = lambda nome: filtros(nome, prod)
+            ld = ler_jsonld(blocos, page.url, aceita)
             if ld is None:
                 continue
+            outra = re.search(r"/p/(MLB\d+)", ld["url"])
+            if outra and outra.group(1) not in page.url:
+                # a variante certa (o tamanho do monitor) não é a desta página: o texto daqui
+                # (cartão, "frete grátis") seria o de outra variante — abre a dela
+                if not ir(page, ld["url"], espera=3):
+                    continue
+                url = ld["url"]
             t = texto(page)
             if prod.get("padrao") and not re.search(prod["padrao"], t[:6000] + tit, re.I):
                 continue
@@ -107,6 +148,6 @@ def coletar(page, cfg, produtos, data, filtros, erros, max_por_modelo=4):
             frete = ld["frete"] if ld["frete"] is not None else (0.0 if gratis else None)
             if not prazo and ld["dias"]:
                 prazo = f"até {ld['dias']} dias"
-            ofertas.append(oferta("Mercado Livre", prod["modelo"], tit, vend, cartao or ld["preco"],
+            ofertas.append(oferta("Mercado Livre", prod["modelo"], ld["nome"] or tit, vend, cartao or ld["preco"],
                                   ld["preco"], frete, prazo, url, data))
     return ofertas

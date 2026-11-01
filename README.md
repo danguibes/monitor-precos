@@ -130,6 +130,31 @@ No **modo acompanhado** cada item de `produtos` tem `busca` (o termo) e `padrao`
 
 ## Lojas
 
+**Mercado Livre pela API oficial, nos monitores de marca.** Com `mercado_livre =
+"ambos"` no toml (hoje: freezer e os quatro colchões), o catálogo do Mercado Livre
+vem também pela API — sem navegador, sem login, sem captcha —, além do navegador;
+`"api"` usa só a API. Medido em 01/11 com o app próprio (credenciais em
+`[mercadolivre]` do `local.toml`; `ferramentas/sonda_api_meli.py` repete a medição):
+
+- a busca aberta (`/sites/MLB/search`) e a ficha do anúncio (`/items/{id}`) dão 403
+  mesmo com token — por isso só **produto de catálogo** entra;
+- `/products/search` e `/products/{id}/items` respondem com o token do app;
+- o frete para o CEP (`/items/{id}/shipping_options`) responde **sem** token, e dá
+  403 com ele.
+
+O catálogo não tem tudo: no Emma, os colchões avulsos estavam no catálogo **sem
+anúncio**, e o anúncio de R$ 1.514,97 que o navegador achou estava fora dele — por
+isso "ambos" e não "api". No Guldi, o navegador trouxe zero numa rodada e a API onze.
+Sem acesso à API, o navegador segue e a página avisa. Editar o monitor pelo
+formulário preserva `mercado_livre`, `pausado`, `unidade_nome` e `limiar_augustinus`.
+
+**Página com variantes no Mercado Livre (navegador).** Colchão e outros produtos
+com tamanho ou cor trazem o JSON-LD como `ProductGroup`, um preço por variante.
+Até 01/11 o leitor só conhecia `Product`, e **todo colchão dava zero ofertas,
+calado**. Agora vale a variante com o id da página (`/p/MLB…`); senão a mais barata
+cujo nome passa nas regras do monitor (que tiram queen, king, solteiro), abrindo a
+página dela; senão nenhuma — nunca o preço de outro tamanho.
+
 **Lojas em que o monitor entra com a sua conta** (Mercado Livre, Vila das
 Frutas) esperam `pausa_lojas_com_login` segundos a mais por página (6, em
 config.toml): um bloqueio ali não fica na loja, chega à conta. Ao ampliar para

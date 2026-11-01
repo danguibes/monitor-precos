@@ -7,14 +7,16 @@ modo = "descoberta"
 intervalo_minimo_horas = 12
 termos = ["BF colchões casal"]
 
+mercado_livre = "ambos"  # catálogo do Mercado Livre pela API oficial, além do navegador; "api" usa só a API
+
 [regras]
 incluir = ["\\bbf\\b"]
-excluir = ["s[oóòôõ]lt[eéèê][iíì]r[oóòôõ]", "q[uúùü][eéèê][eéèê]n", "k[iíì]ng", "s[oóòôõ]lt[eéèê][iíì]r[aáàâã][oóòôõ]", "v[iíì][uúùü]v[aáàâã]", "pr[oóòôõ]t[eéèê]t[oóòôõ]r", "[cç][aáàâã]m[aáàâã]\\s*b[oóòôõ]x", "^\\s*p[iíì]ll[oóòôõ]w\\s*t[oóòôõ]p"]
+excluir = ["s[oóòôõ]lt[eéèê][iíì]r[oóòôõ]", "q[uúùü][eéèê][eéèê]n", "k[iíì]ng", "s[oóòôõ]lt[eéèê][iíì]r[aáàâã][oóòôõ]", "v[iíì][uúùü]v[aáàâã]", "pr[oóòôõ]t[eéèê]t[oóòôõ]r", "[cç][aáàâã]m[aáàâã]\\s*b[oóòôõ]x", "^\\s*p[iíì]ll[oóòôõ]w\\s*t[oóòôõ]p", "[cç][aáàâã]m[aáàâã]\\s*b[aáàâã][uúùü]", "[iíì]nf[aáàâã]nt[iíì]l"]
 
 [pedido]
 numero = 9
 termos = "BF colchões casal"
 precisa = "bf"
-exclui = "solteiro\nqueen\nking\nsolteirão\nviúva\nprotetor\ncama box\ncomeça com pillow top"
+exclui = "solteiro\nqueen\nking\nsolteirão\nviúva\nprotetor\ncama box\ncomeça com pillow top\ncama baú\ninfantil"
 tamanho = ""
 pack = ""

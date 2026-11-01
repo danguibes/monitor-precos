@@ -141,6 +141,23 @@ def montar_toml(r: dict, numero: int) -> tuple[str, str]:
     return id_, conteudo
 
 
+# O formulário não sabe destas chaves; editar pelo formulário reescreve o arquivo e as perderia
+# (antes de 01/11, editar um monitor pausado o despausava).
+PRESERVAR = ("pausado", "mercado_livre", "unidade_nome", "limiar_augustinus")
+
+
+def preservar(novo: str, antigo: str) -> str:
+    """O .toml novo, com as chaves de PRESERVAR que o antigo tinha, no topo, antes da primeira tabela."""
+    velho = tomllib.loads(antigo)
+    extras = [f"{k} = {json.dumps(velho[k], ensure_ascii=False)}" for k in PRESERVAR if k in velho]
+    if not extras:
+        return novo
+    linhas = novo.splitlines()
+    i = next((n for n, l in enumerate(linhas) if l.lstrip().startswith("[")), len(linhas))
+    linhas[i:i] = extras + [""]
+    return "\n".join(linhas).rstrip("\n") + "\n"
+
+
 # ---------------------------------------------------------------- pausar, retomar, excluir
 def acao_do_pedido(r: dict, titulo: str) -> str:
     """A ação vem do campo do formulário; se ele não veio preenchido, do título ("Pausar: Água")."""
@@ -293,6 +310,8 @@ def atender(repo: str, log) -> tuple[list[str], list[str]]:
             log(f"Pedido #{n}: {e}")
             continue
         alterando = arq.exists()
+        if alterando:
+            conteudo = preservar(conteudo, arq.read_text(encoding="utf-8"))
         arq.write_text(conteudo, encoding="utf-8")
         rel = arq.relative_to(RAIZ).as_posix()
         try:

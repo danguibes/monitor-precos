@@ -6,6 +6,7 @@ no texto inteiro, e o "Frete grátis" vinha dos anúncios relacionados — todas
 as ofertas saíam "frete não informado" e com vendedor vazio.
 """
 import json
+import re
 from pathlib import Path
 
 from precos.lojas.mercado_livre import ler_caixa, ler_jsonld
@@ -22,7 +23,8 @@ def txt(nome):
 
 
 def test_mercado_livre_frete_pago_vem_do_jsonld():
-    assert ld("fei27t-frete-pago") and ler_jsonld(ld("fei27t-frete-pago")) == {"preco": 2579.25, "frete": 256.99, "dias": 12}
+    r = ler_jsonld(ld("fei27t-frete-pago"))
+    assert {k: r[k] for k in ("preco", "frete", "dias")} == {"preco": 2579.25, "frete": 256.99, "dias": 12}
 
 
 def test_mercado_livre_caixa_de_compra_da_cartao_vendedor_e_prazo():
@@ -48,7 +50,8 @@ def test_mercado_livre_sem_jsonld_de_oferta():
 
 def test_mercado_livre_layout_de_mercado_sem_comprar_agora():
     """Item de mercado só tem "Adicionar ao carrinho"; a caixa se acha pelo link de entrega."""
-    assert ler_jsonld(ld("agua-mercado")) == {"preco": 24.17, "frete": 20.99, "dias": 2}
+    r = ler_jsonld(ld("agua-mercado"))
+    assert {k: r[k] for k in ("preco", "frete", "dias")} == {"preco": 24.17, "frete": 20.99, "dias": 2}
     cartao, vend, prazo, gratis = ler_caixa(txt("agua-mercado"))
     assert (vend, prazo, gratis) == ("Premium", "Chegará amanhã sábado", False)
 
@@ -57,3 +60,34 @@ def test_mercado_livre_fora_de_estoque_nao_vira_oferta():
     blocos = ld("fei27t-frete-pago")
     j = json.loads(blocos[0]); j["offers"]["availability"] = "https://schema.org/OutOfStock"
     assert ler_jsonld([json.dumps(j)]) is None
+
+
+# Página com variantes (colchão): o JSON-LD é um ProductGroup, um preço por tamanho.
+# Até 01/11 o leitor só conhecia Product, e todo colchão dava zero ofertas, calado.
+GRUPO = json.dumps({"@type": "ProductGroup", "name": "Colchão Guldi Duplo Plus D28", "hasVariant": [
+    {"@type": "Product", "name": "Colchão Casal Guldi Duplo Plus D28 (16x138x188)",
+     "offers": {"price": 852.03, "availability": "https://schema.org/InStock",
+                "url": "https://www.mercadolivre.com.br/colchao-casal-guldi/p/MLB36229349"}},
+    {"@type": "Product", "name": "Colchão Queen Guldi Duplo Plus D28 (16x158x198)",
+     "offers": {"price": 1219.88, "availability": "https://schema.org/InStock",
+                "url": "https://www.mercadolivre.com.br/colchao-queen-guldi/p/MLB36768447"}},
+    {"@type": "Product", "name": "Colchão Solteirão King Guldi Duplo Plus D28",
+     "offers": {"price": 779.95, "availability": "https://schema.org/InStock",
+                "url": "https://www.mercadolivre.com.br/colchao-solteirao-guldi/p/MLB49485085"}},
+]})
+SEM_QUEEN_NEM_SOLTEIRO = lambda nome: not re.search(r"queen|king|solteir", nome, re.I)
+
+
+def test_product_group_vale_a_variante_da_pagina():
+    r = ler_jsonld([GRUPO], "https://www.mercadolivre.com.br/colchao-queen-guldi/p/MLB36768447#x", SEM_QUEEN_NEM_SOLTEIRO)
+    assert r["preco"] == 1219.88 and "Queen" in r["nome"]          # o id da página manda, mesmo sendo queen
+
+
+def test_product_group_sem_id_vale_a_mais_barata_que_passa_nas_regras():
+    r = ler_jsonld([GRUPO], "https://lista.mercadolivre.com.br/x", SEM_QUEEN_NEM_SOLTEIRO)
+    assert r["preco"] == 852.03 and r["url"].endswith("/p/MLB36229349")   # o solteirão é mais barato, mas sai
+
+
+def test_product_group_sem_variante_aceita_fica_de_fora():
+    assert ler_jsonld([GRUPO], "", lambda nome: False) is None
+    assert ler_jsonld([GRUPO]) is None                                     # sem regra nem id: não chuta tamanho
