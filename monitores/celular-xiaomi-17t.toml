@@ -8,13 +8,13 @@ intervalo_minimo_horas = 12
 termos = ["Celular Xiaomi 17T"]
 
 [regras]
-incluir = ["(?<!\\d)512(?!\\d)"]
-excluir = ["(?<!\\d)256(?!\\d)"]
+incluir = ["(?<!\\d)512(?!\\d)", "\\b17t\\b"]
+excluir = ["(?<!\\d)256(?!\\d)", "17t\\s*pr[oóòôõ]"]
 
 [pedido]
 numero = 10
 termos = "Celular Xiaomi 17T"
-precisa = "512"
-exclui = "256"
+precisa = "512\n17t"
+exclui = "256\n17t pro"
 tamanho = ""
 pack = ""

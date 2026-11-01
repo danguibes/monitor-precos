@@ -21,7 +21,10 @@ body:
     id: termos
     attributes:
       label: Como procurar
-      description: Um termo por linha, do jeito que você digitaria na busca de uma loja. Termos amplos funcionam melhor.
+      description: |
+        Um termo por linha, do jeito que você digitaria na busca de uma loja. Termos amplos funcionam melhor.
+        Isto só diz às lojas o que buscar, e NÃO filtra: a busca devolve parecidos (outro modelo, outra marca).
+        O que o anúncio é obrigado a ter (marca, modelo, "17T") vai em "Precisa conter", logo abaixo.
       placeholder: |
         detergente liquido
         detergente 500ml
