@@ -15,3 +15,10 @@ nao_publicar = ["Rua Exemplo", "ap 00"]
 # só o monitor-precos; permissões Contents e Issues em "Read and write".
 # [github]
 # token = "github_pat_..."
+
+# Opcional: app do Mercado Livre (developers.mercadolivre.com.br/devcenter), só para
+# ferramentas/sonda_api_meli.py por enquanto. O token do app vem com escopo de
+# escrita na sua conta: guarde a chave como senha.
+# [mercadolivre]
+# client_id = "..."
+# client_secret = "..."
