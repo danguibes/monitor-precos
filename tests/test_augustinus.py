@@ -134,3 +134,11 @@ def test_consumo_e_economia_por_mes():
     assert economia_mensal(ref, p) == round(ref["gasto_mes"] - ref["consumo_mes"] * p, 2)
     assert economia_mensal(ref, 99.0) < 0                     # mais caro aqui: a conta diz, não esconde
     assert entregue_por_unidade(dict(o, frete=None), AGUA) is None
+
+
+def test_consumo_so_desde_a_data_da_config():
+    """Antes de agosto a casa não lia todo cupom: a compra de julho entra no preço, não no consumo."""
+    antiga = dict(MINALBA, data_emissao="2026-07-03")
+    ref = referencia([antiga, MINALBA], dict(AGUA, augustinus_consumo_desde="2026-08-01"), HOJE)
+    meses = (HOJE - date(2026, 8, 1)).days / (365 / 12)
+    assert ref["compras"] == 2 and ref["consumo_mes"] == round(9 / meses, 3) and ref["desde"] == "2026-08-01"

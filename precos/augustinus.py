@@ -131,6 +131,11 @@ def referencia(compras: list[dict], cfg: dict, hoje: date | None = None, dias: i
         return None
     hoje = hoje or date.today()
     pontos, levado, gasto = [], 0.0, 0.0
+    # o preço olha o ano; o consumo, só desde quando a casa passou a ler todo cupom
+    # (antes disso, mês sem nota não é mês sem compra)
+    desde = cfg.get("augustinus_consumo_desde")
+    inicio = max(hoje - timedelta(days=dias), min(_dia(c) for c in compras),
+                 date.fromisoformat(desde) if desde else date.min)
     for c in compras:
         d = _dia(c)
         if d < hoje - timedelta(days=dias) or not casa_com_o_monitor(c, cfg):
@@ -138,14 +143,12 @@ def referencia(compras: list[dict], cfg: dict, hoje: date | None = None, dias: i
         ppu = preco_por_unidade(c, unidade)
         if ppu:
             pontos.append((d, ppu, str(c.get("conceito_id") or ""), c.get("produto") or ""))
-            levado += unidades_da_compra(c, unidade) or 0
-            gasto += _num(c.get("valor_total")) or 0
+            if d >= inicio:
+                levado += unidades_da_compra(c, unidade) or 0
+                gasto += _num(c.get("valor_total")) or 0
     if not pontos:
         return None
     pontos.sort()
-    # o consumo se divide pelo tempo em que a casa registra cupons, não pelo ano cheio:
-    # quem começou a usar o Augustinus há 3 meses não compra 1/4 do que compra
-    inicio = max(hoje - timedelta(days=dias), min(_dia(c) for c in compras))
     meses = max((hoje - inicio).days, 30) / (365 / 12)
     return {"unidade": unidade, "mediana": round(statistics.median(p[1] for p in pontos), 4),
             "minimo": round(min(p[1] for p in pontos), 4), "compras": len(pontos),
