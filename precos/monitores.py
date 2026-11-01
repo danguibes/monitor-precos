@@ -96,7 +96,7 @@ def montar(id_: str, proprio: dict, geral: dict, lojas: dict, local: dict) -> di
     reg = registro_de_lojas(lojas)
     pasta = pastas(lojas).get(proprio.get("pasta") or "")
     if pasta:
-        dela = set(pasta.get("lojas") or [])
+        dela = set(pasta.get("lojas") or []) | set(lojas.get("sempre") or [])
         reg = {"lojas": [l for l in reg["lojas"] if l["nome"] in dela],
                "lojas_api": [n for n in reg["lojas_api"] if n in dela],
                "lojas_navegador": [n for n in reg["lojas_navegador"] if n in dela]}

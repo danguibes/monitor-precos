@@ -9,6 +9,11 @@
 # ATENÇÃO: as chaves soltas (api, navegador) ficam ANTES das tabelas [[vtex]].
 # Em TOML, chave escrita depois de uma tabela pertence a essa tabela.
 
+# Lojas que entram em TODA pasta, seja qual for o produto. A Shopee fica aqui
+# de antemão: só passa a ser consultada quando entrar no registro (hoje está
+# fora, ver o fim do arquivo); até lá, a linha não faz nada.
+sempre = ["Mercado Livre", "Amazon", "Magalu", "Shopee"]
+
 # Lojas com API própria, sem navegador (coletor em precos/lojas/)
 api = ["Pão de Açúcar"]
 
@@ -69,16 +74,16 @@ host = "www.obahortifruti.com.br"
 # para algum monitor dela. Loja que não está na pasta não é consultada — o que
 # poupa páginas nas lojas em que o monitor entra com a sua conta (Mercado Livre,
 # Vila das Frutas, Rappi). Loja nova entra no registro acima E na pasta.
+# As de `sempre`, no topo, valem em todas e não se repetem aqui.
 [pastas.eletronicos]
 nome = "Eletrônicos"
-lojas = ["Mercado Livre", "Amazon", "Magalu", "Casas Bahia", "Carrefour", "Fast Shop",
-         "Electrolux", "Consul", "Brastemp", "Compra Certa", "Midea"]
+lojas = ["Casas Bahia", "Carrefour", "Fast Shop", "Electrolux", "Consul", "Brastemp", "Compra Certa", "Midea"]
 
 [pastas.moveis]
 nome = "Móveis"
-lojas = ["Mercado Livre", "Amazon", "Magalu", "Casas Bahia", "Carrefour", "Fast Shop"]
+lojas = ["Casas Bahia", "Carrefour", "Fast Shop"]
 
 [pastas.mercado]
 nome = "Mercado"
 lojas = ["Pão de Açúcar", "Atacadão", "Assaí", "Oba Hortifruti", "Vila das Frutas", "Mambo",
-         "Carrefour", "Amazon", "Mercado Livre", "Magalu", "Fast Shop", "Casas Bahia"]
+         "Carrefour", "Fast Shop", "Casas Bahia"]
