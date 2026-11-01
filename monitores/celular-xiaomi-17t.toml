@@ -1,0 +1,20 @@
+# Criado pelo formulário, pedido #10. Para mudar, use o link "editar" da página:
+# ele reabre o formulário preenchido. Editar este arquivo à mão também funciona.
+
+nome = "Celular Xiaomi 17T"
+titulo = "Celular Xiaomi 17T"
+modo = "descoberta"
+intervalo_minimo_horas = 12
+termos = ["Celular Xiaomi 17T"]
+
+[regras]
+incluir = ["\\b512\\b"]
+excluir = ["\\b256\\b"]
+
+[pedido]
+numero = 10
+termos = "Celular Xiaomi 17T"
+precisa = "512"
+exclui = "256"
+tamanho = ""
+pack = ""
