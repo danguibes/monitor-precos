@@ -7,3 +7,11 @@ cep = "00000-000"
 # A publicação no GitHub Pages é barrada se qualquer um destes aparecer na
 # página gerada (o CEP acima já entra sozinho). Ponha rua, número, bairro.
 nao_publicar = ["Rua Exemplo", "ap 00"]
+
+# Opcional, e recomendado: um token do GitHub que só alcança este repositório.
+# Sem ele, o monitor (e o vigia, que fica ligado o tempo todo) usa o login geral
+# do gh, que alcança todos os seus repositórios. Crie em
+# github.com/settings/personal-access-tokens/new: "Only select repositories" com
+# só o monitor-precos; permissões Contents e Issues em "Read and write".
+# [github]
+# token = "github_pat_..."

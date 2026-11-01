@@ -12,9 +12,19 @@ import time
 from .base import PERFIL
 
 
+# Sites em que o perfil do monitor entra com a SUA conta: um bloqueio ali não fica
+# na loja, chega à conta. Cada página deles espera `pausa_lojas_com_login` segundos
+# a mais (config.toml). O Mercado Livre já pediu captcha com quatro monitores.
+COM_LOGIN = ("mercadolivre.com.br", "viladasfrutas.com.br")
+_pausa_com_login = 6.0
+
+
 def abrir_navegador(cfg: dict, visivel: bool | None = None):
     """Retorna (playwright, contexto). O chamador fecha os dois."""
     from playwright.sync_api import sync_playwright  # import tardio: só se usar
+
+    global _pausa_com_login
+    _pausa_com_login = float(cfg.get("pausa_lojas_com_login", _pausa_com_login))
 
     if visivel is None:
         visivel = bool(cfg.get("navegador_visivel", False))
@@ -39,7 +49,7 @@ def ir(page, url: str, espera: float = 2.5) -> bool:
         page.goto(url, wait_until="domcontentloaded", timeout=45000)
     except Exception:
         return False
-    time.sleep(espera)
+    time.sleep(espera + (_pausa_com_login if any(h in url for h in COM_LOGIN) else 0))
     return True
 
 

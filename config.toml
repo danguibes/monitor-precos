@@ -8,3 +8,5 @@ navegador_visivel = false          # true mostra a janela durante a coleta
 publicar = true                    # publica os relatórios, sem o CEP, no GitHub Pages
 vigia_minutos = 5                  # de quanto em quanto tempo o notebook olha o GitHub
                                    # (botão "Atualizar agora" e pedidos de monitor); 0 desliga
+pausa_lojas_com_login = 6          # segundos a mais por página no Mercado Livre e na Vila das Frutas,
+                                   # onde o monitor entra com a sua conta (um bloqueio ali chega à conta)

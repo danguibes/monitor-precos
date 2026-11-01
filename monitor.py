@@ -182,7 +182,10 @@ def vigiar() -> int:
 
 
 def main(argv):
+    token_proprio = mon.usar_token_do_monitor(mon.ler_toml(mon.LOCAL, obrigatorio=False))
     if "--vigiar" in argv:
+        log("Vigia: GitHub pelo token do monitor (só este repositório)." if token_proprio else
+            "Vigia: GitHub pelo login geral do gh (todos os repositórios); veja [github] no local.exemplo.toml.")
         return vigiar()
     if "--logon" in argv:
         atualizar_do_github()

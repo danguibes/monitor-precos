@@ -93,6 +93,15 @@ autor. Sem rede, cada falha vira uma linha no log e ele tenta de novo depois. Um
 segundo vigia não sobe (trava em `dados/vigia.lock`). Com o notebook desligado,
 o pedido espera o próximo logon.
 
+**Token só deste repositório.** Com `[github] token` no `local.toml` (um token
+"fine-grained" com acesso só ao monitor-precos, Contents e Issues em leitura e
+escrita), o monitor e o vigia usam só ele: `GH_TOKEN` para o `gh`, e para o `git`
+o token no cabeçalho, com a configuração de sistema ignorada e reposta sem as
+linhas `credential.*` (o Git Credential Manager tem o login que alcança todos os
+repositórios). Medido em 31/10: monitor-precos lê e empurra; yves e oclandestino
+dão 404 no `gh` e 403 no `git`. O log diz qual login o vigia usa ao subir. O token
+vence: quando vencer, as consultas falham com uma linha no log.
+
 Para parar o vigia até o próximo logon, encerre o `pythonw.exe` cuja linha de
 comando tem `--vigiar` (Gerenciador de Tarefas → Detalhes, coluna "Linha de
 comando"). Para não ligá-lo mais: `vigia_minutos = 0` no config.toml.
@@ -120,6 +129,12 @@ No **modo acompanhado** cada item de `produtos` tem `busca` (o termo) e `padrao`
 (regex que precisa aparecer no anúncio **e** na página do produto).
 
 ## Lojas
+
+**Lojas em que o monitor entra com a sua conta** (Mercado Livre, Vila das
+Frutas) esperam `pausa_lojas_com_login` segundos a mais por página (6, em
+config.toml): um bloqueio ali não fica na loja, chega à conta. Ao ampliar para
+muitos produtos, olhe o monitor.log atrás de "captcha" e "pede login".
+
 
 | como | lojas |
 |---|---|

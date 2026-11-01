@@ -38,6 +38,45 @@ def ler_toml(caminho: Path, obrigatorio: bool = True) -> dict:
         raise ConfiguracaoInvalida(f"{caminho.name}: {e}")
 
 
+def usar_token_do_monitor(local: dict) -> bool:
+    """Se local.toml tem [github] token, este processo e os git/gh que ele chamar usam só ele.
+
+    É um token de escopo fino, só do monitor-precos (issues e conteúdo). Sem ele,
+    valem o login do gh e o Git Credential Manager da máquina, que alcançam todos os
+    repositórios. Nada é gravado na configuração do git: são variáveis de ambiente
+    deste processo — GH_TOKEN para o gh, e para o git o token no cabeçalho de cada
+    requisição ao github.com (como faz o actions/checkout).
+
+    O Git Credential Manager com o login amplo vem da configuração de SISTEMA do
+    git, e o git recorre a ele quando uma requisição falha. Zerar o helper por
+    variável não serve no Windows (variável vazia não existe ali, medido em 31/10).
+    Então o processo ignora a configuração de sistema (GIT_CONFIG_NOSYSTEM) e põe
+    de volta, lida na hora, tudo o que ela tem menos as linhas credential.* —
+    core.autocrlf inclusive, que é de onde vem o CRLF desta máquina.
+    """
+    import base64
+    import os
+    import subprocess
+    token = (local.get("github") or {}).get("token", "").strip()
+    if not token:
+        return False
+    from .base import SEM_JANELA
+    r = subprocess.run(["git", "config", "--system", "--list"], capture_output=True, text=True,
+                       encoding="utf-8", creationflags=SEM_JANELA)
+    sistema = [l.split("=", 1) for l in r.stdout.splitlines() if "=" in l]
+    pares = [(k, v) for k, v in sistema if not k.lower().startswith("credential.") and v]
+    basico = base64.b64encode(f"x-access-token:{token}".encode()).decode()
+    pares.append(("http.https://github.com/.extraheader", f"AUTHORIZATION: basic {basico}"))
+    os.environ["GH_TOKEN"] = token
+    os.environ["GIT_CONFIG_NOSYSTEM"] = "1"
+    os.environ["GCM_INTERACTIVE"] = "never"
+    os.environ["GIT_CONFIG_COUNT"] = str(len(pares))
+    for i, (k, v) in enumerate(pares):
+        os.environ[f"GIT_CONFIG_KEY_{i}"] = k
+        os.environ[f"GIT_CONFIG_VALUE_{i}"] = v
+    return True
+
+
 def registro_de_lojas(lojas: dict) -> dict:
     return {"lojas": lojas.get("vtex", []), "lojas_api": lojas.get("api", []),
             "lojas_navegador": lojas.get("navegador", [])}
