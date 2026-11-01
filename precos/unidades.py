@@ -88,10 +88,19 @@ def montar_pack(o: dict, pack: int) -> dict | None:
 
 
 def unidade_de_comparacao(cfg: dict) -> str | None:
-    """"litro" (o monitor tem volume_ml), "unidade" (o resto) ou None (monitor acompanhado, como o freezer)."""
+    """Como o monitor conta o que compra.
+
+    "litro" com volume_ml; "unidade" com montar_pack ou `por_unidade = true` (lenço:
+    pacotes de 16, 50, 88); None nos outros — celular, colchão, freezer —, que se
+    comparam pelo total. Até 01/11 todo monitor sem volume virava "unidade", e o
+    que não traz contagem no título (celular, colchão) ficava sem melhor oferta.
+    """
     if cfg.get("modo") != "descoberta":
         return None
-    return "litro" if (cfg.get("regras") or {}).get("volume_ml") else "unidade"
+    regras = cfg.get("regras") or {}
+    if regras.get("volume_ml"):
+        return "litro"
+    return "unidade" if regras.get("montar_pack") or cfg.get("por_unidade") else None
 
 
 def sufixo(cfg: dict) -> str:

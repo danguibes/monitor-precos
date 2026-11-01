@@ -99,7 +99,7 @@ def test_sem_regra_incluir_a_compra_precisa_dos_termos():
 
 def test_sem_pack_compara_lenco_com_lenco():
     """Pacotes de 16, 48 e 88: a referência e a oferta contam lenços, nunca pacotes."""
-    sem_pack = dict(LENCO, regras={"incluir": [], "excluir": []})
+    sem_pack = dict(LENCO, regras={"incluir": [], "excluir": []}, por_unidade=True)
     lenco = compra("LENCO UMED HUGGIES C/48", 12.0, "Lenço umedecido Huggies", emb=48)
     ref = referencia([lenco], sem_pack, HOJE)
     assert ref["unidade"] == "unidade" and ref["mediana"] == 0.25

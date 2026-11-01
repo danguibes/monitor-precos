@@ -230,6 +230,7 @@ def gerar_relatorio(cfg, erros: list[str], destino=RELATORIO, origem=HISTORICO, 
     e = html.escape
     cards, linhas_tab = [], []
     un = sufixo(cfg) if descoberta else "/L"
+    conta = not descoberta or unidade_de_comparacao(cfg) is not None  # há "por litro/unidade" a mostrar
     ordem = sorted(res, key=lambda r: r["melhor"]["valor"] if r["melhor"] else 1e12)
     for r in ordem:
         p, mel = r["prod"], r["melhor"]
@@ -254,7 +255,9 @@ def gerar_relatorio(cfg, erros: list[str], destino=RELATORIO, origem=HISTORICO, 
                      f'{"frete não informado" if mel["frete"] is None else brl(mel["frete"]) + " de frete"}'
                      f' · {e(mel["loja"])} ({e(mel["vendedor"])}) · {e(mel["prazo"])}</div>'
                      f'<div class="det">Cartão: {brl(mel["total_cartao"])} · '
-                     f'<b>{brl_un(por_un)}{un}</b> entregue{aviso_kit(mel["produto"], cfg) if descoberta else ""} · mínimo histórico '
+                     + (f'<b>{brl_un(por_un)}{un}</b> entregue{aviso_kit(mel["produto"], cfg) if descoberta else ""} · '
+                        if conta else '')
+                     + f'mínimo histórico '
                      f'{brl_un(r["minimo"]["valor"]) if por_unidade(cfg) else brl(r["minimo"]["valor"])}{un if por_unidade(cfg) else ""} em {e(r["minimo"]["data"][:10])}</div>'
                      f'<div class="spark">{sparkline(r["serie"])}</div>'
                      f'<a href="{e(mel["link"])}" target="_blank" rel="noopener">abrir na loja →</a>')
@@ -269,8 +272,8 @@ def gerar_relatorio(cfg, erros: list[str], destino=RELATORIO, origem=HISTORICO, 
             if descoberta:
                 n = unidades_na_oferta(o["produto"], cfg)
                 primeira = (f'<td>{e(o["produto"])}</td><td>{e(o["loja"])}</td><td>{e(o["vendedor"])}</td>'
-                            f'<td class="n">{brl_un(o["total_pix"] / n if n and o["total_pix"] else None)}'
-                            f'{aviso_kit(o["produto"], cfg, curto=True)}</td>')
+                            + (f'<td class="n">{brl_un(o["total_pix"] / n if n and o["total_pix"] else None)}'
+                               f'{aviso_kit(o["produto"], cfg, curto=True)}</td>' if conta else ''))
             else:
                 primeira = f'<td>{e(o["modelo"])}</td><td>{e(o["loja"])}</td><td>{e(o["vendedor"])}</td>'
             linhas_tab.append(
@@ -280,9 +283,10 @@ def gerar_relatorio(cfg, erros: list[str], destino=RELATORIO, origem=HISTORICO, 
                 f'<td>{e(o["prazo"])}</td><td><a href="{e(o["link"])}" target="_blank" rel="noopener">link</a></td></tr>')
     avisos = "".join(f"<li>{e(x)}</li>" for x in erros)
     titulo = cfg.get("titulo")
-    cabeca = (f'<th>Produto</th><th>Loja</th><th>Vendedor</th><th class="n">Total{un}</th><th class="n">Preço</th>'
+    cabeca = (f'<th>Produto</th><th>Loja</th><th>Vendedor</th>'
+              + (f'<th class="n">Total{un}</th>' if conta else '') + '<th class="n">Preço</th>'
               if descoberta else '<th>Modelo</th><th>Loja</th><th>Vendedor</th><th class="n">Pix</th>')
-    colunas = 10 if descoberta else 9
+    colunas = (10 if conta else 9) if descoberta else 9
     rodape = ("Edite o arquivo do monitor em monitores/ para mudar termos e regras; as lojas ficam em lojas.toml."
               if descoberta else "Edite monitores/freezer.toml para mudar modelos; as lojas ficam em lojas.toml.")
     cep = "de casa" if publico else cfg["cep"]

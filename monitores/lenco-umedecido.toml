@@ -7,6 +7,8 @@ modo = "descoberta"
 intervalo_minimo_horas = 12
 termos = ["lenço umedecido", "pano umedecido", "toalha umedecida"]
 
+por_unidade = true  # pacotes de 16, 50, 88: compara o preço de cada lenço
+
 [regras]
 incluir = []
 excluir = ["[aáàâã][uúùü]t[oóòôõ]m[oóòôõ]t[iíì]v[aáàâã]|[aáàâã][uúùü]t[oóòôõ]m[oóòôõ]t[iíì]v[oóòôõ]|fl[aáàâã]n[eéèê]l[aáàâã]|m[iíì][cç]r[oóòôõ]f[iíì]br[aáàâã]", "d[eéèê]s[iíì]nf[eéèê]t[aáàâã]nt[eéèê]|d[eéèê]s[eéèê]ng[oóòôõ]rd[uúùü]r[aáàâã]nt[eéèê]", "[aáàâã]l[cç][oóòôõ][oóòôõ]l\\s*70|[iíì]npm|[cç][oóòôõ]p[eéèê]r[aáàâã]l[cç][oóòôõ][oóòôõ]l", "l[iíì]mp[aáàâã]\\s*t[uúùü]d[oóòôõ]|p[aáàâã]n[oóòôõ]\\s*d[eéèê]\\s*l[iíì]mp[eéèê]z[aáàâã]|[cç][oóòôõ]z[iíì]nh[aáàâã]|r[eéèê][uúùü]t[iíì]l[iíì]z[aáàâã]v[eéèê]l", "p[eéèê]ts|[cç][aáàâã][eéèê]s|g[aáàâã]t[oóòôõ]s"]

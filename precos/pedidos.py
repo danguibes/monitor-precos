@@ -148,7 +148,7 @@ def montar_toml(r: dict, numero: int) -> tuple[str, str]:
 
 # O formulário não sabe destas chaves; editar pelo formulário reescreve o arquivo e as perderia
 # (antes de 01/11, editar um monitor pausado o despausava).
-PRESERVAR = ("pausado", "mercado_livre", "unidade_nome", "limiar_augustinus")
+PRESERVAR = ("pausado", "mercado_livre", "unidade_nome", "limiar_augustinus", "por_unidade")
 
 
 def preservar(novo: str, antigo: str) -> str:

@@ -141,8 +141,28 @@ def test_kit_pede_conferencia(titulo, ambiguo):
 
 def test_etiqueta_de_kit_no_relatorio():
     from precos.relatorio import aviso_kit
-    lenco = {"modo": "descoberta", "regras": {"incluir": [], "excluir": []}}
+    lenco = {"modo": "descoberta", "regras": {"incluir": [], "excluir": []}, "por_unidade": True}
     etiqueta = aviso_kit("Kit 3 Pacotes de Toalhas Umedecidas 150 Unidades", lenco)
     assert "confira a quantidade" in etiqueta and "contei 150 no total" in etiqueta
     assert aviso_kit("Toalha Umedecida Cotondela Baby 50 un", lenco) == ""
     assert aviso_kit("Kit 3 Pacotes 150 Unidades", {"modo": "acompanhado"}) == ""   # freezer não conta unidades
+
+
+
+def test_sem_volume_pack_ou_por_unidade_compara_pelo_total(tmp_path):
+    """Em 01/11 celular e colchão ficaram sem melhor oferta: viravam "por unidade" sem contagem no título."""
+    from precos.historico import gravar_historico
+    from precos.relatorio import analisar
+    from precos.historico import ler_historico
+    from precos.base import oferta
+    from precos.unidades import unidade_de_comparacao
+    celular = {"modo": "descoberta", "titulo": "x", "termos": ["x"], "regras": {"incluir": [], "excluir": []}}
+    assert unidade_de_comparacao(celular) is None
+    assert unidade_de_comparacao(dict(celular, por_unidade=True)) == "unidade"
+    assert unidade_de_comparacao(dict(celular, regras={"montar_pack": 12})) == "unidade"
+    assert unidade_de_comparacao(dict(celular, regras={"volume_ml": [900, 1100]})) == "litro"
+    arq = tmp_path / "h.csv"
+    gravar_historico([oferta("ML", "ML", "Xiaomi 17t 5g 512gb Global", "v", 4299.14, 4299.14, 0.0, "", "l", "2026-11-01 16:19"),
+                      oferta("ML", "ML", "Xiaomi 17t 512gb 12gb Ram", "v", 4499.0, 4499.0, 0.0, "", "l2", "2026-11-01 16:19")], arq)
+    _, res = analisar(ler_historico(arq), celular)
+    assert res[0]["melhor"]["total_pix"] == 4299.14
