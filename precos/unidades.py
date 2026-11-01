@@ -7,38 +7,43 @@ from __future__ import annotations
 
 import re
 
+# A ordem importa: a contagem do que se compara (unidades, rolos, lenços) vem antes
+# da do embrulho (kit, pack, fardo). "Kit 3 Pacotes ... 150 Unidades" são 150, não 3.
 _QTD = [
     r"\bleve\s+(\d{1,3})\s+pague\b",  # "Leve 16 Pague 15": vêm 16
     r"\bl\s?(\d{1,3})\s?p\s?\d{1,3}\b",  # cupom fiscal: "L16P15", "L12 P11" = leve 16 (12), pague 15 (11)
     r"\bc(\d{1,3})(?=\s|$)",           # cupom fiscal: "Neve 30mts C4" = com 4
     r"\b(\d{1,3})\s*rls?\b",           # cupom fiscal: "11RL" = 11 rolos
-    r"\bcom\s+(\d{1,3})\s+(?:unidades?|rolos?|latas?)\b",
+    r"\bcom\s+(\d{1,4})\s+(?:unidades?|rolos?|latas?|len[çc]os|toalh(?:as|inhas))\b",
     r"\b(\d{1,3})\s*(?:rolos?|latas)\b",  # papel higiênico, refrigerante
+    # "Completa192 Unidades": colado na palavra, sem fronteira antes do número
+    r"(?<!\d)(\d{1,4})\s*(?:unidades|unids?\.?|un\.?|garrafas|len[çc]os|toalh(?:as|inhas)|panos)(?=\W|$)",
+    r"\bc/\s*(\d{1,4})\b",
     r"\bkit\s+(?:c/\s*|com\s+)?(\d{1,3})\b",
     r"\b(?:pack|fardo|caixa|cx\.?|pct\.?|pacote|engradado)\s*(?:c/\s*|com\s+|de\s+)?(\d{1,3})\b",
-    r"\bc/\s*(\d{1,3})\b",
-    r"\b(\d{1,3})\s*(?:unidades|unids?\.?|un\.?|garrafas)(?=\W|$)",
     r"\b(\d{1,3})\s*x\s*\d",  # 6x1,5L
-    r"\b(\d{1,3})\s*(?:folhas|fls)\b",  # lenço umedecido: "Pacote 16 Folhas" (por último: papel tem "folha dupla")
+    r"\b(\d{1,4})\s*(?:folhas|fls)\b",  # lenço umedecido: "Pacote 16 Folhas" (por último: papel tem "folha dupla")
 ]
-# "Kit 4 Pacotes com 48 Unidades" são 192 unidades, não 4 nem 48
-_PACOTES = re.compile(r"\b(?:kit\s+(?:c/\s*|com\s+)?)?(\d{1,2})\s*(?:pacotes|pcts?\.?|embalagens)\b")
+# Kit, combo ou "N pacotes": a contagem pode ser do kit inteiro ou de cada pacote, e o
+# título não diz qual. Vale a do título sem multiplicar — o menor total, que nunca faz
+# o kit parecer mais barato do que é —, e a página marca a oferta para conferir.
+_KIT = re.compile(r"\bkit\b|\bcombo\b|\b\d{1,2}\s*(?:pacotes|pcts?\b\.?|embalagens)")
 _VOL = re.compile(r"(\d+(?:[.,]\d+)?)\s*(ml|litros?|lts?|l)(?![a-z])", re.I)
 
 
 def quantidade_explicita(titulo: str) -> int | None:
     """A contagem escrita no título, ou None se não há nenhuma (não presume 1)."""
     t = titulo.lower()
-    m = _PACOTES.search(t)
-    if m:  # N pacotes × a contagem de dentro de cada um, procurada no resto do título
-        dentro = quantidade_explicita(t[:m.start()] + " " + t[m.end():])
-        if dentro and dentro != int(m.group(1)):
-            return int(m.group(1)) * dentro
     for padrao in _QTD:
         m = re.search(padrao, t)
-        if m and 0 < int(m.group(1)) <= 200:
+        if m and 0 < int(m.group(1)) <= 1000:
             return int(m.group(1))
     return None
+
+
+def kit_ambiguo(titulo: str) -> bool:
+    """Anúncio de kit com contagem: pode ser o total ou por pacote. A página pede para conferir."""
+    return bool(_KIT.search(titulo.lower())) and quantidade_explicita(titulo) is not None
 
 
 def quantidade(titulo: str) -> int:

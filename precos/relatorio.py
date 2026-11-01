@@ -5,7 +5,7 @@ import html
 
 from .base import HISTORICO, RELATORIO, brl, brl_un
 from .historico import ler_historico
-from .unidades import sufixo, unidade_de_comparacao, unidades_na_oferta
+from .unidades import kit_ambiguo, sufixo, unidade_de_comparacao, unidades_na_oferta
 
 
 ESTILO = """:root{--bg:#f6f5f2;--card:#fff;--tx:#1d1d1b;--mut:#6b6a66;--ln:#e3e1dc;--ok:#1f7a4d;--bad:#b3261e;--ac:#2f5d8a}
@@ -24,6 +24,7 @@ a{color:var(--ac)} table{width:100%;border-collapse:collapse;font-size:13px;marg
 th,td{text-align:left;padding:6px 8px;border-bottom:1px solid var(--ln)} .n{text-align:right;white-space:nowrap}
 .tab{overflow-x:auto;background:var(--card);border:1px solid var(--ln);border-radius:12px;margin-top:22px;padding:6px 8px}
 .avisos{color:var(--mut);font-size:13px}
+.kit{display:inline-block;border:1px solid var(--bad);color:var(--bad);border-radius:99px;font-size:11px;padding:0 7px;margin-left:4px;white-space:nowrap;cursor:help}
 .selo-aug{display:inline-block;background:var(--ok);color:var(--card);border-radius:99px;font-size:12px;font-weight:600;padding:2px 9px;margin:4px 0 2px}
 .topo{display:flex;flex-wrap:wrap;gap:12px 24px;align-items:flex-start;justify-content:space-between;margin-bottom:20px}
 .topo .sub{margin:0} .topo>div{flex:1 1 340px}
@@ -133,6 +134,20 @@ def analisar(historico, cfg):
     return ultima, res
 
 
+def aviso_kit(produto: str, cfg, curto=False) -> str:
+    """Kit ou "N pacotes": a contagem pode ser do kit ou de cada pacote, e o vendedor não diz.
+
+    A conta usa o número do título sem multiplicar (o menor total, que nunca faz o
+    kit parecer mais barato do que é); a etiqueta avisa para conferir na loja.
+    """
+    if unidade_de_comparacao(cfg) is None or not kit_ambiguo(produto):
+        return ""
+    n = unidades_na_oferta(produto, cfg)
+    dica = (f"Anúncio de kit: contei {n:g} no total. Se forem {n:g} em cada pacote, "
+            f"cada unidade sai mais barata do que aparece aqui. Confira na loja.")
+    return f'<span class="kit" title="{html.escape(dica)}">⚠{"" if curto else " kit: confira a quantidade"}</span>'
+
+
 def selo_augustinus(oferta, ref, cfg) -> str:
     """Só a marca, no card: a conta e o link ficam uma vez no quadro do topo."""
     from .augustinus import comparar
@@ -202,7 +217,7 @@ def gerar_relatorio(cfg, erros: list[str], destino=RELATORIO, origem=HISTORICO, 
                      f'{"frete não informado" if mel["frete"] is None else brl(mel["frete"]) + " de frete"}'
                      f' · {e(mel["loja"])} ({e(mel["vendedor"])}) · {e(mel["prazo"])}</div>'
                      f'<div class="det">Cartão: {brl(mel["total_cartao"])} · '
-                     f'<b>{brl_un(por_un)}{un}</b> entregue · mínimo histórico '
+                     f'<b>{brl_un(por_un)}{un}</b> entregue{aviso_kit(mel["produto"], cfg) if descoberta else ""} · mínimo histórico '
                      f'{brl_un(r["minimo"]["valor"]) if por_unidade(cfg) else brl(r["minimo"]["valor"])}{un if por_unidade(cfg) else ""} em {e(r["minimo"]["data"][:10])}</div>'
                      f'<div class="spark">{sparkline(r["serie"])}</div>'
                      f'<a href="{e(mel["link"])}" target="_blank" rel="noopener">abrir na loja →</a>')
@@ -217,7 +232,8 @@ def gerar_relatorio(cfg, erros: list[str], destino=RELATORIO, origem=HISTORICO, 
             if descoberta:
                 n = unidades_na_oferta(o["produto"], cfg)
                 primeira = (f'<td>{e(o["produto"])}</td><td>{e(o["loja"])}</td><td>{e(o["vendedor"])}</td>'
-                            f'<td class="n">{brl_un(o["total_pix"] / n if n and o["total_pix"] else None)}</td>')
+                            f'<td class="n">{brl_un(o["total_pix"] / n if n and o["total_pix"] else None)}'
+                            f'{aviso_kit(o["produto"], cfg, curto=True)}</td>')
             else:
                 primeira = f'<td>{e(o["modelo"])}</td><td>{e(o["loja"])}</td><td>{e(o["vendedor"])}</td>'
             linhas_tab.append(

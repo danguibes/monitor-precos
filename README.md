@@ -161,8 +161,11 @@ Cada monitor compara numa unidade só, a mesma na página e no Augustinus:
   inteiro, e o total já é comparável (papel: 12 rolos). **Sem pack, os pacotes
   variam** (lenço: 16, 50, 88), então a melhor oferta de cada loja é a de
   **menor total por unidade**, e o anúncio que não diz quantas unidades traz não
-  ganha. A contagem vem do título: "50 un", "16 folhas", "Kit 4 pacotes com 48"
-  (= 192). O nome da unidade é "un." por padrão (`unidade_nome = "rolo"` no toml
+  ganha. A contagem vem do título: "50 un", "16 folhas", "400 lenços".
+  **Kit, combo ou "N pacotes"** é ambíguo — "Kit 3 pacotes 150 unidades" pode ser
+  150 no total ou por pacote, e o vendedor não diz. A conta usa o número do título
+  sem multiplicar (o menor total: o kit nunca parece mais barato do que é), e a
+  oferta ganha a etiqueta **"⚠ kit: confira a quantidade"**. O nome da unidade é "un." por padrão (`unidade_nome = "rolo"` no toml
   muda).
 
 ## Comparação com o Augustinus

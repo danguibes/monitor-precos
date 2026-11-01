@@ -102,8 +102,13 @@ from precos.unidades import quantidade_explicita as _qe, unidades_na_oferta as _
     ("Lenço Umedecido Neve Care On The Go Pacote 16 Folhas", 16),
     ("Toalha Umedecida Cotondela Baby 50 un", 50),
     ("Lenço Umedecido Huggies Tripla Proteção - 88 Unidades", 88),
-    ("Kit 4 Pacotes Lenço Umedecido Huggies com 48 Unidades", 192),
-    ("Lenço Umedecido Pampers 3 pacotes 48 unidades", 144),
+    ("Kit 4 Pacotes Lenço Umedecido Huggies com 48 Unidades", 48),   # total ou por pacote? o menor
+    ("Kit 3 Pacotes de Toalhas Umedecidas Lenço Umedecido Geriátrica 150 Unidades", 150),  # visto em 31/10
+    ("Lenço Umedecido Use It Balde Azul Com 400 Unidades", 400),
+    ("Lenços Umedecidos Pampers Higiene Completa192 Unidades", 192),
+    ("Toalhinhas Umed Premium 1 Unidade Com 120 Lenços Umedecidos", 120),
+    ("Kit 400 Lenço Umedecido Kit Toalhas Umedecidas Bebe", 400),
+    ("Meu Bebê Ultra Toalhas Umedecidas, Hygieline, 500 Folhas", 500),
     ("Papel Higiênico Folha Dupla Neve 12 Rolos", 12),       # "folha dupla" não é contagem
     ("Lenço Umedecido Huggies", None),
 ])
@@ -118,3 +123,26 @@ def test_unidades_na_oferta_por_monitor():
     assert _uno("Água com Gás 1,5L", agua) == 9.0
     papel = {"modo": "descoberta", "regras": {"montar_pack": 12}}
     assert _uno("2 × Papel Higiênico 6 Rolos", papel) == 12
+
+
+from precos.unidades import kit_ambiguo as _kit
+
+
+@_pt.mark.parametrize("titulo, ambiguo", [
+    ("Kit 3 Pacotes de Toalhas Umedecidas 150 Unidades", True),
+    ("Lenço Umedecido Pampers 3 pacotes 48 unidades", True),
+    ("Combo Lenço Umedecido Huggies 2x48 Unidades", True),
+    ("Toalha Umedecida Cotondela Baby 50 un", False),
+    ("Kit Toalha Umedecida", False),                         # sem contagem já não entra na conta
+])
+def test_kit_pede_conferencia(titulo, ambiguo):
+    assert _kit(titulo) is ambiguo
+
+
+def test_etiqueta_de_kit_no_relatorio():
+    from precos.relatorio import aviso_kit
+    lenco = {"modo": "descoberta", "regras": {"incluir": [], "excluir": []}}
+    etiqueta = aviso_kit("Kit 3 Pacotes de Toalhas Umedecidas 150 Unidades", lenco)
+    assert "confira a quantidade" in etiqueta and "contei 150 no total" in etiqueta
+    assert aviso_kit("Toalha Umedecida Cotondela Baby 50 un", lenco) == ""
+    assert aviso_kit("Kit 3 Pacotes 150 Unidades", {"modo": "acompanhado"}) == ""   # freezer não conta unidades
