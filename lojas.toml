@@ -49,6 +49,10 @@ host = "www.mambo.com.br"
 [[vtex]]
 nome = "Atacadão"
 host = "www.atacadao.com.br"
+# "Taxas de Serviço" no carrinho: 6% do subtotal, com entrega "Grátis" (três carrinhos
+# conferidos em 01/11/2026: 207,70 -> 12,46; 240,60 -> 14,44; 371,20 -> 22,27). Não vem
+# pela API; o monitor soma ao frete. Pedido mínimo R$ 250, esse sim vem pela API.
+taxa_servico = 0.06
 
 [[vtex]]
 nome = "Oba Hortifruti"

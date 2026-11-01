@@ -96,7 +96,28 @@ def coletar_tudo(cfg: dict, estado: dict, log, com_navegador: bool = True):
     pack = (cfg.get("regras") or {}).get("montar_pack")
     if pack:
         ofertas = [x for x in (montar_pack(o, pack) for o in ofertas) if x]
+    # depois do pack: a taxa é sobre o subtotal, e o subtotal de 6 garrafas é 6 vezes o de uma
+    ofertas = [somar_taxa_servico(o, taxas_de_servico(cfg)) for o in ofertas]
     return deduplicar(ofertas), erros
+
+
+def taxas_de_servico(cfg: dict) -> dict[str, float]:
+    """{loja: fração} das lojas com `taxa_servico` em lojas.toml (Atacadão: 0.06)."""
+    return {l["nome"]: float(l["taxa_servico"]) for l in cfg.get("lojas", []) if l.get("taxa_servico")}
+
+
+def somar_taxa_servico(o: dict, taxas: dict) -> dict:
+    """A taxa de serviço da loja entra no frete: "frete" passa a ser o que se paga além dos itens."""
+    t = taxas.get(o["loja"])
+    if not t or o.get("preco_pix") is None:
+        return o
+    o = dict(o)
+    taxa = round(o["preco_pix"] * t + 1e-9, 2)
+    o["frete"] = round((o["frete"] or 0) + taxa, 2)
+    o["total_pix"] = round(o["preco_pix"] + o["frete"], 2)
+    o["total_cartao"] = round((o["preco"] or o["preco_pix"]) + o["frete"], 2)
+    o["prazo"] = f'{o["prazo"]} · frete inclui taxa de serviço de {t:.0%}'.lstrip(" ·")
+    return o
 
 
 def coletar_navegador(cfg, produtos, data, filtros, log):

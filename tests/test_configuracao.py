@@ -20,7 +20,7 @@ def test_registro_de_lojas_tem_os_tres_grupos():
     reg = monitores.registro_de_lojas(lojas)
     assert reg["lojas"] and reg["lojas_api"] and reg["lojas_navegador"]
     # chave solta depois de [[vtex]] cairia dentro da última loja VTEX
-    assert all(set(l) == {"nome", "host"} for l in reg["lojas"])
+    assert all({"nome", "host"} <= set(l) <= {"nome", "host", "taxa_servico"} for l in reg["lojas"])
 
 
 def test_toda_loja_do_registro_tem_coletor():
