@@ -10,3 +10,5 @@ vigia_minutos = 5                  # de quanto em quanto tempo o notebook olha o
                                    # (botão "Atualizar agora" e pedidos de monitor); 0 desliga
 pausa_lojas_com_login = 6          # segundos a mais por página no Mercado Livre e na Vila das Frutas,
                                    # onde o monitor entra com a sua conta (um bloqueio ali chega à conta)
+vigia_porta = 8765                 # o botão "Atualizar agora" da página fala com o vigia por aqui,
+                                   # no próprio notebook (127.0.0.1); 0 desliga e o botão usa o GitHub

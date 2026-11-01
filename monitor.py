@@ -177,7 +177,7 @@ def vigiar() -> int:
     minutos = float(cfg.get("vigia_minutos", 5))
     if minutos <= 0:
         return 0  # vigia desligado no config.toml
-    laco(repo.removeprefix("https://github.com/"), minutos, log)
+    laco(repo.removeprefix("https://github.com/"), minutos, log, int(cfg.get("vigia_porta", 0)))
     return 0
 
 

@@ -1,0 +1,21 @@
+# Criado a pedido, em 01/11/2026. Para mudar, use o link "editar" da página:
+# ele reabre o formulário preenchido. Editar este arquivo à mão também funciona.
+
+nome = "Suco de laranja integral"
+titulo = "Suco de laranja integral"
+modo = "descoberta"
+intervalo_minimo_horas = 12
+termos = ["suco de laranja integral", "suco de laranja"]
+
+[regras]
+incluir = ["l[aáàâã]r[aáàâã]nj[aáàâã]"]
+volume_ml = [850, 2100]  # 1 L, 1,5 L e 2 L; compara por litro
+excluir = ["n[eéèê][cç]t[aáàâã]r", "r[eéèê]fr[eéèê]s[cç][oóòôõ]", "\\bp[oóòôõ]\\b", "[cç][oóòôõ]n[cç][eéèê]ntr[aáàâã]d[oóòôõ]", "r[eéèê]fr[iíì]g[eéèê]r[aáàâã]nt[eéèê]", "[cç][aáàâã]j[uúùü]|[aáàâã][cç][eéèê]r[oóòôõ]l[aáàâã]|m[aáàâã][cç][aáàâã]|[cç][eéèê]n[oóòôõ][uúùü]r[aáàâã]|m[aáàâã]ng[aáàâã]|m[oóòôõ]r[aáàâã]ng[oóòôõ]|m[aáàâã]r[aáàâã][cç][uúùü]j[aáàâã]|m[aáàâã]m[aáàâã][oóòôõ]|b[eéèê]t[eéèê]rr[aáàâã]b[aáàâã]"]
+
+[pedido]
+numero = 0
+termos = "suco de laranja integral\nsuco de laranja"
+precisa = "laranja"
+exclui = "néctar\nrefresco\npó\nconcentrado\nrefrigerante\ncaju ou acerola ou maçã ou cenoura ou manga ou morango ou maracujá ou mamão ou beterraba"
+tamanho = ""
+pack = ""

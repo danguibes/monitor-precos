@@ -97,3 +97,13 @@ def test_pedido_mexido_ha_pouco_espera():
     assert recente({"updatedAt": "2026-11-01T00:57:00Z"}, agora) is True      # mexido 1 min antes
     assert recente({"updatedAt": "2026-11-01T00:54:00Z"}, agora) is False     # parado há 4 min
     assert recente({}, agora) is False
+
+
+def test_numero_nao_pode_estar_dentro_de_outro_numero():
+    """Em 01/11 "512" virou palavra inteira e reprovou todo "Xiaomi 17T 512GB": zero ofertas."""
+    import re
+    from precos.pedidos import palavra_para_regex
+    n = re.compile(palavra_para_regex("512"), re.I)
+    assert n.search("Xiaomi 17T 512GB 12GB RAM") and n.search("Xiaomi 17T 512 GB")
+    assert not n.search("Xiaomi 17T 1512 mAh") and not n.search("Xiaomi 17T 5120")
+    assert not re.search(palavra_para_regex("256"), "Xiaomi 17T 512GB", re.I)

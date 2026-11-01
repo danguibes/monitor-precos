@@ -24,6 +24,9 @@ a{color:var(--ac)} table{width:100%;border-collapse:collapse;font-size:13px;marg
 th,td{text-align:left;padding:6px 8px;border-bottom:1px solid var(--ln)} .n{text-align:right;white-space:nowrap}
 .tab{overflow-x:auto;background:var(--card);border:1px solid var(--ln);border-radius:12px;margin-top:22px;padding:6px 8px}
 .avisos{color:var(--mut);font-size:13px}
+button.botao{font:inherit;cursor:pointer} .atualizar{margin:8px 0 0}
+.botao{display:inline-block;background:var(--ac);color:var(--card);padding:8px 14px;border-radius:10px;text-decoration:none;font-weight:600}
+.botao.secundario{background:transparent;color:var(--ac);border:1.5px solid var(--ac)}
 .kit{display:inline-block;border:1px solid var(--bad);color:var(--bad);border-radius:99px;font-size:11px;padding:0 7px;margin-left:4px;white-space:nowrap;cursor:help}
 .selo-aug{display:inline-block;background:var(--ok);color:var(--card);border-radius:99px;font-size:12px;font-weight:600;padding:2px 9px;margin:4px 0 2px}
 .topo{display:flex;flex-wrap:wrap;gap:12px 24px;align-items:flex-start;justify-content:space-between;margin-bottom:20px}
@@ -148,6 +151,40 @@ def aviso_kit(produto: str, cfg, curto=False) -> str:
     return f'<span class="kit" title="{html.escape(dica)}">⚠{"" if curto else " kit: confira a quantidade"}</span>'
 
 
+# O botão "Atualizar" fala primeiro com o vigia no próprio notebook (127.0.0.1, ver
+# vigia.py); sem resposta em 2,5 s — outro aparelho, notebook dormindo — abre o
+# formulário do GitHub, que o vigia atende quando puder.
+SCRIPT_ATUALIZAR = r"""<script>
+document.querySelectorAll("[data-atualizar]").forEach(b => b.addEventListener("click", async () => {
+  const alvo = b.dataset.alvo || "", aviso = b.parentElement.querySelector(".resposta");
+  const url = "http://127.0.0.1:" + b.dataset.porta + "/atualizar" + (alvo ? "/" + alvo : "");
+  b.disabled = true; aviso.textContent = "Chamando o notebook...";
+  try {
+    const c = new AbortController(); const t = setTimeout(() => c.abort(), 2500);
+    const r = await fetch(url, {method: "POST", signal: c.signal}); clearTimeout(t);
+    if (!r.ok) throw new Error("HTTP " + r.status);
+    const j = await r.json();
+    aviso.textContent = (j.na_fila ? "Na fila: o notebook termina a rodada em curso e emenda esta. "
+                                    : "Começou no notebook. ")
+      + (alvo ? "Este monitor leva alguns minutos" : "Todos os monitores levam perto de uma hora")
+      + "; a página se republica sozinha ao fim — recarregue depois.";
+  } catch (e) {
+    const w = window.open(b.dataset.github, "_blank", "noopener");
+    aviso.innerHTML = "O notebook não respondeu daqui (outro aparelho, ou ele está dormindo). "
+      + (w ? "Abri o pedido no GitHub: é só enviar." : '<a href="' + b.dataset.github + '" target="_blank" rel="noopener">Abrir o pedido no GitHub</a>.');
+  } finally { b.disabled = false; }
+}));
+</script>"""
+
+
+def botao_atualizar(porta: int, link_github: str, alvo: str = "", rotulo: str = "↻ Atualizar agora") -> str:
+    e = html.escape
+    if not porta:
+        return (f'<a class="botao secundario" href="{e(link_github)}" target="_blank" rel="noopener">{e(rotulo)}</a>')
+    return (f'<button type="button" class="botao secundario" data-atualizar data-porta="{int(porta)}" '
+            f'data-alvo="{e(alvo)}" data-github="{e(link_github)}">{e(rotulo)}</button>')
+
+
 def selo_augustinus(oferta, ref, cfg) -> str:
     """Só a marca, no card: a conta e o link ficam uma vez no quadro do topo."""
     from .augustinus import comparar
@@ -185,7 +222,7 @@ def quadro_augustinus(ref, cfg, melhores) -> str:
 
 
 def gerar_relatorio(cfg, erros: list[str], destino=RELATORIO, origem=HISTORICO, publico=False,
-                    link_historico="historico.html", referencia=None):
+                    link_historico="historico.html", referencia=None, botao=""):
     """publico=True é a cópia do GitHub Pages: sem o CEP, com noindex e com volta para o índice."""
     historico = ler_historico(origem)
     descoberta = cfg.get("modo") == "descoberta"
@@ -259,7 +296,8 @@ def gerar_relatorio(cfg, erros: list[str], destino=RELATORIO, origem=HISTORICO, 
 <style>
 {ESTILO}</style></head><body><main>
 {volta}<div class="topo"><div><h1>{e(titulo or "Monitor de freezer")}</h1>
-<p class="sub">Preço + frete para o CEP {e(cep)} · última consulta {e(ultima or "—")} · ordenado pelo {ordenado} · <a href="{e(link_historico)}">histórico →</a></p></div>
+<p class="sub">Preço + frete para o CEP {e(cep)} · última consulta {e(ultima or "—")} · ordenado pelo {ordenado} · <a href="{e(link_historico)}">histórico →</a></p>
+{f'<p class="atualizar">{botao} <span class="det resposta"></span></p>' if botao else ''}</div>
 {quadro_augustinus(referencia, cfg, [r["melhor"] for r in res])}</div>
 <section class="grid">{"".join(cards)}</section>
 <div class="tab"><table><thead><tr>{cabeca}
@@ -267,7 +305,7 @@ def gerar_relatorio(cfg, erros: list[str], destino=RELATORIO, origem=HISTORICO, 
 <tbody>{"".join(linhas_tab) or f'<tr><td colspan="{colunas}">Nenhuma oferta encontrada.</td></tr>'}</tbody></table></div>
 {f'<h3>Avisos desta rodada</h3><ul class="avisos">{avisos}</ul>' if avisos else ''}
 <p class="avisos">{rodape_final}</p>
-</main>{ORDENAR}</body></html>"""
+</main>{ORDENAR}{SCRIPT_ATUALIZAR if botao else ""}</body></html>"""
     destino.parent.mkdir(exist_ok=True)
     destino.write_text(pagina, encoding="utf-8")
     return res

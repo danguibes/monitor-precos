@@ -84,8 +84,13 @@ def palavra_para_regex(texto: str) -> str:
             else:
                 partes.append(ACENTOS.get(c, re.escape(c)))
         regex = "".join(partes)
-        # sigla curta ("BF") precisa ser palavra inteira, senão casa no meio de qualquer outra
-        regex = rf"\b{regex}\b" if len(alt.replace(" ", "")) <= 3 else regex
+        # sigla curta ("BF") precisa ser palavra inteira, senão casa no meio de qualquer outra;
+        # número ("512") só não pode estar dentro de outro número — "512GB" vale, "1512" não.
+        # (Em 01/11 o \b valia para número também, e "512" reprovava todo "512GB".)
+        if alt.isdigit():
+            regex = rf"(?<!\d){regex}(?!\d)"
+        elif len(alt.replace(" ", "")) <= 3:
+            regex = rf"\b{regex}\b"
         alternativas.append(rf"^\s*{regex}" if inicio else regex)
     if not alternativas:
         raise PedidoInvalido(f"linha vazia em '{texto}'")

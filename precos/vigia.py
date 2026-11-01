@@ -14,6 +14,13 @@ Só issues abertas pelo dono do repositório disparam alguma coisa; as de outras
 contas ficam como estão e só viram uma linha no log. Nada do texto da issue é
 lido aqui — o rótulo e o autor bastam.
 
+Pelo próprio notebook há um caminho mais curto: o vigia atende também
+http://127.0.0.1:<vigia_porta>/atualizar (todos) e /atualizar/<id> (um monitor).
+O botão da página tenta esse endereço primeiro e, sem resposta (outro aparelho,
+notebook dormindo), cai no formulário do GitHub. Só escuta na própria máquina, só
+aceita pedido vindo da página do Pages (cabeçalho Origin) e só dispara rodada —
+não devolve dado nenhum.
+
 Custo: entre uma consulta e outra o processo dorme (não impede o notebook de
 suspender). Sem rede, a consulta falha, vai uma linha ao log e tenta de novo
 na volta seguinte. Um segundo vigia não sobe: o primeiro segura uma trava.
@@ -21,10 +28,12 @@ na volta seguinte. Um segundo vigia não sobe: o primeiro segura uma trava.
 from __future__ import annotations
 
 import json
+import re
 import subprocess
 import sys
-import time
+import threading
 from datetime import datetime
+from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
 from .base import DADOS, RAIZ, SEM_JANELA
 
@@ -32,6 +41,101 @@ ATUALIZAR = "atualizar"
 NOVO_MONITOR = "novo-monitor"
 GERENCIAR = "gerenciar-monitor"
 TRAVA = DADOS / "vigia.lock"
+ORIGENS = ("https://danguibes.github.io",)  # a página publicada; o resto leva 403
+TODOS = "*"
+
+
+class Pedidos:
+    """O que o endereço local pediu e ainda não rodou. O servidor põe, a volta do vigia tira."""
+
+    def __init__(self):
+        self.trava, self.evento, self.fila, self.rodando = threading.Lock(), threading.Event(), set(), None
+
+    def pedir(self, alvo: str) -> None:
+        with self.trava:
+            self.fila.add(alvo)
+        self.evento.set()  # acorda o vigia agora, sem esperar os minutos da volta
+
+    def tirar(self) -> set[str]:
+        with self.trava:
+            fila, self.fila = self.fila, set()
+        return fila
+
+
+def tratador(pedidos: Pedidos, existe):
+    class Tratador(BaseHTTPRequestHandler):
+        def _cors(self, origem):
+            self.send_header("Access-Control-Allow-Origin", origem)
+            self.send_header("Access-Control-Allow-Methods", "POST")
+            self.send_header("Access-Control-Allow-Private-Network", "true")  # página https -> 127.0.0.1
+            self.send_header("Vary", "Origin")
+
+        def _origem_ok(self):
+            origem = self.headers.get("Origin", "")
+            if origem not in ORIGENS:
+                self.send_response(403)
+                self.end_headers()
+                return None
+            return origem
+
+        def do_OPTIONS(self):
+            origem = self._origem_ok()
+            if origem:
+                self.send_response(204)
+                self._cors(origem)
+                self.end_headers()
+
+        def do_POST(self):
+            origem = self._origem_ok()
+            if not origem:
+                return
+            m = re.fullmatch(r"/atualizar(?:/([a-z0-9][a-z0-9-]{0,60}))?/?", self.path)
+            if not m or (m.group(1) and not existe(m.group(1))):
+                self.send_response(404)
+                self._cors(origem)
+                self.end_headers()
+                return
+            alvo = m.group(1) or TODOS
+            ocupado = pedidos.rodando
+            pedidos.pedir(alvo)
+            corpo = json.dumps({"ok": True, "alvo": alvo, "na_fila": bool(ocupado)}).encode()
+            self.send_response(202)
+            self._cors(origem)
+            self.send_header("Content-Type", "application/json")
+            self.end_headers()
+            self.wfile.write(corpo)
+
+        def log_message(self, *a):  # sem eco no console (pythonw não tem um)
+            pass
+    return Tratador
+
+
+def servir(porta: int, pedidos: Pedidos, log):
+    """Sobe o endereço local numa thread; None se a porta estiver ocupada."""
+    from .monitores import PASTA_MONITORES
+    existe = lambda id_: (PASTA_MONITORES / f"{id_}.toml").exists()
+    try:
+        srv = ThreadingHTTPServer(("127.0.0.1", porta), tratador(pedidos, existe))
+    except OSError as e:
+        log(f"Vigia: endereço local 127.0.0.1:{porta} indisponível ({e}); o botão usa o GitHub.")
+        return None
+    threading.Thread(target=srv.serve_forever, daemon=True).start()
+    log(f"Vigia: atendendo o botão da página em 127.0.0.1:{porta}.")
+    return srv
+
+
+def atender_locais(pedidos: Pedidos, log) -> None:
+    fila = pedidos.tirar()
+    if not fila:
+        return
+    alvos = [TODOS] if TODOS in fila else sorted(fila)
+    for alvo in alvos:
+        pedidos.rodando = alvo
+        log("Vigia: botão da página — " + ("todos os monitores." if alvo == TODOS else f"monitor {alvo}."))
+        try:
+            rodar_monitor("--todos") if alvo == TODOS else rodar_monitor("--monitor", alvo)
+        finally:
+            pedidos.rodando = None
 
 
 def gh(*args) -> str:
@@ -100,15 +204,19 @@ def uma_volta(repo: str, log, ja_avisado: set[str]) -> None:
             gh("issue", "close", str(n), "-R", repo)
 
 
-def vigiar(repo: str, minutos: float, log) -> None:
+def vigiar(repo: str, minutos: float, log, porta: int = 0) -> None:
     trava = travar()
     if trava is None:
         log("Vigia: já há outro rodando; este sai.")
         return
     log(f"Vigia: olhando {repo} a cada {minutos:g} min.")
+    pedidos = Pedidos()
+    if porta:
+        servir(porta, pedidos, log)
     ja_avisado: set[str] = set()
     falhando = False
     while True:
+        atender_locais(pedidos, log)  # o botão local vem antes do GitHub, que pode estar fora
         try:
             uma_volta(repo, log, ja_avisado)
             if falhando:
@@ -118,4 +226,6 @@ def vigiar(repo: str, minutos: float, log) -> None:
             if not falhando:
                 log(f"Vigia: consulta falhou ({exc!r}); sigo tentando.")
             falhando = True
-        time.sleep(minutos * 60)
+        atender_locais(pedidos, log)
+        pedidos.evento.wait(minutos * 60)  # o botão local acorda antes
+        pedidos.evento.clear()

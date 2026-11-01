@@ -23,7 +23,7 @@ from pathlib import Path
 
 from .base import DADOS, RAIZ, SEM_JANELA, brl
 from .historico_pagina import gerar_historico
-from .relatorio import ESTILO, gerar_relatorio, selo_augustinus
+from .relatorio import ESTILO, SCRIPT_ATUALIZAR, botao_atualizar, gerar_relatorio, selo_augustinus
 
 SITE = DADOS / "site"
 
@@ -93,7 +93,8 @@ def link_editar(repo: str, id_: str, cfg: dict) -> str:
     return f"{repo}/issues/new?" + urllib.parse.urlencode({k: v for k, v in campos.items() if v})
 
 
-def gerar_indice(itens: list[dict], destino: Path, repo: str | None = None, avisos: list[str] = ()) -> None:
+def gerar_indice(itens: list[dict], destino: Path, repo: str | None = None, avisos: list[str] = (),
+                 porta: int = 0) -> None:
     e = html.escape
     cards = []
     for it in itens:
@@ -120,9 +121,9 @@ def gerar_indice(itens: list[dict], destino: Path, repo: str | None = None, avis
     novo = (f'<p><a class="botao" href="{e(link_novo_monitor(repo))}" target="_blank" rel="noopener">'
             f'+ Novo monitor</a> <span class="det">abre um formulário no GitHub; com o notebook ligado, '
             f'em até 5 minutos ele cria o monitor e já pesquisa em todas as lojas</span></p>'
-            f'<p><a class="botao secundario" href="{e(link_atualizar(repo))}" target="_blank" rel="noopener">'
-            f'↻ Atualizar agora</a> <span class="det">abre um pedido no GitHub; com o notebook ligado, '
-            f'em até 5 minutos ele roda todos os monitores e republica esta página</span></p>') if repo else ""
+            f'<p>{botao_atualizar(porta, link_atualizar(repo))} <span class="det resposta">'
+            f'{"no notebook, começa na hora; de outro aparelho, abre um pedido no GitHub que o notebook atende em até 5 minutos" if porta else "abre um pedido no GitHub; com o notebook ligado, em até 5 minutos ele roda todos os monitores"}'
+            f'</span></p>') if repo else ""
     lista_avisos = "".join(f"<li>{e(a)}</li>" for a in avisos)
     destino.write_text(f"""<!doctype html><html lang="pt-BR"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex">
@@ -131,13 +132,14 @@ def gerar_indice(itens: list[dict], destino: Path, repo: str | None = None, avis
 .acoes{{margin-top:8px}} .card-pausado{{opacity:.6}}
 .pausado{{border:1px solid var(--mut);color:var(--mut);border-radius:99px;font-size:11px;padding:1px 8px}}
 .botao.secundario{{background:transparent;color:var(--ac);border:1.5px solid var(--ac);margin-top:4px}}
+button.botao{{font:inherit;cursor:pointer}}
 </style></head><body><main>
 <h1>Monitor de preços</h1>
 <p class="sub">Melhor oferta de cada monitor, com o frete para um CEP fixo · gerado em {datetime.now():%Y-%m-%d %H:%M}</p>
 <section class="grid">{"".join(cards)}</section>
 {novo}
 {f'<h3>Avisos</h3><ul class="avisos">{lista_avisos}</ul>' if lista_avisos else ''}
-</main></body></html>""", encoding="utf-8")
+</main>{SCRIPT_ATUALIZAR if porta and repo else ''}</body></html>""", encoding="utf-8")
 
 
 def gerar_site(monitores: list[dict], pasta: Path = SITE, repo: str | None = None) -> None:
@@ -147,11 +149,14 @@ def gerar_site(monitores: list[dict], pasta: Path = SITE, repo: str | None = Non
         shutil.rmtree(pasta, onexc=lambda f, caminho, _: (os.chmod(caminho, stat.S_IWRITE), f(caminho)))
     pasta.mkdir(parents=True)
     itens = []
+    porta = int(monitores[0]["cfg"].get("vigia_porta", 0)) if monitores else 0
     for m in monitores:
         estado = carregar_json(m["estado"], {})
         ref = estado.get("referencia_augustinus")
+        botao = botao_atualizar(porta, link_atualizar(repo), m["id"], "↻ atualizar só este") if repo else ""
         res = gerar_relatorio(m["cfg"], estado.get("avisos", []), pasta / f"{m['id']}.html", m["historico"],
-                              publico=True, link_historico=f"{m['id']}-historico.html", referencia=ref)
+                              publico=True, link_historico=f"{m['id']}-historico.html", referencia=ref,
+                              botao=botao)
         gerar_historico(m["cfg"], pasta / f"{m['id']}-historico.html", m["historico"],
                         volta=f"{m['id']}.html", publico=True)
         melhores = [r["melhor"] for r in res if r["melhor"]]
@@ -159,7 +164,7 @@ def gerar_site(monitores: list[dict], pasta: Path = SITE, repo: str | None = Non
         melhor = min(com_frete, key=lambda x: x["total_pix"]) if com_frete else None
         itens.append({"id": m["id"], "nome": m["cfg"].get("nome", m["id"]), "melhor": melhor,
                       "ultima": melhor["data"] if melhor else None, "cfg": m["cfg"], "referencia": ref})
-    gerar_indice(itens, pasta / "index.html", repo, carregar_json(AVISOS_PEDIDOS, []))
+    gerar_indice(itens, pasta / "index.html", repo, carregar_json(AVISOS_PEDIDOS, []), porta)
 
 
 def git(*args, cwd: Path) -> str:
