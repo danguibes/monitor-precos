@@ -79,7 +79,9 @@ def palavra_para_regex(texto: str) -> str:
                     partes.append(r"\s*")
             else:
                 partes.append(ACENTOS.get(c, re.escape(c)))
-        alternativas.append("".join(partes))
+        regex = "".join(partes)
+        # sigla curta ("BF") precisa ser palavra inteira, senão casa no meio de qualquer outra
+        alternativas.append(rf"\b{regex}\b" if len(alt.replace(" ", "")) <= 3 else regex)
     if not alternativas:
         raise PedidoInvalido(f"linha vazia em '{texto}'")
     return "|".join(alternativas)

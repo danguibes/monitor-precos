@@ -8,13 +8,13 @@ intervalo_minimo_horas = 12
 termos = ["colchão emma casal"]
 
 [regras]
-incluir = []
+incluir = ["[eéèê]mm[aáàâã]"]
 excluir = []
 
 [pedido]
 numero = 5
 termos = "colchão emma casal"
-precisa = ""
+precisa = "emma"
 exclui = ""
 tamanho = ""
 pack = ""

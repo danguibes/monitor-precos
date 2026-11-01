@@ -69,3 +69,12 @@ def test_card_pausado_mostra_retomar_e_os_links_vem_preenchidos(tmp_path):
     html = (tmp_path / "index.html").read_text(encoding="utf-8")
     assert html.count(">retomar<") == 1 and html.count(">pausar<") == 1 and html.count(">excluir<") == 2
     assert 'class="pausado"' in html
+
+
+def test_sigla_curta_vira_palavra_inteira():
+    import re
+    from precos.pedidos import palavra_para_regex
+    bf = re.compile(palavra_para_regex("bf"), re.I)
+    assert bf.search("Colchão BF Colchões Casal") and bf.search("Colchão Casal - BF")
+    assert not bf.search("Colchão Bfresh Casal") and not bf.search("Colchão Casal ABF")
+    assert re.search(palavra_para_regex("guldi"), "Colchão Guldi Casal", re.I)   # nome comum segue igual

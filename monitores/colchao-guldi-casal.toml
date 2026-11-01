@@ -8,13 +8,13 @@ intervalo_minimo_horas = 12
 termos = ["colchão guldi casal"]
 
 [regras]
-incluir = []
+incluir = ["g[uúùü]ld[iíì]"]
 excluir = []
 
 [pedido]
 numero = 6
 termos = "colchão guldi casal"
-precisa = ""
+precisa = "guldi"
 exclui = ""
 tamanho = ""
 pack = ""

@@ -8,13 +8,13 @@ intervalo_minimo_horas = 12
 termos = ["Colchão Luuna Casal"]
 
 [regras]
-incluir = []
+incluir = ["l[uúùü][uúùü]n[aáàâã]"]
 excluir = ["s[oóòôõ]lt[eéèê][iíì]r[oóòôõ]", "q[uúùü][eéèê][eéèê]n", "k[iíì]ng", "s[oóòôõ]lt[eéèê][iíì]r[aáàâã][oóòôõ]", "v[iíì][uúùü]v[aáàâã]"]
 
 [pedido]
 numero = 7
 termos = "Colchão Luuna Casal"
-precisa = ""
+precisa = "luuna"
 exclui = "solteiro\nqueen\nking\nsolteirão\nviúva"
 tamanho = ""
 pack = ""
