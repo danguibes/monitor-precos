@@ -9,12 +9,12 @@ termos = ["colchão emma casal"]
 
 [regras]
 incluir = ["[eéèê]mm[aáàâã]"]
-excluir = []
+excluir = ["s[oóòôõ]lt[eéèê][iíì]r[oóòôõ]", "q[uúùü][eéèê][eéèê]n", "k[iíì]ng", "s[oóòôõ]lt[eéèê][iíì]r[aáàâã][oóòôõ]", "v[iíì][uúùü]v[aáàâã]", "pr[oóòôõ]t[eéèê]t[oóòôõ]r", "[cç][aáàâã]m[aáàâã]\\s*b[oóòôõ]x", "^\\s*p[iíì]ll[oóòôõ]w\\s*t[oóòôõ]p"]
 
 [pedido]
 numero = 5
 termos = "colchão emma casal"
 precisa = "emma"
-exclui = ""
+exclui = "solteiro\nqueen\nking\nsolteirão\nviúva\nprotetor\ncama box\ncomeça com pillow top"
 tamanho = ""
 pack = ""

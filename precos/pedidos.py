@@ -70,6 +70,10 @@ def palavra_para_regex(texto: str) -> str:
     alternativas = []
     for alt in re.split(r"\s+ou\s+|\s+/\s+", texto.strip(), flags=re.I):
         alt = sem_acento(alt.strip().lower())
+        # "começa com pillow top": só no início do título — o sobrecolchão "Pillow Top Casal
+        # ... (5x138x188)" sai, e o "Colchão ... Pillow Top" fica
+        inicio = alt.startswith("comeca com ")
+        alt = alt.removeprefix("comeca com ").strip()
         if not alt:
             continue
         partes = []
@@ -81,7 +85,8 @@ def palavra_para_regex(texto: str) -> str:
                 partes.append(ACENTOS.get(c, re.escape(c)))
         regex = "".join(partes)
         # sigla curta ("BF") precisa ser palavra inteira, senão casa no meio de qualquer outra
-        alternativas.append(rf"\b{regex}\b" if len(alt.replace(" ", "")) <= 3 else regex)
+        regex = rf"\b{regex}\b" if len(alt.replace(" ", "")) <= 3 else regex
+        alternativas.append(rf"^\s*{regex}" if inicio else regex)
     if not alternativas:
         raise PedidoInvalido(f"linha vazia em '{texto}'")
     return "|".join(alternativas)
@@ -176,12 +181,15 @@ def atender_gerencia(repo: str, log) -> tuple[list[str], bool]:
     dono = repo.split("/")[0]
     try:
         abertos = json.loads(gh("issue", "list", "-R", repo, "--label", GERENCIAR, "--state", "open",
-                                "--json", "number,title,body,author", "--limit", "30"))
+                                "--json", "number,title,body,author,updatedAt", "--limit", "30"))
     except (RuntimeError, ValueError) as e:
         log(f"Pedidos: não consegui ler as issues ({e})")
         return [], False
     avisos, mudou = [], False
     for issue in abertos:
+        if recente(issue):
+            log(f"Pedido #{issue['number']}: mexido há menos de {CARENCIA_MIN} min; espera a próxima volta")
+            continue
         n, autor = issue["number"], issue["author"]["login"]
         if autor != dono:
             avisos.append(f"Pedido #{n} aberto por @{autor} foi ignorado: só pedidos de @{dono} são atendidos.")
@@ -205,6 +213,22 @@ def atender_gerencia(repo: str, log) -> tuple[list[str], bool]:
         log(f"Pedido #{n}: monitor {Path(rel).stem} {frase.split(':')[0]}")
         mudou = True
     return avisos, mudou
+
+
+# ---------------------------------------------------------------- carência
+# O pedido só é atendido depois de CARENCIA_MIN minutos sem mexida. Em 31/10 o vigia
+# leu dois pedidos de colchão 2 e 34 segundos antes de a pessoa editá-los para pôr as
+# exclusões, e a edição de issue já fechada não é lida: os monitores nasceram sem elas.
+CARENCIA_MIN = 3
+
+
+def recente(issue: dict, agora=None) -> bool:
+    from datetime import datetime, timezone
+    quando = issue.get("updatedAt")
+    if not quando:
+        return False
+    agora = agora or datetime.now(timezone.utc)
+    return (agora - datetime.fromisoformat(quando.replace("Z", "+00:00"))).total_seconds() < CARENCIA_MIN * 60
 
 
 # ---------------------------------------------------------------- GitHub
@@ -239,12 +263,15 @@ def atender(repo: str, log) -> tuple[list[str], list[str]]:
     dono = repo.split("/")[0]
     try:
         abertos = json.loads(gh("issue", "list", "-R", repo, "--label", ROTULO, "--state", "open",
-                                "--json", "number,title,body,author", "--limit", "30"))
+                                "--json", "number,title,body,author,updatedAt", "--limit", "30"))
     except (RuntimeError, ValueError) as e:
         log(f"Pedidos: não consegui ler as issues ({e})")
         return [], []
     avisos, prontos = [], []
     for issue in abertos:
+        if recente(issue):
+            log(f"Pedido #{issue['number']}: mexido há menos de {CARENCIA_MIN} min; espera a próxima volta")
+            continue
         n, autor = issue["number"], issue["author"]["login"]
         if autor != dono:
             avisos.append(f"Pedido #{n} aberto por @{autor} foi ignorado: só pedidos de @{dono} são atendidos.")
@@ -277,7 +304,9 @@ def atender(repo: str, log) -> tuple[list[str], list[str]]:
             log(f"Pedido #{n}: o arquivo foi gerado mas não subiu ({e}); fica para a próxima rodada")
             continue
         responder(repo, n, f"Monitor **{r['nome']}** {'alterado' if alterando else 'criado'} em `{rel}`. "
-                           "A primeira consulta começa agora, em todas as lojas; a página se atualiza quando ela terminar.", fechar=True)
+                           "A primeira consulta começa agora, em todas as lojas; a página se atualiza quando ela terminar.\n\n"
+                           "Esta issue fechada não é mais lida: para mudar o monitor, use o link **editar** da página.",
+                  fechar=True)
         log(f"Pedido #{n}: monitor {id_} {'alterado' if alterando else 'criado'}")
         prontos.append(id_)
     for a in avisos:

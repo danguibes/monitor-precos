@@ -78,3 +78,22 @@ def test_sigla_curta_vira_palavra_inteira():
     assert bf.search("Colchão BF Colchões Casal") and bf.search("Colchão Casal - BF")
     assert not bf.search("Colchão Bfresh Casal") and not bf.search("Colchão Casal ABF")
     assert re.search(palavra_para_regex("guldi"), "Colchão Guldi Casal", re.I)   # nome comum segue igual
+
+
+def test_comeca_com_so_vale_no_inicio():
+    import re
+    from precos.pedidos import palavra_para_regex
+    topper = re.compile(palavra_para_regex("começa com pillow top"), re.I)
+    assert topper.search("Pillow Top Casal Guldi Dream Espuma D50 (5x138x188)")
+    assert not topper.search("Colchão Casal Molas Ensacadas Premium Pillow Top Sleep 138x188cm BF Colchões")
+    assert re.search(palavra_para_regex("protetor ou começa com pillow top"), "Pillow Top Casal", re.I)
+
+
+def test_pedido_mexido_ha_pouco_espera():
+    """Em 31/10 o vigia leu o pedido 2 s antes de a pessoa editá-lo; agora espera 3 min parado."""
+    from datetime import datetime, timezone
+    from precos.pedidos import recente
+    agora = datetime(2026, 11, 1, 0, 58, 3, tzinfo=timezone.utc)
+    assert recente({"updatedAt": "2026-11-01T00:57:00Z"}, agora) is True      # mexido 1 min antes
+    assert recente({"updatedAt": "2026-11-01T00:54:00Z"}, agora) is False     # parado há 4 min
+    assert recente({}, agora) is False

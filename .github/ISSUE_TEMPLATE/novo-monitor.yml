@@ -40,7 +40,10 @@ body:
     id: exclui
     attributes:
       label: Não pode conter
-      description: Uma por linha; o anúncio com QUALQUER uma delas é descartado.
+      description: |
+        Uma por linha; o anúncio com QUALQUER uma delas é descartado.
+        "começa com" vale só no início do título: começa com pillow top tira o sobrecolchão e deixa o "Colchão ... Pillow Top".
+        Sigla de até 3 letras (BF) vale como palavra inteira.
       placeholder: |
         refil
         kit

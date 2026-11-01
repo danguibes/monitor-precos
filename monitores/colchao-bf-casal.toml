@@ -9,12 +9,12 @@ termos = ["BF colchões casal"]
 
 [regras]
 incluir = ["\\bbf\\b"]
-excluir = ["s[oóòôõ]lt[eéèê][iíì]r[oóòôõ]", "q[uúùü][eéèê][eéèê]n", "k[iíì]ng", "s[oóòôõ]lt[eéèê][iíì]r[aáàâã][oóòôõ]", "v[iíì][uúùü]v[aáàâã]"]
+excluir = ["s[oóòôõ]lt[eéèê][iíì]r[oóòôõ]", "q[uúùü][eéèê][eéèê]n", "k[iíì]ng", "s[oóòôõ]lt[eéèê][iíì]r[aáàâã][oóòôõ]", "v[iíì][uúùü]v[aáàâã]", "pr[oóòôõ]t[eéèê]t[oóòôõ]r", "[cç][aáàâã]m[aáàâã]\\s*b[oóòôõ]x", "^\\s*p[iíì]ll[oóòôõ]w\\s*t[oóòôõ]p"]
 
 [pedido]
 numero = 9
 termos = "BF colchões casal"
 precisa = "bf"
-exclui = "solteiro\nqueen\nking\nsolteirão\nviúva"
+exclui = "solteiro\nqueen\nking\nsolteirão\nviúva\nprotetor\ncama box\ncomeça com pillow top"
 tamanho = ""
 pack = ""

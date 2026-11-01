@@ -9,12 +9,12 @@ termos = ["colchão guldi casal"]
 
 [regras]
 incluir = ["g[uúùü]ld[iíì]"]
-excluir = []
+excluir = ["s[oóòôõ]lt[eéèê][iíì]r[oóòôõ]", "q[uúùü][eéèê][eéèê]n", "k[iíì]ng", "s[oóòôõ]lt[eéèê][iíì]r[aáàâã][oóòôõ]", "v[iíì][uúùü]v[aáàâã]", "pr[oóòôõ]t[eéèê]t[oóòôõ]r", "[cç][aáàâã]m[aáàâã]\\s*b[oóòôõ]x", "^\\s*p[iíì]ll[oóòôõ]w\\s*t[oóòôõ]p"]
 
 [pedido]
 numero = 6
 termos = "colchão guldi casal"
 precisa = "guldi"
-exclui = ""
+exclui = "solteiro\nqueen\nking\nsolteirão\nviúva\nprotetor\ncama box\ncomeça com pillow top"
 tamanho = ""
 pack = ""
