@@ -185,6 +185,19 @@ def botao_atualizar(porta: int, link_github: str, alvo: str = "", rotulo: str = 
             f'data-alvo="{e(alvo)}" data-github="{e(link_github)}">{e(rotulo)}</button>')
 
 
+def minimo_em_unidades(o: dict, minimos: dict | None) -> str:
+    """"R$ 250,00 · 87 un.": o pedido mínimo da loja e quantas unidades deste anúncio chegam nele."""
+    import math
+    m = (minimos or {}).get(o["loja"])
+    preco = o.get("preco_pix") or o.get("preco")
+    if not m:
+        return "—"
+    if not preco:
+        return brl(m)
+    n = math.ceil(m / preco - 1e-9)
+    return f"{brl(m)} · {n} un." if n > 1 else brl(m)
+
+
 def selo_augustinus(oferta, ref, cfg) -> str:
     """Só a marca, no card: a conta e o link ficam uma vez no quadro do topo."""
     from .augustinus import comparar
@@ -222,7 +235,7 @@ def quadro_augustinus(ref, cfg, melhores) -> str:
 
 
 def gerar_relatorio(cfg, erros: list[str], destino=RELATORIO, origem=HISTORICO, publico=False,
-                    link_historico="historico.html", referencia=None, botao=""):
+                    link_historico="historico.html", referencia=None, botao="", minimos=None):
     """publico=True é a cópia do GitHub Pages: sem o CEP, com noindex e com volta para o índice."""
     historico = ler_historico(origem)
     descoberta = cfg.get("modo") == "descoberta"
@@ -280,13 +293,14 @@ def gerar_relatorio(cfg, erros: list[str], destino=RELATORIO, origem=HISTORICO, 
                 f'<tr>{primeira}'
                 f'<td class="n">{brl(o["preco_pix"])}</td><td class="n">{brl(o["frete"])}</td>'
                 f'<td class="n"><b>{brl(o["total_pix"])}</b></td><td class="n">{brl(o["total_cartao"])}</td>'
+                f'<td class="n">{minimo_em_unidades(o, minimos)}</td>'
                 f'<td>{e(o["prazo"])}</td><td><a href="{e(o["link"])}" target="_blank" rel="noopener">link</a></td></tr>')
     avisos = "".join(f"<li>{e(x)}</li>" for x in erros)
     titulo = cfg.get("titulo")
     cabeca = (f'<th>Produto</th><th>Loja</th><th>Vendedor</th>'
               + (f'<th class="n">Total{un}</th>' if conta else '') + '<th class="n">Preço</th>'
               if descoberta else '<th>Modelo</th><th>Loja</th><th>Vendedor</th><th class="n">Pix</th>')
-    colunas = (10 if conta else 9) if descoberta else 9
+    colunas = (11 if conta else 10) if descoberta else 10
     rodape = ("Edite o arquivo do monitor em monitores/ para mudar termos e regras; as lojas ficam em lojas.toml."
               if descoberta else "Edite monitores/freezer.toml para mudar modelos; as lojas ficam em lojas.toml.")
     cep = "de casa" if publico else cfg["cep"]
@@ -305,7 +319,7 @@ def gerar_relatorio(cfg, erros: list[str], destino=RELATORIO, origem=HISTORICO, 
 {quadro_augustinus(referencia, cfg, [r["melhor"] for r in res])}</div>
 <section class="grid">{"".join(cards)}</section>
 <div class="tab"><table><thead><tr>{cabeca}
-<th class="n">Frete</th><th class="n">Total Pix</th><th class="n">Total cartão</th><th>Prazo</th><th></th></tr></thead>
+<th class="n">Frete</th><th class="n">Total Pix</th><th class="n">Total cartão</th><th class="n" title="Valor mínimo do pedido para a loja entregar, e quantas unidades deste anúncio chegam nele">Mínimo p/ entregar</th><th>Prazo</th><th></th></tr></thead>
 <tbody>{"".join(linhas_tab) or f'<tr><td colspan="{colunas}">Nenhuma oferta encontrada.</td></tr>'}</tbody></table></div>
 {f'<h3>Avisos desta rodada</h3><ul class="avisos">{avisos}</ul>' if avisos else ''}
 <p class="avisos">{rodape_final}</p>

@@ -156,7 +156,7 @@ def gerar_site(monitores: list[dict], pasta: Path = SITE, repo: str | None = Non
         botao = botao_atualizar(porta, link_atualizar(repo), m["id"], "↻ atualizar só este") if repo else ""
         res = gerar_relatorio(m["cfg"], estado.get("avisos", []), pasta / f"{m['id']}.html", m["historico"],
                               publico=True, link_historico=f"{m['id']}-historico.html", referencia=ref,
-                              botao=botao)
+                              botao=botao, minimos=estado.get("pedido_minimo"))
         gerar_historico(m["cfg"], pasta / f"{m['id']}-historico.html", m["historico"],
                         volta=f"{m['id']}.html", publico=True)
         melhores = [r["melhor"] for r in res if r["melhor"]]

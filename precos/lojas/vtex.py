@@ -79,6 +79,16 @@ def simular_com_canal(host, sku, vendedor, cep, cache_sc: dict):
     return None
 
 
+def pedido_minimo(sim: dict) -> float | None:
+    """O valor mínimo do pedido para a loja entregar (minimumOrderValue, em centavos), ou None.
+
+    Medido em 01/11/2026: o Atacadão devolve 25000 (R$ 250,00) na simulação. O frete
+    vem zerado, mas abaixo disso a loja não entrega.
+    """
+    v = sim.get("minimumOrderValue")
+    return reais(v) if v else None
+
+
 def ler_simulacao(sim: dict):
     item = sim["items"][0]
     # "available", "withoutStock", "cannotBeDelivered"...: só a primeira vira oferta.
@@ -111,6 +121,7 @@ def coletar(cfg: dict, estado: dict, produtos=None, filtro=None):
     cep = re.sub(r"\D", "", cfg["cep"])
     volt = str(cfg.get("voltagem", "127"))
     cache_sc = estado.setdefault("canal_vendas", {})
+    minimos = {}  # por loja; vai para estado["pedido_minimo"] ao fim
     cache_regiao, cache_loja, sem_loja = {}, {}, set()
     agora = datetime.now().strftime("%Y-%m-%d %H:%M")
     ofertas, erros = [], []
@@ -165,6 +176,8 @@ def coletar(cfg: dict, estado: dict, produtos=None, filtro=None):
                         dados, motivo = ler_simulacao(sim)
                         if not dados:
                             continue  # vendedor não entrega no CEP
+                        if pedido_minimo(sim):
+                            minimos[nome_loja] = pedido_minimo(sim)
                         tot_pix = round((dados["preco_pix"] or 0) + dados["frete"], 2)
                         tot_cartao = round((dados["preco"] or 0) + dados["frete"], 2)
                         ofertas.append({
@@ -176,6 +189,7 @@ def coletar(cfg: dict, estado: dict, produtos=None, filtro=None):
                             "total_pix": tot_pix, "total_cartao": tot_cartao,
                             "link": p.get("link", ""),
                         })
+    estado["pedido_minimo"] = minimos  # o da última rodada: loja sem oferta não fica com mínimo velho
     # remove duplicatas (mesma loja/sku/vendedor)
     unicos = {}
     for o in ofertas:

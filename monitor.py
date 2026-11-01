@@ -115,7 +115,7 @@ def rodar(m, argv, aug=None) -> None:
     salvar_json(m["estado"], estado)
 
     res = gerar_relatorio(cfg, erros, m["relatorio"], m["historico"],
-                          referencia=estado.get("referencia_augustinus"))
+                          referencia=estado.get("referencia_augustinus"), minimos=estado.get("pedido_minimo"))
     gerar_historico(cfg, m["relatorio"].parent / "historico.html", m["historico"], volta=m["relatorio"].name)
     regra = cfg.get("abrir_relatorio", "quando_baixar")
     if "--sem-abrir" in argv:
@@ -220,8 +220,9 @@ def main(argv):
     escolhidos = escolher(ativos if "--monitor" not in argv else monitores, argv)
     if "--relatorio" in argv:
         for m in escolhidos:
+            est = carregar_json(m["estado"], {})
             gerar_relatorio(m["cfg"], [], m["relatorio"], m["historico"],
-                            referencia=carregar_json(m["estado"], {}).get("referencia_augustinus"))
+                            referencia=est.get("referencia_augustinus"), minimos=est.get("pedido_minimo"))
             gerar_historico(m["cfg"], m["relatorio"].parent / "historico.html", m["historico"],
                             volta=m["relatorio"].name)
             abrir(m["relatorio"])
