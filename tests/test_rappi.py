@@ -40,3 +40,12 @@ def test_produtos_titulo_e_esgotado():
     assert rappi.titulo(ps[2]) == "12x Crystal Com Gas 500 mL"                     # já está no nome: não repete
     assert rappi.titulo(ps[0]) == "Minalba Água Mineral com Gás 1.5l 1 Und"
     assert rappi.produtos_da_busca({}) == []
+
+
+def test_entrega_da_conta_logada_vem_dos_dados_da_loja():
+    """Logado, o cabeçalho não tem "Taxas"; a entrega da conta está em storeContext (01/11/2026: 0)."""
+    dados = {"props": {"pageProps": {"storeContext": {"charges": {"delivery": {"delivery_fee_charge": 0}}}}}}
+    logado = "Assaí Atacadista\nEntrega\nSeg, 8 AM\nPromoções\n"
+    assert rappi.entrega_da_conta(logado, dados) == 0.0
+    assert rappi.entrega_da_conta(CAB_SEM_LOGIN, dados) is None    # visitante: grátis só de cliente novo
+    assert rappi.entrega_da_conta(logado, {}) is None

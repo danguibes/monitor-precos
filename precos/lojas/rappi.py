@@ -8,9 +8,11 @@ e Keeta são só aplicativo, e o Rappi tem site, com preço sem login.
     endereço da conta (sem login, uma loja padrão da Grande São Paulo);
   - a busca: <loja>/s?term=<termo>, e os produtos vêm prontos no __NEXT_DATA__
     da página (nome, preço, apresentação "1 X 500 mL", in_stock, is_available);
-  - a taxa de entrega: o cabeçalho da loja ("Taxas / R$ 9,99"). Sem login ele diz
-    "Entrega grátis (novos usuários)", que não vale para quem já é cliente — aí o
-    frete fica como não informado. Logue com: py monitor.py --configurar rappi
+  - a taxa de entrega: sem login o cabeçalho diz "Taxas / Entrega grátis (novos
+    usuários)", que não vale para quem já é cliente — aí o frete fica como não
+    informado. Logado (medido em 01/11/2026), o cabeçalho perde a linha "Taxas" e
+    a entrega da conta vem em storeContext.charges.delivery.delivery_fee_charge,
+    no __NEXT_DATA__ da loja. Logue com: py monitor.py --configurar rappi
 
 O nome da loja traz o bairro e o cabeçalho logado traz o endereço: nada disso
 sai daqui. A oferta vai como loja "Assaí", vendedor "Rappi".
@@ -62,6 +64,15 @@ def ler_cabecalho(t: str) -> tuple[float | None, str]:
     return None, prazo
 
 
+def entrega_da_conta(t: str, dados: dict) -> float | None:
+    """A entrega da conta logada, pelos dados da loja; None se o cabeçalho é o de quem não entrou."""
+    if re.search(r"\nTaxas\n", t):
+        return None  # cabeçalho de visitante: a promoção de cliente novo não é o frete da conta
+    ctx = ((dados or {}).get("props") or {}).get("pageProps", {}).get("storeContext") or {}
+    v = ((ctx.get("charges") or {}).get("delivery") or {}).get("delivery_fee_charge")
+    return float(v) if isinstance(v, (int, float)) else None
+
+
 def produtos_da_busca(dados: dict) -> list[dict]:
     fb = ((dados or {}).get("props") or {}).get("pageProps", {}).get("fallback") or {}
     for chave, valor in fb.items():
@@ -94,7 +105,13 @@ def coletar(page, cfg, produtos, data, filtros, erros):
         return []
     if not ir(page, loja, espera=4):
         return []
-    frete, prazo = ler_cabecalho(texto(page))
+    t = texto(page)
+    frete, prazo = ler_cabecalho(t)
+    if frete is None:
+        try:
+            frete = entrega_da_conta(t, json.loads(page.eval_on_selector("#__NEXT_DATA__", "e => e.textContent")))
+        except Exception:
+            pass
     if frete is None:
         erros.append("Assaí (Rappi): sem a taxa de entrega da sua conta (logue com py monitor.py --configurar rappi)")
     ofertas = []
