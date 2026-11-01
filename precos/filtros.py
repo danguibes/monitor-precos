@@ -22,11 +22,16 @@ def voltagem_ok(texto: str, preferida: str) -> bool:
 # Peça e acessório trazem o modelo no título ("Termostato Freezer Consul Cvu20 Cvu18", visto em 31/10)
 _PECA = re.compile(r"garantia|cesto|capa|pe[çc]a|borracha|termostato|resist[eê]ncia|gaxeta|prateleira|puxador"
                    r"|dobradi[çc]a|sensor|placa|timer|interruptor|ventilador", re.I)
+# Peça que COMEÇA pelo nome da peça ("Tampa Do Gaveta Freezer Vertical Consul Cvu18", R$ 45,49, era o
+# melhor freezer em 01/11; "Conjunto Relé De Partida Freezer"). Só no começo: "4 Gavetas" e
+# "Compressor Inverter" estão no meio do título de freezer de verdade.
+_PECA_NO_INICIO = re.compile(r"^\W*(tampa|conjunto|rel[eé]|kit|bandeja|gaveta|porta|p[eé]s?|motor|compressor"
+                             r"|filtro|l[aâ]mpada|capacitor|cabo|suporte|organizador|pezinho|rod[ií]zio)\b", re.I)
 
 
 def eh_freezer(nome: str) -> bool:
     n = nome.lower()
-    return ("freezer" in n or "congelador" in n) and not _PECA.search(n)
+    return ("freezer" in n or "congelador" in n) and not _PECA.search(n) and not _PECA_NO_INICIO.search(n)
 
 
 def filtro_por_regras(regras: dict):
