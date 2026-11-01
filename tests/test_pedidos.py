@@ -131,3 +131,16 @@ def test_atender_ignora_terceiros_e_cria_o_do_dono(tmp_path, monkeypatch):
     commits = [c for c in chamadas if c[:2] == ("git", "commit")]
     assert len(commits) == 1 and commits[0][-1].endswith("agua-com-gas-1-5-l-teste.toml")  # só esse arquivo
     assert ("gh", "issue", "close", "4", "-R", "dono/repo") in chamadas
+
+
+def test_pasta_do_formulario_e_o_editar_que_mantem_a_atual():
+    from precos.pedidos import preservar
+    base = {"nome": "Detergente", "termos": "detergente", "frequencia": "12 horas"}
+    _, novo = montar_toml(dict(base, pasta="Mercado"), 7)
+    assert tomllib.loads(novo)["pasta"] == "mercado"
+    _, eletro = montar_toml(dict(base, pasta="Eletrônicos"), 7)
+    assert tomllib.loads(eletro)["pasta"] == "eletronicos"
+    _, manter = montar_toml(dict(base, pasta="Manter a atual (ou Outros, se for novo)"), 7)
+    assert "pasta" not in tomllib.loads(manter)
+    assert tomllib.loads(preservar(manter, novo))["pasta"] == "mercado"          # editar sem escolher: fica
+    assert tomllib.loads(preservar(eletro, novo))["pasta"] == "eletronicos"      # escolheu outra: muda

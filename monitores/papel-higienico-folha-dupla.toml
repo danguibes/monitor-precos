@@ -2,6 +2,7 @@
 # ele reabre o formulário preenchido. Editar este arquivo à mão também funciona.
 
 nome = "Papel higiênico folha dupla"
+pasta = "mercado"
 titulo = "Papel higiênico folha dupla"
 modo = "descoberta"
 intervalo_minimo_horas = 12

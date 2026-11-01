@@ -2,6 +2,7 @@
 # ele reabre o formulário preenchido. Editar este arquivo à mão também funciona.
 
 nome = "Lenço umedecido"
+pasta = "mercado"
 titulo = "Lenço umedecido"
 modo = "descoberta"
 intervalo_minimo_horas = 12

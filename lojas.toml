@@ -1,6 +1,6 @@
-# Registro único de lojas. TODO monitor pesquisa TODAS as lojas daqui:
-# nenhum monitor escolhe lojas. Loja que não vende o produto simplesmente
-# não devolve oferta.
+# Registro único de lojas. Nenhum monitor escolhe lojas: ele diz a sua PASTA
+# (pasta = "mercado") e procura nas lojas dela, listadas em [pastas] no fim.
+# Monitor sem pasta procura em todas.
 #
 # Para incluir uma loja VTEX, basta o host: busca e frete vêm da API pública
 # (/api/catalog_system e /api/checkout/pub/orderForms/simulation). As outras
@@ -63,3 +63,22 @@ host = "www.obahortifruti.com.br"
 #   Assaí    — só vende online por iFood e Rappi
 #   Hirota   — só retirada no CEP de casa
 #   Zaffari, Covabra, Savegnago, Na Sua Casa (Coca-Cola) — VTEX, não entregam no CEP
+
+# Pastas da página principal, nesta ordem, e as lojas de cada uma. Montadas em
+# 01/11/2026 pelo histórico: cada pasta ficou com toda loja que já trouxe oferta
+# para algum monitor dela. Loja que não está na pasta não é consultada — o que
+# poupa páginas nas lojas em que o monitor entra com a sua conta (Mercado Livre,
+# Vila das Frutas, Rappi). Loja nova entra no registro acima E na pasta.
+[pastas.eletronicos]
+nome = "Eletrônicos"
+lojas = ["Mercado Livre", "Amazon", "Magalu", "Casas Bahia", "Carrefour", "Fast Shop",
+         "Electrolux", "Consul", "Brastemp", "Compra Certa", "Midea"]
+
+[pastas.moveis]
+nome = "Móveis"
+lojas = ["Mercado Livre", "Amazon", "Magalu", "Casas Bahia", "Carrefour", "Fast Shop"]
+
+[pastas.mercado]
+nome = "Mercado"
+lojas = ["Pão de Açúcar", "Atacadão", "Assaí", "Oba Hortifruti", "Vila das Frutas", "Mambo",
+         "Carrefour", "Amazon", "Mercado Livre", "Magalu", "Fast Shop", "Casas Bahia"]

@@ -2,6 +2,7 @@
 # ele reabre o formulário preenchido. Editar este arquivo à mão também funciona.
 
 nome = "Colchão BF Casal"
+pasta = "moveis"
 titulo = "Colchão BF Casal"
 modo = "descoberta"
 intervalo_minimo_horas = 12

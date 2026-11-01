@@ -1,8 +1,9 @@
 # Freezer: modo "acompanhado" — modelos fixos, cada um com o código que precisa
 # aparecer no anúncio E na página do produto (padrao, uma regex).
-# As lojas não ficam aqui: todo monitor pesquisa todas as de lojas.toml.
+# As lojas não ficam aqui: o monitor pesquisa as da pasta dele, em lojas.toml.
 
 nome = "Freezer"
+pasta = "eletronicos"
 modo = "acompanhado"
 voltagem = "127"  # 127 ou 220; bivolt sempre entra
 intervalo_minimo_horas = 6

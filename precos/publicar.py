@@ -98,14 +98,29 @@ COMO_LOJA = {"Assaí": "Assaí (pelo Rappi)"}
 
 
 def lojas_varridas(cfg: dict) -> list[str]:
-    """Todas as lojas que toda rodada consulta, de lojas.toml (VTEX, API própria e navegador)."""
+    """As lojas que o monitor consulta (as da pasta dele, já filtradas em monitores.montar)."""
     nomes = [l["nome"] for l in cfg.get("lojas", [])] + list(cfg.get("lojas_api", [])) + list(cfg.get("lojas_navegador", []))
     return sorted({COMO_LOJA.get(n, n) for n in nomes}, key=lambda n: n.lower())
 
 
 def gerar_indice(itens: list[dict], destino: Path, repo: str | None = None, avisos: list[str] = (),
-                 porta: int = 0, lojas: list[str] = ()) -> None:
+                 porta: int = 0) -> None:
+    """Os cards agrupados por pasta (Eletrônicos, Móveis, Mercado...), cada uma com as lojas que varre."""
     e = html.escape
+    grupos: dict[str, list] = {}
+    for it in sorted(itens, key=lambda it: (it.get("cfg") or {}).get("pasta_ordem", 99)):
+        grupos.setdefault((it.get("cfg") or {}).get("pasta_nome", "Outros"), []).append(it)
+    secoes = []
+    for nome_pasta, membros in grupos.items():
+        lojas = sorted({l for it in membros for l in lojas_varridas(it.get("cfg") or {})}, key=str.lower)
+        linha = f'<p class="det lojas">Lojas varridas ({len(lojas)}): {" · ".join(e(l) for l in lojas)}</p>' if lojas else ""
+        secoes.append(f'<section class="pasta"><h2 class="titulo-pasta">{e(nome_pasta)} '
+                      f'<span class="det">{len(membros)} monitor(es)</span></h2>{linha}'
+                      f'<div class="grid">{"".join(_cards(membros, repo, e))}</div></section>')
+    _escrever_indice(destino, secoes, repo, avisos, porta, e)
+
+
+def _cards(itens, repo, e) -> list[str]:
     cards = []
     for it in itens:
         mel = it["melhor"]
@@ -128,9 +143,13 @@ def gerar_indice(itens: list[dict], destino: Path, repo: str | None = None, avis
                      f'<div class="meta">última consulta {e(it["ultima"] or "—")}</div>{corpo}'
                      f'<a href="{e(it["id"])}.html">ver todas as ofertas →</a> · '
                      f'<a href="{e(it["id"])}-historico.html">histórico</a>{gerir}</article>')
+    return cards
+
+
+def _escrever_indice(destino, secoes, repo, avisos, porta, e) -> None:
     novo = (f'<p><a class="botao" href="{e(link_novo_monitor(repo))}" target="_blank" rel="noopener">'
             f'+ Novo monitor</a> <span class="det">abre um formulário no GitHub; com o notebook ligado, '
-            f'em até 5 minutos ele cria o monitor e já pesquisa em todas as lojas</span></p>'
+            f'em até 5 minutos ele cria o monitor e já pesquisa nas lojas da pasta</span></p>'
             f'<p>{botao_atualizar(porta, link_atualizar(repo))} <span class="det resposta">'
             f'{"no notebook, começa na hora; de outro aparelho, abre um pedido no GitHub que o notebook atende em até 5 minutos" if porta else "abre um pedido no GitHub; com o notebook ligado, em até 5 minutos ele roda todos os monitores"}'
             f'</span></p>') if repo else ""
@@ -139,15 +158,16 @@ def gerar_indice(itens: list[dict], destino: Path, repo: str | None = None, avis
 <meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex">
 <title>Monitor de preços</title><style>{ESTILO}
 .botao{{display:inline-block;background:var(--ac);color:var(--card);padding:8px 14px;border-radius:10px;text-decoration:none;font-weight:600;margin-top:18px}}
-.lojas{{margin:-12px 0 18px}} .acoes{{margin-top:8px}} .card-pausado{{opacity:.6}}
+.lojas{{margin:0 0 12px}} .pasta{{margin:0 0 28px}}
+.titulo-pasta{{font-size:20px;margin:8px 0 4px;padding-bottom:4px;border-bottom:1px solid var(--ln)}}
+.titulo-pasta .det{{font-weight:400}} .acoes{{margin-top:8px}} .card-pausado{{opacity:.6}}
 .pausado{{border:1px solid var(--mut);color:var(--mut);border-radius:99px;font-size:11px;padding:1px 8px}}
 .botao.secundario{{background:transparent;color:var(--ac);border:1.5px solid var(--ac);margin-top:4px}}
 button.botao{{font:inherit;cursor:pointer}}
 </style></head><body><main>
 <h1>Monitor de preços</h1>
 <p class="sub">Melhor oferta de cada monitor, com o frete para um CEP fixo · gerado em {datetime.now():%Y-%m-%d %H:%M}</p>
-{f'<p class="det lojas">Lojas varridas em todos os monitores ({len(lojas)}): {" · ".join(e(l) for l in lojas)}</p>' if lojas else ''}
-<section class="grid">{"".join(cards)}</section>
+{"".join(secoes)}
 {novo}
 {f'<h3>Avisos</h3><ul class="avisos">{lista_avisos}</ul>' if lista_avisos else ''}
 </main>{SCRIPT_ATUALIZAR if porta and repo else ''}</body></html>""", encoding="utf-8")
@@ -175,8 +195,7 @@ def gerar_site(monitores: list[dict], pasta: Path = SITE, repo: str | None = Non
         melhor = min(com_frete, key=lambda x: x["total_pix"]) if com_frete else None
         itens.append({"id": m["id"], "nome": m["cfg"].get("nome", m["id"]), "melhor": melhor,
                       "ultima": melhor["data"] if melhor else None, "cfg": m["cfg"], "referencia": ref})
-    gerar_indice(itens, pasta / "index.html", repo, carregar_json(AVISOS_PEDIDOS, []), porta,
-                 lojas_varridas(monitores[0]["cfg"]) if monitores else [])
+    gerar_indice(itens, pasta / "index.html", repo, carregar_json(AVISOS_PEDIDOS, []), porta)
 
 
 def git(*args, cwd: Path) -> str:

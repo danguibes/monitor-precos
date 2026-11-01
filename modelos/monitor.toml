@@ -1,6 +1,7 @@
 # Novo monitor. Troque o nome do arquivo (ex.: detergente.toml), o título, os
 # termos e as regras, e salve. Na próxima rodada do notebook ele já é pesquisado
-# em TODAS as lojas de lojas.toml — monitor não escolhe lojas.
+# nas lojas da sua pasta (pasta = "mercado", "eletronicos" ou "moveis", em
+# lojas.toml); sem pasta, em todas. Monitor não escolhe lojas uma a uma.
 #
 # As regras usam regex: [áa] aceita com e sem acento, | é "ou", \s é espaço.
 # Se o arquivo quebrar, o Actions do GitHub avisa (aba Actions, teste vermelho).

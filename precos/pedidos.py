@@ -30,7 +30,7 @@ ACOES = ("pausar", "retomar", "excluir")
 CAMPOS = {  # rótulo do campo no formulário -> chave
     "Nome": "nome", "Como procurar": "termos", "Precisa conter": "precisa", "Não pode conter": "exclui",
     "Tamanho de uma unidade": "tamanho", "Comparar o custo de quantas unidades": "pack",
-    "Frequência": "frequencia", "Monitor a alterar": "monitor", "Monitor": "monitor", "Ação": "acao",
+    "Frequência": "frequencia", "Pasta": "pasta", "Monitor a alterar": "monitor", "Monitor": "monitor", "Ação": "acao",
 }
 ACENTOS = {"a": "[aáàâã]", "e": "[eéèê]", "i": "[iíì]", "o": "[oóòôõ]", "u": "[uúùü]", "c": "[cç]"}
 
@@ -121,6 +121,9 @@ def montar_toml(r: dict, numero: int) -> tuple[str, str]:
             raise PedidoInvalido(f"a quantidade '{r['pack']}' precisa ser um número de 2 a 48")
         regras["montar_pack"] = int(r["pack"])
     horas = int(re.match(r"\d+", r.get("frequencia", "12")).group())
+    # "Mercado" -> "mercado"; "Manter a atual..." (o padrão, para o editar não mudar de pasta) -> nenhuma
+    pasta = sem_acento(r.get("pasta", "")).strip().lower()
+    pasta = pasta if re.fullmatch(r"[a-z]+", pasta) else ""
     id_ = r.get("monitor", "").strip() or slug(nome)
 
     s = lambda v: json.dumps(v, ensure_ascii=False)  # string TOML básica == string JSON
@@ -128,6 +131,7 @@ def montar_toml(r: dict, numero: int) -> tuple[str, str]:
     texto = [f"# Criado pelo formulário, pedido #{numero}. Para mudar, use o link \"editar\" da página:",
              "# ele reabre o formulário preenchido. Editar este arquivo à mão também funciona.", "",
              f"nome = {s(nome)}", f"titulo = {s(nome)}", 'modo = "descoberta"',
+             *([f"pasta = {s(pasta)}"] if pasta else []),
              f"intervalo_minimo_horas = {horas}", f"termos = {lista(termos)}", "", "[regras]",
              f"incluir = {lista(regras['incluir'])}", f"excluir = {lista(regras['excluir'])}"]
     if "volume_ml" in regras:
@@ -148,13 +152,14 @@ def montar_toml(r: dict, numero: int) -> tuple[str, str]:
 
 # O formulário não sabe destas chaves; editar pelo formulário reescreve o arquivo e as perderia
 # (antes de 01/11, editar um monitor pausado o despausava).
-PRESERVAR = ("pausado", "mercado_livre", "unidade_nome", "limiar_augustinus", "por_unidade")
+PRESERVAR = ("pausado", "mercado_livre", "unidade_nome", "limiar_augustinus", "por_unidade", "pasta")
 
 
 def preservar(novo: str, antigo: str) -> str:
     """O .toml novo, com as chaves de PRESERVAR que o antigo tinha, no topo, antes da primeira tabela."""
-    velho = tomllib.loads(antigo)
-    extras = [f"{k} = {json.dumps(velho[k], ensure_ascii=False)}" for k in PRESERVAR if k in velho]
+    velho, ja = tomllib.loads(antigo), tomllib.loads(novo)
+    # a pasta escolhida no formulário vence; "manter a atual" não escreve pasta e a antiga fica
+    extras = [f"{k} = {json.dumps(velho[k], ensure_ascii=False)}" for k in PRESERVAR if k in velho and k not in ja]
     if not extras:
         return novo
     linhas = novo.splitlines()
@@ -328,7 +333,7 @@ def atender(repo: str, log) -> tuple[list[str], list[str]]:
             log(f"Pedido #{n}: o arquivo foi gerado mas não subiu ({e}); fica para a próxima rodada")
             continue
         responder(repo, n, f"Monitor **{r['nome']}** {'alterado' if alterando else 'criado'} em `{rel}`. "
-                           "A primeira consulta começa agora, em todas as lojas; a página se atualiza quando ela terminar.\n\n"
+                           "A primeira consulta começa agora, nas lojas da pasta; a página se atualiza quando ela terminar.\n\n"
                            "Esta issue fechada não é mais lida: para mudar o monitor, use o link **editar** da página.",
                   fechar=True)
         log(f"Pedido #{n}: monitor {id_} {'alterado' if alterando else 'criado'}")

@@ -115,8 +115,13 @@ O monitor faz `git pull` antes de cada rodada, e o Actions acusa se o arquivo qu
 | freezer | `monitores/freezer.toml` | acompanhado: modelos fixos, regex por modelo | `dados/` |
 | água com gás 6 × 1,5 L | `monitores/agua-com-gas.toml` | descoberta: busca aberta, entra o que passa nas regras | `dados/agua-com-gas/` |
 
-**Nenhum monitor escolhe lojas.** Todos pesquisam todas as lojas de `lojas.toml`;
-a loja que não vende o produto só não devolve oferta.
+**Nenhum monitor escolhe lojas uma a uma.** Cada um diz a sua **pasta**
+(`pasta = "mercado"`, `"eletronicos"` ou `"moveis"`) e pesquisa as lojas dela,
+listadas em `[pastas]` no fim de `lojas.toml`; a página principal agrupa os
+monitores pelas mesmas pastas. Monitor sem pasta vai para "Outros" e pesquisa
+todas — esquecer a pasta nunca deixa de procurar. A razão de não pesquisar tudo
+em todo lugar é a conta: Mercado Livre, Vila das Frutas e Rappi entram com o seu
+login, e procurar colchão no Assaí só gasta páginas dela.
 
 No **modo descoberta** o monitor define `termos` amplos de busca e `regras`:
 `incluir` e `excluir` (regex), `volume_ml` (de uma unidade) e `montar_pack`. Com

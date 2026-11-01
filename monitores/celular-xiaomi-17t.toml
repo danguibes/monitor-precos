@@ -2,6 +2,7 @@
 # ele reabre o formulário preenchido. Editar este arquivo à mão também funciona.
 
 nome = "Celular Xiaomi 17T"
+pasta = "eletronicos"
 titulo = "Celular Xiaomi 17T"
 modo = "descoberta"
 intervalo_minimo_horas = 12

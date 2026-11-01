@@ -1,7 +1,7 @@
 """Os monitores, montados a partir de quatro arquivos com donos diferentes:
 
   config.toml          opções gerais
-  lojas.toml           o registro único de lojas — todo monitor pesquisa todas
+  lojas.toml           o registro único de lojas e as pastas — o monitor pesquisa as da sua
   monitores/<id>.toml  o que cada monitor procura (um arquivo por monitor)
   local.toml           o que é pessoal (o CEP); fica fora do git
 
@@ -82,9 +82,28 @@ def registro_de_lojas(lojas: dict) -> dict:
             "lojas_navegador": lojas.get("navegador", [])}
 
 
+def pastas(lojas: dict) -> dict[str, dict]:
+    """{id: {"nome", "lojas"}} na ordem de lojas.toml."""
+    return dict(lojas.get("pastas") or {})
+
+
 def montar(id_: str, proprio: dict, geral: dict, lojas: dict, local: dict) -> dict:
-    """O cfg de um monitor. O próprio monitor manda em tudo, menos nas lojas e no CEP."""
-    cfg = geral | proprio | registro_de_lojas(lojas) | {"cep": local.get("cep", "")}
+    """O cfg de um monitor. O próprio monitor manda em tudo, menos nas lojas e no CEP.
+
+    As lojas são as da pasta do monitor; sem pasta (ou com uma que lojas.toml não
+    conhece), todas — esquecer a pasta nunca deixa de procurar.
+    """
+    reg = registro_de_lojas(lojas)
+    pasta = pastas(lojas).get(proprio.get("pasta") or "")
+    if pasta:
+        dela = set(pasta.get("lojas") or [])
+        reg = {"lojas": [l for l in reg["lojas"] if l["nome"] in dela],
+               "lojas_api": [n for n in reg["lojas_api"] if n in dela],
+               "lojas_navegador": [n for n in reg["lojas_navegador"] if n in dela]}
+    ordem = list(pastas(lojas))
+    cfg = geral | proprio | reg | {"cep": local.get("cep", ""),
+                                   "pasta_nome": pasta["nome"] if pasta else "Outros",
+                                   "pasta_ordem": ordem.index(proprio["pasta"]) if pasta else len(ordem)}
     cfg.setdefault("nome", id_)
     return cfg
 
@@ -117,7 +136,7 @@ def validar_monitor(m: dict) -> None:
     if m.get("modo") not in ("acompanhado", "descoberta"):
         raise ConfiguracaoInvalida("modo precisa ser acompanhado ou descoberta")
     if "lojas" in m or "lojas_navegador" in m or "lojas_api" in m:
-        raise ConfiguracaoInvalida("monitor não escolhe lojas: todas valem para todos")
+        raise ConfiguracaoInvalida("monitor não escolhe lojas: elas vêm da pasta, em lojas.toml")
     try:
         if m["modo"] == "descoberta":
             if not m.get("termos") or not m.get("titulo"):

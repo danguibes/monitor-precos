@@ -1,8 +1,9 @@
 # Água com gás: modo "descoberta" — busca aberta, entra todo anúncio que
-# passa nas regras. As lojas não ficam aqui: todo monitor pesquisa todas as
-# de lojas.toml.
+# passa nas regras. As lojas não ficam aqui: o monitor pesquisa as da pasta
+# dele, listadas em lojas.toml.
 
 nome = "Água com gás"
+pasta = "mercado"
 titulo = "Água com gás · pack 6 × 1,5 L"
 modo = "descoberta"
 intervalo_minimo_horas = 12

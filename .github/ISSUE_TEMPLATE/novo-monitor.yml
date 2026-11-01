@@ -7,7 +7,7 @@ body:
     attributes:
       value: |
         Preencha em palavras comuns. Na próxima rodada do notebook o monitor lê este pedido,
-        cria o monitor, pesquisa em **todas** as lojas e responde aqui com o resultado.
+        cria o monitor, pesquisa nas lojas da pasta escolhida e responde aqui com o resultado.
         Só pedidos abertos pelo dono do repositório são atendidos.
   - type: input
     id: nome
@@ -64,6 +64,20 @@ body:
         Opcional. Com 6, a comparação é o custo de receber 6 unidades: avulsas, kits que somem 6,
         ou o pack de 6 — com o frete contado uma vez. Deixe vazio para comparar anúncio por anúncio.
       placeholder: "6"
+  - type: dropdown
+    id: pasta
+    attributes:
+      label: Pasta
+      description: |
+        Onde o monitor aparece na página, e em que lojas ele procura (cada pasta tem as suas).
+        Ao editar, "Manter a atual" deixa o monitor onde está; num monitor novo, ele vai para "Outros" e procura em todas.
+      options:
+        - Manter a atual (ou Outros, se for novo)
+        - Mercado
+        - Eletrônicos
+        - Móveis
+    validations:
+      required: true
   - type: dropdown
     id: frequencia
     attributes:

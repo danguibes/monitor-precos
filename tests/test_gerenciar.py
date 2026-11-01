@@ -109,11 +109,17 @@ def test_numero_nao_pode_estar_dentro_de_outro_numero():
     assert not re.search(palavra_para_regex("256"), "Xiaomi 17T 512GB", re.I)
 
 
-def test_topo_lista_as_lojas_varridas(tmp_path):
+def test_indice_agrupa_por_pasta_com_as_lojas_de_cada_uma(tmp_path):
     from precos.publicar import lojas_varridas
     cfg = {"lojas": [{"nome": "Mambo", "host": "x"}, {"nome": "Atacadão", "host": "y"}],
            "lojas_api": ["Pão de Açúcar"], "lojas_navegador": ["Amazon", "Assaí", "Mercado Livre"]}
-    lojas = lojas_varridas(cfg)
-    assert lojas == ["Amazon", "Assaí (pelo Rappi)", "Atacadão", "Mambo", "Mercado Livre", "Pão de Açúcar"]
-    gerar_indice([], tmp_path / "index.html", None, lojas=lojas)
-    assert "Lojas varridas em todos os monitores (6): Amazon · Assaí (pelo Rappi)" in (tmp_path / "index.html").read_text(encoding="utf-8")
+    assert lojas_varridas(cfg) == ["Amazon", "Assaí (pelo Rappi)", "Atacadão", "Mambo", "Mercado Livre", "Pão de Açúcar"]
+    merc = dict(cfg, pasta_nome="Mercado", pasta_ordem=2)
+    elet = {"lojas": [], "lojas_api": [], "lojas_navegador": ["Magalu"], "pasta_nome": "Eletrônicos", "pasta_ordem": 0}
+    itens = [{"id": i, "nome": i, "melhor": None, "ultima": None, "cfg": c}
+             for i, c in (("agua", merc), ("freezer", elet), ("solto", {}))]
+    gerar_indice(itens, tmp_path / "index.html", None)
+    html = (tmp_path / "index.html").read_text(encoding="utf-8")
+    assert html.index(">Eletrônicos ") < html.index(">Mercado ") < html.index(">Outros ")   # ordem do lojas.toml
+    assert "Lojas varridas (1): Magalu" in html and "Lojas varridas (6): Amazon · Assaí (pelo Rappi)" in html
+
