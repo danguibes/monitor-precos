@@ -24,4 +24,17 @@ def test_taxa_depois_do_pack_incide_sobre_as_seis():
 def test_outras_lojas_nao_mudam_e_a_taxa_vem_do_lojas_toml():
     o = oferta("Mambo", "x", "y", "", 10.0, 10.0, 5.0, "", "l", "d")
     assert somar_taxa_servico(o, ATACADAO) == o
-    assert taxas_de_servico({"lojas": [{"nome": "Atacadão", "taxa_servico": 0.06}, {"nome": "Mambo"}]}) == ATACADAO
+    assert taxas_de_servico({"lojas": [{"nome": "Atacadão", "taxa_servico": 0.06}, {"nome": "Mambo"}]}) == ATACADAO | {"Assaí": 0.10}
+
+
+@pytest.mark.parametrize("subtotal, taxa", [(36.00, 4.00), (78.00, 8.00)])
+def test_rappi_bate_com_os_carrinhos(subtotal, taxa):
+    """A do Rappi é da plataforma, não está no lojas.toml, e sai em real inteiro."""
+    taxas = taxas_de_servico({"lojas": []})
+    o = somar_taxa_servico(oferta("Assaí", "x", "itens", "Rappi", subtotal, subtotal, 0.0, "", "l", "d"), taxas)
+    assert o["frete"] == taxa
+
+
+def test_sem_frete_conhecido_a_taxa_nao_inventa_total():
+    o = oferta("Assaí", "x", "itens", "Rappi", 36.0, 36.0, None, "", "l", "d")
+    assert somar_taxa_servico(o, taxas_de_servico({"lojas": []})) == o

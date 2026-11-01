@@ -27,6 +27,10 @@ from ..navegador import ir, texto
 BASE = "https://www.rappi.com.br"
 LISTA = BASE + "/lojas/tipo/supermercados"
 LOJA = "Assaí"
+# Taxa de serviço do Rappi, à parte da entrega. Medida em dois carrinhos de 01/11/2026
+# (outra loja do Rappi, mesma conta): R$ 36,00 -> R$ 4,00 e R$ 78,00 -> R$ 8,00. Os dois
+# batem com 10% arredondado ao real; dois pontos só, então vale conferir num carrinho maior.
+TAXA_SERVICO = 0.10
 
 
 def loja_assai(hrefs: list[str]) -> str | None:

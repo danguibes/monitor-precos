@@ -102,17 +102,19 @@ def coletar_tudo(cfg: dict, estado: dict, log, com_navegador: bool = True):
 
 
 def taxas_de_servico(cfg: dict) -> dict[str, float]:
-    """{loja: fração} das lojas com `taxa_servico` em lojas.toml (Atacadão: 0.06)."""
-    return {l["nome"]: float(l["taxa_servico"]) for l in cfg.get("lojas", []) if l.get("taxa_servico")}
+    """{loja: fração} das lojas com `taxa_servico` em lojas.toml (Atacadão: 0.06), mais a do Rappi,
+    que é da plataforma e não da loja: vale para o Assaí e para qualquer loja que vier por ele."""
+    taxas = {l["nome"]: float(l["taxa_servico"]) for l in cfg.get("lojas", []) if l.get("taxa_servico")}
+    return taxas | {rappi.LOJA: rappi.TAXA_SERVICO}
 
 
 def somar_taxa_servico(o: dict, taxas: dict) -> dict:
     """A taxa de serviço da loja entra no frete: "frete" passa a ser o que se paga além dos itens."""
     t = taxas.get(o["loja"])
-    if not t or o.get("preco_pix") is None:
-        return o
+    if not t or o.get("preco_pix") is None or o.get("frete") is None:
+        return o  # entrega desconhecida (Rappi sem login): taxa sem frete daria um total que parece certo
     o = dict(o)
-    taxa = round(o["preco_pix"] * t + 1e-9, 2)
+    taxa = round(o["preco_pix"] * t + 1e-9, 0 if o["loja"] == rappi.LOJA else 2)
     o["frete"] = round((o["frete"] or 0) + taxa, 2)
     o["total_pix"] = round(o["preco_pix"] + o["frete"], 2)
     o["total_cartao"] = round((o["preco"] or o["preco_pix"]) + o["frete"], 2)
