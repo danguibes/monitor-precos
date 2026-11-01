@@ -107,3 +107,13 @@ def test_numero_nao_pode_estar_dentro_de_outro_numero():
     assert n.search("Xiaomi 17T 512GB 12GB RAM") and n.search("Xiaomi 17T 512 GB")
     assert not n.search("Xiaomi 17T 1512 mAh") and not n.search("Xiaomi 17T 5120")
     assert not re.search(palavra_para_regex("256"), "Xiaomi 17T 512GB", re.I)
+
+
+def test_topo_lista_as_lojas_varridas(tmp_path):
+    from precos.publicar import lojas_varridas
+    cfg = {"lojas": [{"nome": "Mambo", "host": "x"}, {"nome": "Atacadão", "host": "y"}],
+           "lojas_api": ["Pão de Açúcar"], "lojas_navegador": ["Amazon", "Assaí", "Mercado Livre"]}
+    lojas = lojas_varridas(cfg)
+    assert lojas == ["Amazon", "Assaí (pelo Rappi)", "Atacadão", "Mambo", "Mercado Livre", "Pão de Açúcar"]
+    gerar_indice([], tmp_path / "index.html", None, lojas=lojas)
+    assert "Lojas varridas em todos os monitores (6): Amazon · Assaí (pelo Rappi)" in (tmp_path / "index.html").read_text(encoding="utf-8")
