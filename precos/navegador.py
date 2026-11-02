@@ -38,8 +38,14 @@ def abrir_navegador(cfg: dict, visivel: bool | None = None):
                   ignore_default_args=["--enable-automation"])
     try:
         ctx = pw.chromium.launch_persistent_context(channel="chrome", **opcoes)
-    except Exception:
-        ctx = pw.chromium.launch_persistent_context(**opcoes)  # Chromium do Playwright
+    except Exception as chrome:
+        try:
+            ctx = pw.chromium.launch_persistent_context(**opcoes)  # Chromium do Playwright
+        except Exception as e:
+            # sem o stop, o Playwright fica preso ao processo e todo monitor seguinte da
+            # rodada cai em "Sync API inside the asyncio loop" (01/11/2026, perfil em uso)
+            pw.stop()
+            raise RuntimeError(f"Chrome: {chrome}".split("\n")[0] + f" | Chromium: {e}".split("\n")[0]) from e
     ctx.set_default_timeout(25000)
     return pw, ctx
 

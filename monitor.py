@@ -71,6 +71,40 @@ def vencido(m) -> bool:
     return True
 
 
+TRAVA_RODADA = Path(__file__).parent / "dados" / "rodada.lock"
+
+
+def travar_rodada():
+    """Uma rodada por vez: duas abrindo o mesmo perfil do Chrome derrubam as duas (01/11/2026).
+
+    Devolve o arquivo travado (solto ao sair do processo) ou None se outra rodada já segura.
+    """
+    import msvcrt
+    TRAVA_RODADA.parent.mkdir(parents=True, exist_ok=True)
+    f = open(TRAVA_RODADA, "a+")
+    try:
+        msvcrt.locking(f.fileno(), msvcrt.LK_NBLCK, 1)
+    except OSError:
+        f.close()
+        return None
+    return f
+
+
+def manter_acordado() -> None:
+    """Pede ao Windows para não voltar a dormir enquanto este processo vive.
+
+    A tarefa agendada acorda o notebook da espera, mas sem isto ele dorme de novo
+    em ~2 min e a rodada, que leva ~40, para no meio. Vale só para este processo:
+    ao sair, o Windows volta ao normal sozinho. A tela continua podendo apagar.
+    """
+    import ctypes
+    ES_CONTINUOUS, ES_SYSTEM_REQUIRED = 0x80000000, 0x00000001
+    try:
+        ctypes.windll.kernel32.SetThreadExecutionState(ES_CONTINUOUS | ES_SYSTEM_REQUIRED)
+    except (AttributeError, OSError):
+        pass  # fora do Windows não há o que pedir
+
+
 def ler_augustinus():
     """As compras da casa no Augustinus, uma vez por rodada; None se não há acesso (o monitor segue)."""
     aug = mon.ler_toml(mon.LOCAL, obrigatorio=False).get("augustinus")
@@ -177,7 +211,8 @@ def vigiar() -> int:
     minutos = float(cfg.get("vigia_minutos", 5))
     if minutos <= 0:
         return 0  # vigia desligado no config.toml
-    laco(repo.removeprefix("https://github.com/"), minutos, log, int(cfg.get("vigia_porta", 0)))
+    laco(repo.removeprefix("https://github.com/"), minutos, log, int(cfg.get("vigia_porta", 0)),
+         float(cfg.get("recuperar_apos_horas", 24)))
     return 0
 
 
@@ -237,8 +272,14 @@ def main(argv):
         escolhidos = [m for m in monitores if m["id"] in novos]
     if "--logon" in argv:  # o monitor recém-pedido roda mesmo dentro do intervalo
         escolhidos = [m for m in escolhidos if m["id"] in novos or vencido(m)]
-        if escolhidos:
-            time.sleep(45)  # dá tempo da rede subir depois do login
+    trava = travar_rodada() if escolhidos else None
+    if escolhidos and trava is None:
+        log("Outra rodada já está em andamento; esta sai sem coletar.")
+        return 0
+    if escolhidos:
+        manter_acordado()
+    if "--logon" in argv and escolhidos:
+        time.sleep(45)  # dá tempo da rede subir depois do login (ou do despertar agendado)
     aug = ler_augustinus() if escolhidos else None
     for m in escolhidos:
         try:

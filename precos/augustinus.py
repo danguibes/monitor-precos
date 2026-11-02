@@ -119,8 +119,10 @@ def casa_com_o_monitor(c: dict, cfg: dict) -> bool:
     if not regras.get("incluir") and not casa_com_termos(c.get("produto") or "", cfg.get("termos") or []):
         return False
     if faixa:
+        # só o piso: o teto escolhe ofertas comparáveis, mas o suco de 3 L que a casa
+        # levou é consumo do mesmo jeito. E em ml: "LARANJA PERA KG" tem 1000 g e passava
         base, emb = _num(c.get("quantidade_base")), _num(c.get("embalagem")) or 1
-        if not base or not faixa[0] <= base / emb <= faixa[1]:
+        if (c.get("unidade_base") or "").lower() != "ml" or not base or base / emb < faixa[0]:
             return False
     return True
 

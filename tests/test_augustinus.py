@@ -136,6 +136,17 @@ def test_consumo_e_economia_por_mes():
     assert entregue_por_unidade(dict(o, frete=None), AGUA) is None
 
 
+def test_suco_conta_o_normal_e_o_grande_mas_nao_a_fruta():
+    """Faixa de volume do monitor: piso vale, teto não (3 L é consumo); e só em ml (laranja a quilo não é suco)."""
+    from precos.augustinus import casa_com_o_monitor
+    laranja = tomllib.loads((RAIZ / "monitores" / "suco-de-laranja-integral.toml").read_text(encoding="utf-8"))
+    normal = compra("SUCO NAT ONE 1,7L LA", 13.99, "Suco Laranja", 1.7, "l", 1, 1700, "ml")
+    grande = compra("SUCO DE LARANJA MOMENTO MAMBO 3L", 39.98, "Suco Laranja", 3, "l", 1, 3000, "ml")
+    fruta = compra("LARANJA PERA GNEL KG", 3.99, "Laranja Pêra", 1, "kg", 1, 1000, "g", "Kg")
+    caixinha = compra("SUCO LARANJA 200ML", 2.99, "Suco Laranja", 200, "ml", 1, 200, "ml")
+    assert [casa_com_o_monitor(c, laranja) for c in (normal, grande, fruta, caixinha)] == [True, True, False, False]
+
+
 def test_quadro_compara_com_o_que_se_pagou_e_nao_com_a_mediana():
     """O caso do suco: oferta abaixo da mediana, acima do pago por litro; o quadro não pode dizer as duas coisas."""
     from precos.relatorio import quadro_augustinus

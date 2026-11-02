@@ -21,6 +21,12 @@ notebook dormindo), cai no formulário do GitHub. Só escuta na própria máquin
 aceita pedido vindo da página do Pages (cabeçalho Origin) e só dispara rodada —
 não devolve dado nenhum.
 
+Rodada de recuperação: o notebook passa a noite em espera e o vigia fica
+congelado junto. Ao acordar, se nenhum monitor consultou nas últimas
+`recuperar_apos_horas` (config.toml, padrão 24), o vigia roda o `--logon` na hora.
+A outra metade é a tarefa agendada (`py instalar.py --agendar`), que acorda o
+notebook na tomada de madrugada.
+
 Custo: entre uma consulta e outra o processo dorme (não impede o notebook de
 suspender). Sem rede, a consulta falha, vai uma linha ao log e tenta de novo
 na volta seguinte. Um segundo vigia não sobe: o primeiro segura uma trava.
@@ -32,7 +38,7 @@ import re
 import subprocess
 import sys
 import threading
-from datetime import datetime
+from datetime import datetime, timedelta
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
 from .base import DADOS, RAIZ, SEM_JANELA
@@ -204,7 +210,26 @@ def uma_volta(repo: str, log, ja_avisado: set[str]) -> None:
             gh("issue", "close", str(n), "-R", repo)
 
 
-def vigiar(repo: str, minutos: float, log, porta: int = 0) -> None:
+def ultima_rodada() -> datetime | None:
+    """A consulta mais recente de qualquer monitor (o estado.json de cada um)."""
+    datas = []
+    for est in [DADOS / "estado.json", *DADOS.glob("*/estado.json")]:  # o freezer mora na raiz de dados/
+        try:
+            datas.append(datetime.fromisoformat(json.loads(est.read_text(encoding="utf-8"))["ultima_execucao"]))
+        except (OSError, ValueError, KeyError, TypeError):
+            continue
+    return max(datas, default=None)
+
+
+def atrasada(agora: datetime, ultima: datetime | None, tentou: datetime | None, horas: float) -> bool:
+    """Passou um dia sem rodada? E sem insistir: depois de uma tentativa, espera 2 h pela próxima
+    (sem rede, a rodada não grava data nenhuma e o vigia a dispararia a cada volta)."""
+    if not horas or (tentou and agora - tentou < timedelta(hours=2)):
+        return False
+    return ultima is None or agora - ultima >= timedelta(hours=horas)
+
+
+def vigiar(repo: str, minutos: float, log, porta: int = 0, recuperar_horas: float = 24) -> None:
     trava = travar()
     if trava is None:
         log("Vigia: já há outro rodando; este sai.")
@@ -215,7 +240,16 @@ def vigiar(repo: str, minutos: float, log, porta: int = 0) -> None:
         servir(porta, pedidos, log)
     ja_avisado: set[str] = set()
     falhando = False
+    tentou = None
     while True:
+        # o notebook passa dias em espera, com este processo congelado; na primeira volta
+        # depois de acordar, se o dia passou sem rodada, ela sai agora (--logon respeita
+        # o intervalo de cada monitor, e a trava da rodada barra uma segunda em paralelo)
+        agora = datetime.now()
+        if atrasada(agora, ultima_rodada(), tentou, recuperar_horas):
+            log(f"Vigia: nenhuma rodada há {recuperar_horas:g} h ou mais; rodando agora.")
+            tentou = agora
+            rodar_monitor("--logon")
         atender_locais(pedidos, log)  # o botão local vem antes do GitHub, que pode estar fora
         try:
             uma_volta(repo, log, ja_avisado)
