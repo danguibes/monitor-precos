@@ -20,7 +20,8 @@ api = ["Pão de Açúcar"]
 # Lojas pelo navegador do monitor (coletor em precos/lojas/)
 # Mercado Livre e Vila das Frutas precisam de login: py monitor.py --configurar
 # Amazon: sem login; o coletor põe o CEP pelo "Atualizar CEP" da página
-navegador = ["Carrefour", "Magalu", "Casas Bahia", "Mercado Livre", "Vila das Frutas", "Amazon", "Assaí"]
+navegador = ["Carrefour", "Magalu", "Casas Bahia", "Mercado Livre", "Vila das Frutas", "Amazon", "Assaí",
+             "MadeiraMadeira"]
 
 # Lojas VTEX, pela API pública, sem navegador
 [[vtex]]
@@ -81,7 +82,7 @@ lojas = ["Casas Bahia", "Carrefour", "Fast Shop", "Electrolux", "Consul", "Brast
 
 [pastas.moveis]
 nome = "Móveis"
-lojas = ["Casas Bahia", "Carrefour", "Fast Shop"]
+lojas = ["Casas Bahia", "Carrefour", "Fast Shop", "MadeiraMadeira"]  # MadeiraMadeira: pedida em 01/11, sem histórico ainda
 
 [pastas.mercado]
 nome = "Mercado"

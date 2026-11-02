@@ -4,7 +4,7 @@ from __future__ import annotations
 from datetime import datetime
 
 from .filtros import criar_filtro
-from .lojas import (amazon, carrefour, casas_bahia, magalu, mercado_livre, mercado_livre_api, pao_de_acucar,
+from .lojas import (amazon, carrefour, casas_bahia, madeiramadeira, magalu, mercado_livre, mercado_livre_api, pao_de_acucar,
                     rappi, shopee, vila_das_frutas, vtex)
 from .navegador import abrir_navegador
 from .unidades import montar_pack
@@ -13,6 +13,7 @@ COLETORES = {
     "Carrefour": carrefour.coletar,
     "Magalu": magalu.coletar,
     "Casas Bahia": casas_bahia.coletar,
+    "MadeiraMadeira": madeiramadeira.coletar,
     "Mercado Livre": mercado_livre.coletar,
     "Shopee": shopee.coletar,
     "Vila das Frutas": vila_das_frutas.coletar,
