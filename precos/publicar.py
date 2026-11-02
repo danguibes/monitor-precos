@@ -114,8 +114,8 @@ def gerar_indice(itens: list[dict], destino: Path, repo: str | None = None, avis
     for nome_pasta, membros in grupos.items():
         lojas = sorted({l for it in membros for l in lojas_varridas(it.get("cfg") or {})}, key=str.lower)
         linha = f'<p class="det lojas">Lojas varridas ({len(lojas)}): {" · ".join(e(l) for l in lojas)}</p>' if lojas else ""
-        # <details> abre e recolhe sem script; o script só lembra, neste navegador, o que foi recolhido
-        secoes.append(f'<details class="pasta" open data-pasta="{e(nome_pasta)}"><summary><h2 class="titulo-pasta">'
+        # <details> nasce fechado e abre sem script; o script só lembra, neste navegador, o que foi aberto
+        secoes.append(f'<details class="pasta" data-pasta="{e(nome_pasta)}"><summary><h2 class="titulo-pasta">'
                       f'{e(nome_pasta)} <span class="det">{len(membros)} monitor(es)</span></h2></summary>{linha}'
                       f'<div class="grid">{"".join(_cards(membros, repo, e))}</div></details>')
     _escrever_indice(destino, secoes, repo, avisos, porta, e)
@@ -178,12 +178,12 @@ button.botao{{font:inherit;cursor:pointer}}
 </main>{SCRIPT_PASTAS}{SCRIPT_ATUALIZAR if porta and repo else ''}</body></html>""", encoding="utf-8")
 
 
-# Lembra as pastas recolhidas só neste navegador; sem localStorage (aba anônima), todas abrem.
+# Lembra as pastas abertas só neste navegador; sem localStorage (aba anônima), todas ficam fechadas.
 SCRIPT_PASTAS = """<script>
-(function(){var k="pastas-recolhidas",r=[];try{r=JSON.parse(localStorage.getItem(k)||"[]")}catch(_){}
+(function(){var k="pastas-abertas",r=[];try{r=JSON.parse(localStorage.getItem(k)||"[]")}catch(_){}
 document.querySelectorAll("details.pasta").forEach(function(d){
-if(r.indexOf(d.dataset.pasta)>=0)d.open=false;
-d.addEventListener("toggle",function(){var f=[];document.querySelectorAll("details.pasta:not([open])")
+if(r.indexOf(d.dataset.pasta)>=0)d.open=true;
+d.addEventListener("toggle",function(){var f=[];document.querySelectorAll("details.pasta[open]")
 .forEach(function(x){f.push(x.dataset.pasta)});try{localStorage.setItem(k,JSON.stringify(f))}catch(_){}})})})();
 </script>"""
 
