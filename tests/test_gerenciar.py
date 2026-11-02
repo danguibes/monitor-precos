@@ -122,4 +122,5 @@ def test_indice_agrupa_por_pasta_com_as_lojas_de_cada_uma(tmp_path):
     html = (tmp_path / "index.html").read_text(encoding="utf-8")
     assert html.index(">Eletrônicos ") < html.index(">Mercado ") < html.index(">Outros ")   # ordem do lojas.toml
     assert "Lojas varridas (1): Magalu" in html and "Lojas varridas (6): Amazon · Assaí (pelo Rappi)" in html
+    assert html.count('<details class="pasta" open') == 3 and html.count("<summary>") == 3   # recolhe, mas abre aberta
 

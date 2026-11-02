@@ -114,9 +114,10 @@ def gerar_indice(itens: list[dict], destino: Path, repo: str | None = None, avis
     for nome_pasta, membros in grupos.items():
         lojas = sorted({l for it in membros for l in lojas_varridas(it.get("cfg") or {})}, key=str.lower)
         linha = f'<p class="det lojas">Lojas varridas ({len(lojas)}): {" · ".join(e(l) for l in lojas)}</p>' if lojas else ""
-        secoes.append(f'<section class="pasta"><h2 class="titulo-pasta">{e(nome_pasta)} '
-                      f'<span class="det">{len(membros)} monitor(es)</span></h2>{linha}'
-                      f'<div class="grid">{"".join(_cards(membros, repo, e))}</div></section>')
+        # <details> abre e recolhe sem script; o script só lembra, neste navegador, o que foi recolhido
+        secoes.append(f'<details class="pasta" open data-pasta="{e(nome_pasta)}"><summary><h2 class="titulo-pasta">'
+                      f'{e(nome_pasta)} <span class="det">{len(membros)} monitor(es)</span></h2></summary>{linha}'
+                      f'<div class="grid">{"".join(_cards(membros, repo, e))}</div></details>')
     _escrever_indice(destino, secoes, repo, avisos, porta, e)
 
 
@@ -159,7 +160,11 @@ def _escrever_indice(destino, secoes, repo, avisos, porta, e) -> None:
 <title>Monitor de preços</title><style>{ESTILO}
 .botao{{display:inline-block;background:var(--ac);color:var(--card);padding:8px 14px;border-radius:10px;text-decoration:none;font-weight:600;margin-top:18px}}
 .lojas{{margin:0 0 12px}} .pasta{{margin:0 0 28px}}
-.titulo-pasta{{font-size:20px;margin:8px 0 4px;padding-bottom:4px;border-bottom:1px solid var(--ln)}}
+.titulo-pasta{{font-size:20px;margin:8px 0 4px;display:inline}}
+.pasta>summary{{cursor:pointer;list-style:none;border-bottom:1px solid var(--ln);margin-bottom:8px;padding:8px 0 4px}}
+.pasta>summary::-webkit-details-marker{{display:none}}
+.pasta>summary::before{{content:"▸";display:inline-block;width:1.1em;color:var(--mut);transition:transform .15s}}
+.pasta[open]>summary::before{{transform:rotate(90deg)}}
 .titulo-pasta .det{{font-weight:400}} .acoes{{margin-top:8px}} .card-pausado{{opacity:.6}}
 .pausado{{border:1px solid var(--mut);color:var(--mut);border-radius:99px;font-size:11px;padding:1px 8px}}
 .botao.secundario{{background:transparent;color:var(--ac);border:1.5px solid var(--ac);margin-top:4px}}
@@ -170,7 +175,17 @@ button.botao{{font:inherit;cursor:pointer}}
 {"".join(secoes)}
 {novo}
 {f'<h3>Avisos</h3><ul class="avisos">{lista_avisos}</ul>' if lista_avisos else ''}
-</main>{SCRIPT_ATUALIZAR if porta and repo else ''}</body></html>""", encoding="utf-8")
+</main>{SCRIPT_PASTAS}{SCRIPT_ATUALIZAR if porta and repo else ''}</body></html>""", encoding="utf-8")
+
+
+# Lembra as pastas recolhidas só neste navegador; sem localStorage (aba anônima), todas abrem.
+SCRIPT_PASTAS = """<script>
+(function(){var k="pastas-recolhidas",r=[];try{r=JSON.parse(localStorage.getItem(k)||"[]")}catch(_){}
+document.querySelectorAll("details.pasta").forEach(function(d){
+if(r.indexOf(d.dataset.pasta)>=0)d.open=false;
+d.addEventListener("toggle",function(){var f=[];document.querySelectorAll("details.pasta:not([open])")
+.forEach(function(x){f.push(x.dataset.pasta)});try{localStorage.setItem(k,JSON.stringify(f))}catch(_){}})})})();
+</script>"""
 
 
 def gerar_site(monitores: list[dict], pasta: Path = SITE, repo: str | None = None) -> None:
