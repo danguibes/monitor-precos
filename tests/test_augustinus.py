@@ -136,6 +136,18 @@ def test_consumo_e_economia_por_mes():
     assert entregue_por_unidade(dict(o, frete=None), AGUA) is None
 
 
+def test_quadro_compara_com_o_que_se_pagou_e_nao_com_a_mediana():
+    """O caso do suco: oferta abaixo da mediana, acima do pago por litro; o quadro não pode dizer as duas coisas."""
+    from precos.relatorio import quadro_augustinus
+    ref = {"unidade": "litro", "mediana": 11.47, "compras": 10, "conceitos": [], "consumo_mes": 9.0,
+           "gasto_mes": 88.56, "media_paga": 9.84, "desde": "2026-08-01"}
+    cfg = dict(AGUA, unidade_comparacao="litro")
+    o = oferta("Atacadão", "x", "Água Mineral Minalba com Gás 1,5 L Pack 6", "Atacadão", 94.41, 94.41, 0.0, "", "", "")
+    q = quadro_augustinus(ref, cfg, [o])                     # 94,41 / 9 L = 10,49/L
+    assert "7% acima" in q and "mais caro" in q and "abaixo" not in q
+    assert "R$ 9,84" in q and "R$ 11,47" in q                 # a mediana fica, como detalhe
+
+
 def test_consumo_so_desde_a_data_da_config():
     """Antes de agosto a casa não lia todo cupom: a compra de julho entra no preço, não no consumo."""
     antiga = dict(MINALBA, data_emissao="2026-07-03")

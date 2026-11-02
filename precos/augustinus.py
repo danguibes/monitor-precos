@@ -155,6 +155,8 @@ def referencia(compras: list[dict], cfg: dict, hoje: date | None = None, dias: i
             "ultima": pontos[-1][0].isoformat(), "conceitos": conceitos(pontos, cfg),
             "limiar": float(cfg.get("limiar_augustinus", LIMIAR_PADRAO)),
             "consumo_mes": round(levado / meses, 3), "gasto_mes": round(gasto / meses, 2),
+            # o que a casa pagou por unidade no período do consumo: compra grande pesa mais
+            "media_paga": round(gasto / levado, 4) if levado else None,
             "desde": inicio.isoformat()}
 
 

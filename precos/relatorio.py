@@ -223,11 +223,22 @@ def quadro_augustinus(ref, cfg, melhores) -> str:
         itens.append(f'<li><a href="{e(ref["app"])}/#/precos/{e(c["id"])}" target="_blank" rel="noopener">{nome}</a></li>'
                      if ref.get("app") else f"<li>{nome}</li>")
     aqui = mes = ""
+    desde = f'{ref["desde"][8:10]}/{ref["desde"][5:7]}/{ref["desde"][:4]}'
+    # a comparação usa a mesma base da conta do mês (o pago, ponderado pelo volume);
+    # contra a mediana, uma oferta podia sair "abaixo" e ainda assim encarecer o mês
+    base = ref.get("media_paga") or ref["mediana"]
+    if ref.get("media_paga"):
+        topo = (f'<div>No Augustinus você paga <b>{brl_un(base)}{un}</b> '
+                f'<span class="det">média do que gastou desde {desde}, pesando pelo volume '
+                f'(mediana de {ref["compras"]} compra(s) no ano: {brl_un(ref["mediana"])}{un})</span></div>')
+    else:
+        topo = (f'<div>No Augustinus você paga <b>{brl_un(base)}{un}</b> '
+                f'<span class="det">mediana de {ref["compras"]} compra(s) no último ano</span></div>')
     cands = [(m, entregue_por_unidade(m, cfg)) for m in melhores if m]
     cands = [(m, p) for m, p in cands if p]
     if cands:
         m, p = min(cands, key=lambda mp: mp[1])
-        dif = 1 - p / ref["mediana"]
+        dif = 1 - p / base
         aqui = (f'<div>Melhor aqui: <b>{brl_un(p)}{un}</b> entregue ({e(m["loja"])}), '
                 f'{abs(dif):.0%} {"abaixo" if dif >= 0 else "acima"}.</div>')
         eco = economia_mensal(ref, p)
@@ -237,11 +248,9 @@ def quadro_augustinus(ref, cfg, melhores) -> str:
                      else f'sairia <b>{brl(-eco)}/mês mais caro</b>')
             mes = (f'<div>Você leva ~{qtd}{un.replace("/", " ")}/mês e gasta {brl(ref["gasto_mes"])}/mês. '
                    f'Pelo melhor daqui: {conta}.'
-                   f'<div class="det">Pelos cupons lidos desde {ref["desde"][8:10]}/{ref["desde"][5:7]}/{ref["desde"][:4]}; '
+                   f'<div class="det">Pelos cupons lidos desde {desde}; '
                    f'compra sem cupom não entra, então o volume real pode ser maior.</div></div>')
-    return (f'<aside class="aug"><div>No Augustinus você paga <b>{brl_un(ref["mediana"])}{un}</b> '
-            f'<span class="det">mediana de {ref["compras"]} compra(s) no último ano</span></div>{aqui}{mes}'
-            f'<ul>{"".join(itens)}</ul></aside>')
+    return f'<aside class="aug">{topo}{aqui}{mes}<ul>{"".join(itens)}</ul></aside>'
 
 
 def gerar_relatorio(cfg, erros: list[str], destino=RELATORIO, origem=HISTORICO, publico=False,
