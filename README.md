@@ -263,6 +263,45 @@ juntos (o IP e o sistema, Windows aqui e Linux lá), e a nuvem medida foi nos EU
 não em São Paulo. Sem as duas opções de `navegador.py` que escondem a automação,
 o Magalu recusa até daqui, e o Mercado Livre pede captcha.
 
+### Nuvem no Brasil, por requisição simples (03/11/2026)
+
+A tabela acima mediu **geografia** junto com datacenter: a nuvem era nos EUA. A
+sessão do Augustinus mediu de um IP da AWS São Paulo (`sa-east-1`, AS16509), por
+`pg_net` do banco do Augustinus, com o cliente simples (o `UA` de `precos/base.py`,
+sem navegador). O lado da casa foi conferido aqui no mesmo dia, com o mesmo cliente.
+
+| alvo | casa | AWS São Paulo |
+|---|---|---|
+| Oba, Mambo (VTEX) | 206, produtos | 206, produtos |
+| Atacadão (VTEX) | 308 → /io/… | o mesmo 308 |
+| Pão de Açúcar | 200 | 200 |
+| Carrefour | 200, página cheia | 200, página cheia |
+| Mercado Livre, busca | 302 para verificação de conta | **200, página cheia** |
+| Magalu | 403 | 403 |
+| Casas Bahia | 403 | 403 |
+| API oficial do ML, sem token | 403 | 403 |
+
+Os CDNs trataram o IP como nacional (`x-amz-cf-pop: GRU3-P9`, `cf-ray: …-GRU`),
+sem WAF, desafio nem captcha. Duas leituras, e o grau de cada uma:
+
+- **Provado:** a metade sem navegador nem login — as VTEX, o Pão de Açúcar e a API
+  do ML — responde igual de um datacenter em São Paulo.
+- **Provável, não provado:** o "Acesso Bloqueado" do Carrefour e o captcha do ML nos
+  EUA foram por país. A coluna dos EUA foi pelo navegador, e esta, por requisição
+  simples: os clientes são diferentes.
+- **Sem resposta:** Magalu e Casas Bahia recusam o cliente simples nos dois lados,
+  então esta medição não diz nada sobre eles.
+
+**O que decide e não foi medido:** o navegador (`ferramentas/sonda_navegador.py`)
+num IP de datacenter brasileiro. É ele que libera ou não Magalu, Casas Bahia,
+Amazon e Vila das Frutas. Numa VPS, rode a sonda de navegador **antes** da de
+requisição: a ordem contamina (a SEFAZ recusou este IP por minutos depois de três
+requisições seguidas). E o `pg_net` não segue redirecionamento: o 308 do Atacadão
+chegou lá como "500" com `location`.
+
+Mudar para a nuvem também muda de endereço o que hoje fica só nesta máquina, fora
+do git: o perfil logado do Chrome e o CEP do `local.toml`.
+
 
 
 ```
