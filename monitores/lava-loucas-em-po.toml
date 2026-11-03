@@ -1,0 +1,18 @@
+# Criado a pedido, em 02/11/2026, escrito à mão. O "editar" da página abre este
+# arquivo no GitHub.
+#
+# Para a máquina de lavar louça, em pó (Finish e afins): compara por kg.
+# Tablete, cápsula, gel, secante e sal ficam fora: outro produto e outra conta.
+# Em 02/11 o Augustinus não tinha nenhuma compra disto.
+
+nome = "Lava-louças em pó (máquina)"
+pasta = "mercado"
+titulo = "Detergente em pó para lava-louças · por kg"
+modo = "descoberta"
+intervalo_minimo_horas = 12
+termos = ["detergente em pó lava louças", "lava louças em pó máquina"]
+
+[regras]
+incluir = ['lava.?lou[çc]as|lou[çc]a|finish', '\bp[óo]\b']
+excluir = ['tablete|pastilha|c[áa]psula|\btabs?\b|\bgel\b|l[íi]quid', 'secante|abrilhantador|\bsal\b|limpa.?m[áa]quina|lava.?roupa', '\bkit\b|\+']
+peso_g = [400, 3000]

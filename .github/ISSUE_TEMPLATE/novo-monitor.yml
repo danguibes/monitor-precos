@@ -54,7 +54,7 @@ body:
     id: tamanho
     attributes:
       label: Tamanho de uma unidade
-      description: Opcional. Em ml ou litros (500 ml, 1,5 L). Aceita uma folga de 7% para mais ou para menos.
+      description: Opcional. Em ml, litros, g ou kg (500 ml, 1,5 L, 200 g, 2,4 kg); compara por litro ou por kg. Aceita uma folga de 7% para mais ou para menos.
       placeholder: 500 ml
   - type: input
     id: pack

@@ -7,7 +7,7 @@ fica em certificados/, e a conexão verifica cadeia e nome.
 
 A conta é sempre na unidade do monitor, e é aqui que se erra calado:
 
-  * monitor por LITRO (tem volume_ml nas regras): o volume vem do CATÁLOGO do
+  * monitor por LITRO (volume_ml nas regras) ou por QUILO (peso_g): a medida vem do CATÁLOGO do
     Augustinus (quantidade_base, já multiplicado pela embalagem). Nunca do texto
     do cupom: "AGUA MINMINALBA 15L" é 1,5 L cortado, e lido como 15 L daria um
     preço por litro absurdo. Catálogo sem medida → a compra fica fora.
@@ -34,7 +34,7 @@ from datetime import date, timedelta
 
 from .base import RAIZ
 from .filtros import filtro_por_regras
-from .unidades import quantidade_explicita, unidade_de_comparacao, unidades_na_oferta
+from .unidades import MEDIDAS, quantidade_explicita, unidade_de_comparacao, unidades_na_oferta
 
 CA = RAIZ / "certificados" / "supabase-prod-ca-2021.crt"
 LIMIAR_PADRAO = 0.10
@@ -83,21 +83,25 @@ def preco_por_unidade(c: dict, unidade: str) -> float | None:
     preco = _num(c.get("valor_unitario"))
     if not preco:
         return None
-    if unidade == "litro":
-        base = _num(c.get("quantidade_base"))
-        if not base or str(c.get("unidade_base") or "").lower() != "ml":
-            return None  # catálogo sem medida: o texto do cupom não é confiável para volume
-        return preco / (base / 1000)
+    if unidade in MEDIDAS:
+        base = _base_do_catalogo(c, unidade)
+        return preco / (base / 1000) if base else None  # catálogo sem medida: o cupom não é confiável
     n = quantidade_explicita(c.get("descricao") or "")
     return preco / n if n else None
 
 
+def _base_do_catalogo(c: dict, unidade: str) -> float | None:
+    """ml (litro) ou g (quilo) de uma embalagem, pelo catálogo; None se a medida é de outro tipo."""
+    base = _num(c.get("quantidade_base"))
+    return base if base and str(c.get("unidade_base") or "").lower() == MEDIDAS[unidade][1] else None
+
+
 def unidades_da_compra(c: dict, unidade: str) -> float | None:
-    """Litros ou unidades que a linha do cupom levou para casa (quantidade × o de uma embalagem)."""
+    """Litros, quilos ou unidades que a linha do cupom levou para casa (quantidade × o de uma embalagem)."""
     q = _num(c.get("quantidade")) or 1
-    if unidade == "litro":
-        base = _num(c.get("quantidade_base"))
-        return q * base / 1000 if base and str(c.get("unidade_base") or "").lower() == "ml" else None
+    if unidade in MEDIDAS:
+        base = _base_do_catalogo(c, unidade)
+        return q * base / 1000 if base else None
     n = quantidade_explicita(c.get("descricao") or "")
     return q * n if n else None
 
@@ -110,7 +114,11 @@ def _dia(c: dict) -> date:
 def casa_com_o_monitor(c: dict, cfg: dict) -> bool:
     """As palavras do monitor sobre o nome do catálogo + o texto do cupom; e o volume de UMA unidade."""
     regras = dict(cfg.get("regras") or {})
-    faixa = regras.pop("volume_ml", None)
+    unidade = unidade_de_comparacao(cfg)
+    faixa = None
+    for u, (chave, _, _) in MEDIDAS.items():
+        f = regras.pop(chave, None)
+        faixa = f if u == unidade else faixa
     regras.pop("montar_pack", None)
     regras.pop("quantidade", None)
     texto = f"{c.get('produto') or ''} {c.get('descricao') or ''}"
@@ -120,9 +128,10 @@ def casa_com_o_monitor(c: dict, cfg: dict) -> bool:
         return False
     if faixa:
         # só o piso: o teto escolhe ofertas comparáveis, mas o suco de 3 L que a casa
-        # levou é consumo do mesmo jeito. E em ml: "LARANJA PERA KG" tem 1000 g e passava
-        base, emb = _num(c.get("quantidade_base")), _num(c.get("embalagem")) or 1
-        if (c.get("unidade_base") or "").lower() != "ml" or not base or base / emb < faixa[0]:
+        # levou é consumo do mesmo jeito. E na medida certa: "LARANJA PERA KG" tem
+        # 1000 g e passava no monitor por litro
+        base, emb = _base_do_catalogo(c, unidade), _num(c.get("embalagem")) or 1
+        if not base or base / emb < faixa[0]:
             return False
     return True
 

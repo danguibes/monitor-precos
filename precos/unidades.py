@@ -29,6 +29,10 @@ _QTD = [
 # o kit parecer mais barato do que é —, e a página marca a oferta para conferir.
 _KIT = re.compile(r"\bkit\b|\bcombo\b|\b\d{1,2}\s*(?:pacotes|pcts?\b\.?|embalagens)")
 _VOL = re.compile(r"(\d+(?:[.,]\d+)?)\s*(ml|litros?|lts?|l)(?![a-z])", re.I)
+_PESO = re.compile(r"(\d+(?:[.,]\d+)?)\s*(kgs?|quilos?|gramas|grs?|g)(?![a-z])", re.I)
+# por medida: a chave das regras com a faixa de UMA embalagem, a unidade dela no
+# catálogo do Augustinus e o sufixo da página
+MEDIDAS = {"litro": ("volume_ml", "ml", "/L"), "quilo": ("peso_g", "g", "/kg")}
 
 
 def quantidade_explicita(titulo: str) -> int | None:
@@ -63,6 +67,20 @@ def volume_ml(titulo: str) -> float | None:
     return v * 1000
 
 
+def peso_g(titulo: str) -> float | None:
+    """Peso de uma unidade, em gramas. O primeiro peso do título vale ("Requeijão 200g", "OMO 2,4kg")."""
+    m = _PESO.search(titulo)
+    if not m:
+        return None
+    v = float(m.group(1).replace(",", "."))
+    return v * 1000 if m.group(2).lower().startswith(("kg", "quilo")) else v
+
+
+def medida(titulo: str, unidade: str) -> float | None:
+    """ml (litro) ou g (quilo) de uma embalagem."""
+    return volume_ml(titulo) if unidade == "litro" else peso_g(titulo) if unidade == "quilo" else None
+
+
 def montar_pack(o: dict, pack: int) -> dict | None:
     """Converte a oferta no custo de levar `pack` unidades: 6 avulsas, 2 kits de 3...
 
@@ -90,21 +108,24 @@ def montar_pack(o: dict, pack: int) -> dict | None:
 def unidade_de_comparacao(cfg: dict) -> str | None:
     """Como o monitor conta o que compra.
 
-    "litro" com volume_ml; "unidade" com montar_pack ou `por_unidade = true` (lenço:
-    pacotes de 16, 50, 88); None nos outros — celular, colchão, freezer —, que se
-    comparam pelo total. Até 01/11 todo monitor sem volume virava "unidade", e o
-    que não traz contagem no título (celular, colchão) ficava sem melhor oferta.
+    "litro" com volume_ml; "quilo" com peso_g (requeijão, sabão em pó); "unidade" com
+    montar_pack ou `por_unidade = true` (lenço: pacotes de 16, 50, 88); None nos
+    outros — celular, colchão, freezer —, que se comparam pelo total. Até 01/11 todo
+    monitor sem volume virava "unidade", e o que não traz contagem no título
+    (celular, colchão) ficava sem melhor oferta.
     """
     if cfg.get("modo") != "descoberta":
         return None
     regras = cfg.get("regras") or {}
-    if regras.get("volume_ml"):
-        return "litro"
+    for unidade, (chave, _, _) in MEDIDAS.items():
+        if regras.get(chave):
+            return unidade
     return "unidade" if regras.get("montar_pack") or cfg.get("por_unidade") else None
 
 
 def sufixo(cfg: dict) -> str:
-    return "/L" if unidade_de_comparacao(cfg) == "litro" else "/" + cfg.get("unidade_nome", "un.")
+    u = unidade_de_comparacao(cfg)
+    return MEDIDAS[u][2] if u in MEDIDAS else "/" + cfg.get("unidade_nome", "un.")
 
 
 def unidades_na_oferta(produto: str, cfg: dict) -> float | None:
@@ -115,8 +136,9 @@ def unidades_na_oferta(produto: str, cfg: dict) -> float | None:
     se comparam por unidade, e "sem número" não pode virar 1.
     """
     pack = (cfg.get("regras") or {}).get("montar_pack")
-    if unidade_de_comparacao(cfg) == "litro":
-        v = volume_ml(produto)
+    u = unidade_de_comparacao(cfg)
+    if u in MEDIDAS:
+        v = medida(produto, u)
         if not v:
             return None
         return (pack or quantidade(produto)) * v / 1000

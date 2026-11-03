@@ -1,0 +1,18 @@
+# Criado a pedido, em 02/11/2026, escrito à mão. O "editar" da página abre este
+# arquivo no GitHub.
+#
+# A casa leva caixa de 1 L (Piracanjuba, Assaí Chef), de 12 em 12: compara por
+# litro, e a caixa fechada de 12 conta como 12 L. Fora: semi e desnatado, pó,
+# zero lactose (preço de outro produto) e as bebidas que levam "leite" no nome.
+
+nome = "Leite integral"
+pasta = "mercado"
+titulo = "Leite integral 1 L · por litro"
+modo = "descoberta"
+intervalo_minimo_horas = 12
+termos = ["leite integral 1 litro", "leite longa vida integral"]
+
+[regras]
+incluir = ['\bleite\b', 'integral']
+excluir = ['semi|desnatad', '\bp[óo]\b', 'condensad|fermentad|creme|achocolat|chocolate|coco|aveia|am[êe]ndoa|soja|vegetal|arroz', 'lactose', 'f[óo]rmula|infantil|composto', '\bkit\b|\+']
+volume_ml = [950, 1050]

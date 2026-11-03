@@ -1,0 +1,17 @@
+# Criado a pedido, em 02/11/2026, escrito à mão. O "editar" da página abre este
+# arquivo no GitHub.
+#
+# Detergente líquido de pia. A casa leva Limpol de 500 ml: compara por litro, e
+# o fardo de 24 conta como 12 L. O em pó (roupa, máquina) tem monitor próprio.
+
+nome = "Detergente"
+pasta = "mercado"
+titulo = "Detergente líquido 500 ml · por litro"
+modo = "descoberta"
+intervalo_minimo_horas = 12
+termos = ["detergente líquido 500ml", "lava louças líquido 500ml"]
+
+[regras]
+incluir = ['detergente|lava.?lou[çc]as']
+excluir = ['\bp[óo]\b', 'roupa|m[áa]quina|tablete|pastilha|finish', 'automotiv|carro|multiuso|desengordurante|piso|limpador|sanit', '\bkit\b|\+']
+volume_ml = [450, 550]

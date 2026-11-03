@@ -22,7 +22,7 @@ from pathlib import Path
 
 from .base import RAIZ, SEM_JANELA
 from .monitores import PASTA_MONITORES, ConfiguracaoInvalida, validar_monitor
-from .unidades import volume_ml
+from .unidades import peso_g, volume_ml
 
 ROTULO = "novo-monitor"
 GERENCIAR = "gerenciar-monitor"  # .github/ISSUE_TEMPLATE/gerenciar-monitor.yml: pausar, retomar, excluir
@@ -112,10 +112,12 @@ def montar_toml(r: dict, numero: int) -> tuple[str, str]:
     regras = {"incluir": [palavra_para_regex(l) for l in linhas(r.get("precisa"))],
               "excluir": [palavra_para_regex(l) for l in linhas(r.get("exclui"))]}
     if r.get("tamanho"):
-        ml = volume_ml(r["tamanho"].replace(" ", ""))
-        if not ml:
-            raise PedidoInvalido(f"não entendi o tamanho '{r['tamanho']}' — use ml ou litros, como 500 ml ou 1,5 L")
-        regras["volume_ml"] = [round(ml * 0.93), round(ml * 1.07)]
+        t = r["tamanho"].replace(" ", "")
+        ml, g = volume_ml(t), peso_g(t)
+        if not (ml or g):
+            raise PedidoInvalido(f"não entendi o tamanho '{r['tamanho']}' — use ml, litros, g ou kg, "
+                                 "como 500 ml, 1,5 L, 200 g ou 2,4 kg")
+        regras["volume_ml" if ml else "peso_g"] = [round((ml or g) * 0.93), round((ml or g) * 1.07)]
     if r.get("pack"):
         if not r["pack"].strip().isdigit() or not 1 < int(r["pack"]) <= 48:
             raise PedidoInvalido(f"a quantidade '{r['pack']}' precisa ser um número de 2 a 48")
@@ -134,8 +136,9 @@ def montar_toml(r: dict, numero: int) -> tuple[str, str]:
              *([f"pasta = {s(pasta)}"] if pasta else []),
              f"intervalo_minimo_horas = {horas}", f"termos = {lista(termos)}", "", "[regras]",
              f"incluir = {lista(regras['incluir'])}", f"excluir = {lista(regras['excluir'])}"]
-    if "volume_ml" in regras:
-        texto.append(f"volume_ml = {regras['volume_ml']}")
+    for chave in ("volume_ml", "peso_g"):
+        if chave in regras:
+            texto.append(f"{chave} = {regras[chave]}")
     if "montar_pack" in regras:
         texto.append(f"montar_pack = {regras['montar_pack']}")
     # as respostas como vieram, para o "editar" reabrir o formulário preenchido

@@ -1,0 +1,18 @@
+# Criado a pedido, em 02/11/2026, escrito à mão. O "editar" da página abre este
+# arquivo no GitHub.
+#
+# Para a máquina de lavar roupa. A casa leva OMO e Brilhante de 1,6 a 2,4 kg:
+# compara por kg. O cupom chama de "detergente em pó" ou "lava roupas em pó",
+# e o anúncio também; o líquido e o de lava-louças ficam fora.
+
+nome = "Sabão em pó (roupa)"
+pasta = "mercado"
+titulo = "Sabão em pó para lavar roupa · por kg"
+modo = "descoberta"
+intervalo_minimo_horas = 12
+termos = ["sabão em pó", "lava roupas em pó"]
+
+[regras]
+incluir = ['\bp[óo]\b', 'sab[ãa]o|lava.?roupas?|detergente']
+excluir = ['lou[çc]a', 'l[íi]quid', 'tira.?manchas|alvejante|amaciante|vanish', '\bkit\b|\+']
+peso_g = [800, 5000]

@@ -21,9 +21,10 @@ import urllib.parse
 from datetime import datetime
 from pathlib import Path
 
-from .base import DADOS, RAIZ, SEM_JANELA, brl
+from .base import DADOS, RAIZ, SEM_JANELA, brl, brl_un
 from .historico_pagina import gerar_historico
 from .relatorio import ESTILO, SCRIPT_ATUALIZAR, botao_atualizar, gerar_relatorio, selo_augustinus
+from .unidades import sufixo, unidade_de_comparacao
 
 SITE = DADOS / "site"
 
@@ -122,13 +123,23 @@ def gerar_indice(itens: list[dict], destino: Path, repo: str | None = None, avis
 
 
 def _cards(itens, repo, e) -> list[str]:
+    from .augustinus import entregue_por_unidade
     cards = []
     for it in itens:
-        mel = it["melhor"]
-        corpo = (f'<div class="total">{brl(mel["total_pix"])}</div>'
-                 f'{selo_augustinus(mel, it.get("referencia"), it.get("cfg", {}))}'
-                 f'<div class="det">{e(mel["produto"][:90])} · {e(mel["loja"])}</div>') if mel else \
-            '<div class="det">Sem oferta na última rodada.</div>'
+        mel, cfg = it["melhor"], it.get("cfg") or {}
+        # o que se compara é o preço por litro, kg ou rolo: ele é o número grande, e o
+        # total entregue e o produto viram o complemento; sem unidade (freezer, colchão), o total
+        p = entregue_por_unidade(mel, cfg) if mel and unidade_de_comparacao(cfg) else None
+        if mel and p:
+            corpo = (f'<div class="total">{brl_un(p)}<span class="un">{e(sufixo(cfg))}</span></div>'
+                     f'{selo_augustinus(mel, it.get("referencia"), cfg)}'
+                     f'<div class="det">{brl(mel["total_pix"])} entregue · {e(mel["produto"][:90])} · {e(mel["loja"])}</div>')
+        elif mel:
+            corpo = (f'<div class="total">{brl(mel["total_pix"])}</div>'
+                     f'{selo_augustinus(mel, it.get("referencia"), cfg)}'
+                     f'<div class="det">{e(mel["produto"][:90])} · {e(mel["loja"])}</div>')
+        else:
+            corpo = '<div class="det">Sem oferta na última rodada.</div>'
         pausado = (it.get("cfg") or {}).get("pausado")
         gerir = ""
         if repo:
@@ -165,7 +176,7 @@ def _escrever_indice(destino, secoes, repo, avisos, porta, e) -> None:
 .pasta>summary::-webkit-details-marker{{display:none}}
 .pasta>summary::before{{content:"▸";display:inline-block;width:1.1em;color:var(--mut);transition:transform .15s}}
 .pasta[open]>summary::before{{transform:rotate(90deg)}}
-.titulo-pasta .det{{font-weight:400}} .acoes{{margin-top:8px}} .card-pausado{{opacity:.6}}
+.titulo-pasta .det{{font-weight:400}} .total .un{{font-size:15px;font-weight:500;color:var(--mut);margin-left:2px}} .acoes{{margin-top:8px}} .card-pausado{{opacity:.6}}
 .pausado{{border:1px solid var(--mut);color:var(--mut);border-radius:99px;font-size:11px;padding:1px 8px}}
 .botao.secundario{{background:transparent;color:var(--ac);border:1.5px solid var(--ac);margin-top:4px}}
 button.botao{{font:inherit;cursor:pointer}}

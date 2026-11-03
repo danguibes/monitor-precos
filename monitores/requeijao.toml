@@ -1,0 +1,18 @@
+# Criado a pedido, em 02/11/2026, escrito à mão (a faixa de peso é mais larga que a
+# do formulário). O "editar" da página abre este arquivo no GitHub.
+#
+# A casa leva copo de 200 g e de 380–400 g (Vigor, Tirolez, Danone, Catupiry,
+# Galbani), cremoso e light: compara por kg. Fora: sabor, culinário (bisnaga de
+# cozinha, outro produto) e o que só tem requeijão no recheio.
+
+nome = "Requeijão cremoso"
+pasta = "mercado"
+titulo = "Requeijão cremoso · por kg"
+modo = "descoberta"
+intervalo_minimo_horas = 12
+termos = ["requeijão cremoso", "requeijão light"]
+
+[regras]
+incluir = ['requeij[ãa]o']
+excluir = ['cheddar|sabor|ervas|bacon|calabresa|frango', 'culin[áa]ri|bisnaga', 'p[ãa]o|mini|salgad|biscoito|torrad|recheio|recheado|pizza|coxinha|esfiha', '\bkit\b|\+']
+peso_g = [180, 420]

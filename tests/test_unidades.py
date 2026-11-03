@@ -166,3 +166,32 @@ def test_sem_volume_pack_ou_por_unidade_compara_pelo_total(tmp_path):
                       oferta("ML", "ML", "Xiaomi 17t 512gb 12gb Ram", "v", 4499.0, 4499.0, 0.0, "", "l2", "2026-11-01 16:19")], arq)
     _, res = analisar(ler_historico(arq), celular)
     assert res[0]["melhor"]["total_pix"] == 4299.14
+
+
+@pytest.mark.parametrize("titulo, g", [
+    ("Requeijão Cremoso Vigor Light 200g", 200),
+    ("Sabão em Pó Omo Lavagem Perfeita 1,6kg", 1600),
+    ("DET PO OMO BAG 2,4kg", 2400),
+    ("Lava Louças em Pó Finish 1 Kg", 1000),
+    ("Requeijão Catupiry 250 gramas", 250),
+    ("Leite Integral 1L", None),
+])
+def test_peso_do_titulo(titulo, g):
+    from precos.unidades import peso_g
+    assert peso_g(titulo) == g
+
+
+def test_monitor_por_kg_filtra_pelo_peso_e_conta_os_quilos():
+    """Requeijão e sabão em pó comparam por kg: a faixa de peso filtra e o sufixo é /kg."""
+    from precos.unidades import sufixo, unidade_de_comparacao
+    req = tomllib.loads((Path(__file__).parent.parent / "monitores" / "requeijao.toml").read_text(encoding="utf-8"))
+    f = filtro_por_regras(req["regras"])
+    assert f("Requeijão Cremoso Tirolez 200g") and f("Requeijão Light Vigor 400g")
+    assert not f("Requeijão Sabor Cheddar 200g") and not f("Requeijão Culinário Bisnaga 1,5kg")
+    assert not f("Pão de Queijo Recheado com Requeijão 400g") and not f("Requeijão Cremoso")   # sem peso, não compara
+    assert unidade_de_comparacao(req) == "quilo" and sufixo(req) == "/kg"
+    assert _uno("Requeijão Cremoso Vigor 400g", req) == 0.4
+    sabao = tomllib.loads((Path(__file__).parent.parent / "monitores" / "sabao-em-po-roupa.toml").read_text(encoding="utf-8"))
+    g = filtro_por_regras(sabao["regras"])
+    assert g("Sabão em Pó Omo Lavagem Perfeita 1,6kg") and g("Lava Roupas em Pó Brilhante 2,2 kg")
+    assert not g("Lava Roupas Líquido Omo 3L") and not g("Detergente em Pó Lava Louças Finish 1kg")

@@ -165,3 +165,13 @@ def test_consumo_so_desde_a_data_da_config():
     ref = referencia([antiga, MINALBA], dict(AGUA, augustinus_consumo_desde="2026-08-01"), HOJE)
     meses = (HOJE - date(2026, 8, 1)).days / (365 / 12)
     assert ref["compras"] == 2 and ref["consumo_mes"] == round(9 / meses, 3) and ref["desde"] == "2026-08-01"
+
+
+def test_monitor_por_kg_le_o_peso_do_catalogo():
+    """Requeijão: o catálogo diz 400 g; a compra entra por kg, e o pão com requeijão não entra."""
+    from precos.augustinus import casa_com_o_monitor, unidades_da_compra
+    req = tomllib.loads((RAIZ / "monitores" / "requeijao.toml").read_text(encoding="utf-8"))
+    vigor = compra("REQ VIGOR 400G LIGHT", 17.90, "Requeijão", 400, "g", 1, 400, "g")
+    pao = compra("MINI PAO BATATA FRANGO C REQ 400", 29.99, "Mini pão de batata com frango e requeijão", 3200, "g", 8, 3200, "g")
+    assert casa_com_o_monitor(vigor, req) and not casa_com_o_monitor(pao, req)
+    assert round(preco_por_unidade(vigor, "quilo"), 2) == 44.75 and unidades_da_compra(vigor, "quilo") == pytest.approx(2.4)

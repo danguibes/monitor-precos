@@ -243,7 +243,7 @@ def quadro_augustinus(ref, cfg, melhores) -> str:
                 f'{abs(dif):.0%} {"abaixo" if dif >= 0 else "acima"}.</div>')
         eco = economia_mensal(ref, p)
         if eco is not None:
-            qtd = f'{ref["consumo_mes"]:.1f}'.replace(".", ",") if ref["unidade"] == "litro" else f'{ref["consumo_mes"]:.0f}'
+            qtd = f'{ref["consumo_mes"]:.1f}'.replace(".", ",") if ref["unidade"] in ("litro", "quilo") else f'{ref["consumo_mes"]:.0f}'
             conta = (f'economia de <b>{brl(eco)}/mês</b> (~{brl(eco * 12, 0)}/ano)' if eco > 0
                      else f'sairia <b>{brl(-eco)}/mês mais caro</b>')
             mes = (f'<div>Você leva ~{qtd}{un.replace("/", " ")}/mês e gasta {brl(ref["gasto_mes"])}/mês. '

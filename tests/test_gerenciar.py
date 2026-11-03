@@ -124,3 +124,17 @@ def test_indice_agrupa_por_pasta_com_as_lojas_de_cada_uma(tmp_path):
     assert "Lojas varridas (1): Magalu" in html and "Lojas varridas (6): Amazon · Assaí (pelo Rappi)" in html
     assert html.count('<details class="pasta" data-pasta=') == 3 and html.count("<summary>") == 3   # nascem fechadas
 
+
+
+def test_card_destaca_o_preco_por_unidade_e_o_produto_vira_complemento(tmp_path):
+    from precos.base import oferta
+    cfg = {"modo": "descoberta", "regras": {"volume_ml": [950, 1050]}, "pasta_nome": "Mercado", "lojas": []}
+    leite = oferta("Assaí", "x", "Leite Integral Piracanjuba 1L Caixa com 12", "", 60.0, 56.28, 0.0, "", "", "")
+    freezer = oferta("Magalu", "x", "Freezer Vertical 197L", "", 3000.0, 2799.0, 0.0, "", "", "")
+    itens = [{"id": "leite", "nome": "Leite", "melhor": leite, "ultima": None, "cfg": cfg},
+             {"id": "freezer", "nome": "Freezer", "melhor": freezer, "ultima": None, "cfg": {"pasta_nome": "Outros"}}]
+    gerar_indice(itens, tmp_path / "index.html", None)
+    html = (tmp_path / "index.html").read_text(encoding="utf-8")
+    assert '<div class="total">R$ 4,69<span class="un">/L</span></div>' in html          # 56,28 / 12 L
+    assert "R$ 56,28 entregue · Leite Integral Piracanjuba" in html
+    assert '<div class="total">R$ 2.799,00</div>' in html                                # sem unidade: o total

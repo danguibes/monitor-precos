@@ -1,0 +1,19 @@
+# Criado a pedido, em 02/11/2026, escrito à mão. O "editar" da página abre este
+# arquivo no GitHub.
+#
+# A casa leva de 1 a 1,7 L (Candura, Comfort, Bijou): compara por litro. Atenção
+# à leitura: o concentrado rende mais por litro, então o mais barato por litro
+# pode ser o diluído — confira o rótulo antes de trocar de marca.
+
+nome = "Amaciante"
+pasta = "mercado"
+titulo = "Amaciante de roupas · por litro"
+modo = "descoberta"
+intervalo_minimo_horas = 12
+termos = ["amaciante de roupas", "amaciante concentrado"]
+
+[regras]
+incluir = ['amaciante']
+# "+ 500ml" é combo; "1,7 + perfume" (Bijou, o mais barato que a casa levou) é o nome do produto
+excluir = ['cabelo|condicionador|carne|tempero', '\bkit\b|\+\s*\d']
+volume_ml = [900, 2100]

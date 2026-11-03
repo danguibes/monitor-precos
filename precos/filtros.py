@@ -40,14 +40,16 @@ def filtro_por_regras(regras: dict):
     regras = {"incluir": [regex, ...]   -> todas precisam aparecer
               "excluir": [regex, ...]   -> nenhuma pode aparecer
               "volume_ml": [min, max]   -> volume de uma unidade
+              "peso_g": [min, max]      -> peso de uma unidade (compara por kg)
               "quantidade": [min, max]  -> unidades no anúncio
               "montar_pack": N}         -> as unidades do anúncio precisam compor N
                                            (com N=6: avulsa, kit de 2, de 3 ou de 6)
     """
-    from .unidades import quantidade, volume_ml
+    from .unidades import peso_g, quantidade, volume_ml
     incluir = [re.compile(r, re.I) for r in regras.get("incluir", [])]
     excluir = [re.compile(r, re.I) for r in regras.get("excluir", [])]
     vol = regras.get("volume_ml")
+    peso = regras.get("peso_g")
     qtd = regras.get("quantidade")
     pack = regras.get("montar_pack")
 
@@ -57,6 +59,10 @@ def filtro_por_regras(regras: dict):
         if vol:
             v = volume_ml(texto)
             if v is None or not vol[0] <= v <= vol[1]:
+                return False
+        if peso:
+            g = peso_g(texto)
+            if g is None or not peso[0] <= g <= peso[1]:
                 return False
         if qtd and not qtd[0] <= quantidade(texto) <= qtd[1]:
             return False

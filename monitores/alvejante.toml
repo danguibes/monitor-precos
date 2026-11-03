@@ -1,0 +1,18 @@
+# Criado a pedido, em 02/11/2026, escrito à mão. O "editar" da página abre este
+# arquivo no GitHub.
+#
+# A casa leva alvejante de 1,5 L (Urca Maxx, Suprema sem cloro): compara por
+# litro. Água sanitária fica fora: a casa também compra (2 L, ~R$ 2,40/L), mas é
+# outro produto, e misturar as duas faria o alvejante parecer caro.
+
+nome = "Alvejante"
+pasta = "mercado"
+titulo = "Alvejante (sem a água sanitária) · por litro"
+modo = "descoberta"
+intervalo_minimo_horas = 12
+termos = ["alvejante", "alvejante sem cloro"]
+
+[regras]
+incluir = ['alvejante']
+excluir = ['sanit[áa]ria', '\bp[óo]\b|\bgel\b|tira.?manchas', '\bkit\b|\+']
+volume_ml = [900, 2100]
