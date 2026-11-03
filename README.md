@@ -276,13 +276,16 @@ sem navegador). O lado da casa foi conferido aqui no mesmo dia, com o mesmo clie
 | Atacadão (VTEX) | 308 → /io/… | o mesmo 308 |
 | Pão de Açúcar | 200 | 200 |
 | Carrefour | 200, página cheia | 200, página cheia |
-| Mercado Livre, busca | 302 para verificação de conta | **200, página cheia** |
+| Mercado Livre, busca | 302 para `/gz/account-verification` | **200, página cheia** |
 | Magalu | 403 | 403 |
 | Casas Bahia | 403 | 403 |
 | API oficial do ML, sem token | 403 | 403 |
 
 Os CDNs trataram o IP como nacional (`x-amz-cf-pop: GRU3-P9`, `cf-ray: …-GRU`),
-sem WAF, desafio nem captcha. Duas leituras, e o grau de cada uma:
+sem WAF, desafio nem captcha. O IP era a saída compartilhada do Supabase, já
+usada antes contra a SEFAZ: o caso pessimista de reputação, então para a AWS São
+Paulo o resultado é um piso. Outro provedor de VPS é outra faixa de IP, que esta
+medição não cobre. As leituras, e o grau de cada uma:
 
 - **Provado:** a metade sem navegador nem login — as VTEX, o Pão de Açúcar e a API
   do ML — responde igual de um datacenter em São Paulo.
