@@ -199,6 +199,24 @@ d.addEventListener("toggle",function(){var f=[];document.querySelectorAll("detai
 </script>"""
 
 
+def melhor_do_card(melhores: list[dict], cfg: dict) -> dict | None:
+    """A oferta do card: a mais barata por litro, kg ou unidade (a mesma do quadro do Augustinus).
+
+    Até 02/11 era a de menor TOTAL, o que não aparecia enquanto o card mostrava o total:
+    no suco de laranja, a garrafa de 1 L a R$ 10,49/L ganhava da de 1,5 L a R$ 6,82/L.
+    Sem unidade (freezer) ou sem a contagem no título, vale o total, como antes.
+    """
+    from .augustinus import entregue_por_unidade
+    com_frete = [x for x in melhores if x.get("frete") is not None] or melhores
+    if not com_frete:
+        return None
+    if unidade_de_comparacao(cfg):
+        por_un = [(p, x) for x in com_frete if (p := entregue_por_unidade(x, cfg))]
+        if por_un:
+            return min(por_un, key=lambda px: px[0])[1]
+    return min(com_frete, key=lambda x: x["total_pix"])
+
+
 def gerar_site(monitores: list[dict], pasta: Path = SITE, repo: str | None = None) -> None:
     from .base import carregar_json
     if pasta.exists():
@@ -216,9 +234,7 @@ def gerar_site(monitores: list[dict], pasta: Path = SITE, repo: str | None = Non
                               botao=botao, minimos=estado.get("pedido_minimo"))
         gerar_historico(m["cfg"], pasta / f"{m['id']}-historico.html", m["historico"],
                         volta=f"{m['id']}.html", publico=True)
-        melhores = [r["melhor"] for r in res if r["melhor"]]
-        com_frete = [x for x in melhores if x.get("frete") is not None] or melhores
-        melhor = min(com_frete, key=lambda x: x["total_pix"]) if com_frete else None
+        melhor = melhor_do_card([r["melhor"] for r in res if r["melhor"]], m["cfg"])
         itens.append({"id": m["id"], "nome": m["cfg"].get("nome", m["id"]), "melhor": melhor,
                       "ultima": melhor["data"] if melhor else None, "cfg": m["cfg"], "referencia": ref})
     gerar_indice(itens, pasta / "index.html", repo, carregar_json(AVISOS_PEDIDOS, []), porta)

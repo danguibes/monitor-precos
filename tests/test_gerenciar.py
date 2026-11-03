@@ -138,3 +138,15 @@ def test_card_destaca_o_preco_por_unidade_e_o_produto_vira_complemento(tmp_path)
     assert '<div class="total">R$ 4,69<span class="un">/L</span></div>' in html          # 56,28 / 12 L
     assert "R$ 56,28 entregue · Leite Integral Piracanjuba" in html
     assert '<div class="total">R$ 2.799,00</div>' in html                                # sem unidade: o total
+
+
+def test_card_escolhe_o_mais_barato_por_unidade_e_nao_pelo_total():
+    """Suco de laranja, 02/11: 1 L a R$ 10,49 tinha o menor total, e 1,5 L a R$ 10,23 sai R$ 6,82/L."""
+    from precos.base import oferta
+    from precos.publicar import melhor_do_card
+    cfg = {"modo": "descoberta", "regras": {"volume_ml": [850, 2100]}}
+    um = oferta("Atacadão", "x", "Suco de Laranja OQ Integral 1L", "", 10.49, 10.49, 0.0, "", "", "")
+    litro_e_meio = oferta("Amazon", "x", "Suco Maguary Laranja 1,5L", "", 10.23, 10.23, 0.0, "", "", "")
+    assert melhor_do_card([um, litro_e_meio], cfg) is litro_e_meio
+    assert melhor_do_card([um, litro_e_meio], {}) is litro_e_meio            # sem unidade: o menor total
+    assert melhor_do_card([], cfg) is None

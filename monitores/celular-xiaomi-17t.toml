@@ -6,7 +6,9 @@ pasta = "eletronicos"
 titulo = "Celular Xiaomi 17T"
 modo = "descoberta"
 intervalo_minimo_horas = 12
-termos = ["Celular Xiaomi 17T"]
+# "Celular Xiaomi 17T" trazia películas e o de 256 GB na Magalu, e o de 512 GB nem
+# aparecia (02/11/2026); com o armazenamento no termo, ele vem em primeiro
+termos = ["Xiaomi 17T 512GB", "smartphone xiaomi 17t 5g 512gb"]
 
 [regras]
 incluir = ["(?<!\\d)512(?!\\d)", "\\b17t\\b"]
@@ -14,7 +16,7 @@ excluir = ["(?<!\\d)256(?!\\d)", "17t\\s*pr[oóòôõ]"]
 
 [pedido]
 numero = 10
-termos = "Celular Xiaomi 17T"
+termos = "Xiaomi 17T 512GB\nsmartphone xiaomi 17t 5g 512gb"
 precisa = "512\n17t"
 exclui = "256\n17t pro"
 tamanho = ""
