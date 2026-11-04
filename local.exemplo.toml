@@ -22,3 +22,15 @@ nao_publicar = ["Rua Exemplo", "ap 00"]
 # [mercadolivre]
 # client_id = "..."
 # client_secret = "..."
+
+# Opcional: entrega dos pedidos online à pousada do Augustinus (py monitor.py
+# --compras-online). Papel só de INSERT, diferente do [augustinus]. Espelhe o host,
+# a porta e o banco de lá; pelo pooler, o usuário leva o ponto e o ref do projeto.
+# conta é um rótulo seu (nunca e-mail): diz de qual conta veio o pedido.
+# [augustinus_pedidos]
+# host = "..."
+# porta = 5432
+# banco = "postgres"
+# usuario = "monitor_pedidos.<ref>"
+# senha = "..."
+# conta = "danilo"

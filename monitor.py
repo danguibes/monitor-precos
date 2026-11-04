@@ -19,6 +19,8 @@ Uso:
   py monitor.py --vigiar     -> fica olhando o GitHub: botão "Atualizar agora" e pedidos de monitor
                                 (o lançador do logon chama isto depois da rodada)
   py monitor.py --sem-abrir  -> não abre o relatório ao fim (o vigia usa)
+  py monitor.py --compras-online -> entrega os pedidos do Mercado Livre ao Augustinus
+                                (com --ensaio, só mostra o que sairia, sem enviar)
 
 Tudo o que é gerado (histórico, relatório, log, perfil do navegador) fica em dados/.
 """
@@ -88,6 +90,32 @@ def travar_rodada():
         f.close()
         return None
     return f
+
+
+_trava_compras = None
+
+
+def travar_rodada_compras():
+    """A trava de rodada, guardada até o processo sair: solta antes, outra rodada abriria o mesmo perfil."""
+    global _trava_compras
+    _trava_compras = travar_rodada()
+    return _trava_compras
+
+
+def entregar_compras_online(monitores, ja_travado: bool) -> None:
+    """Na rodada do logon, uma vez por dia. Sem a seção no local.toml, não faz nada; se falhar, a rodada não sente."""
+    from precos import compras_online
+    local = mon.ler_toml(mon.LOCAL, obrigatorio=False)
+    acesso = local.get("augustinus_pedidos")
+    if not acesso or compras_online.entregue_hoje():
+        return
+    if not ja_travado and travar_rodada_compras() is None:
+        return
+    proibidos = [str(t).lower() for t in [local.get("cep", ""), *local.get("nao_publicar", [])] if t]
+    try:
+        compras_online.rodar(monitores[0]["cfg"], acesso, proibidos, ensaio=False)
+    except Exception as exc:
+        log(f"Compras online: ERRO {type(exc).__name__}; nada marcado como entregue, tento na próxima rodada.")
 
 
 def manter_acordado() -> None:
@@ -245,6 +273,16 @@ def main(argv):
         configurar(monitores[0]["cfg"], filtro)
         return 0
 
+    if "--compras-online" in argv:  # os pedidos do ML para a pousada do Augustinus; --ensaio não envia
+        if travar_rodada_compras() is None:
+            log("Outra rodada já está em andamento; compras online ficam para depois.")
+            return 0
+        from precos import compras_online
+        local = mon.ler_toml(mon.LOCAL, obrigatorio=False)
+        proibidos = [str(t).lower() for t in [local.get("cep", ""), *local.get("nao_publicar", [])] if t]
+        compras_online.rodar(monitores[0]["cfg"], local.get("augustinus_pedidos"), proibidos, "--ensaio" in argv)
+        return 0
+
     if "--publicar" in argv:  # só republica, sem coletar; a referência do Augustinus não depende da coleta
         aug = ler_augustinus()
         for m in monitores:
@@ -288,6 +326,8 @@ def main(argv):
             log(f"[{m['id']}] ERRO: {exc!r}")
     if escolhidos or mudou:
         publicar_se_ligado(monitores, argv)
+    if "--logon" in argv:
+        entregar_compras_online(monitores, ja_travado=trava is not None)
     return 0
 
 
