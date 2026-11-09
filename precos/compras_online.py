@@ -30,12 +30,11 @@ from __future__ import annotations
 
 import json
 import re
-import ssl
 from datetime import date
 from decimal import Decimal
 from urllib.parse import parse_qs, urlparse
 
-from .augustinus import CA
+from .augustinus import conectar
 from .base import RAIZ, carregar_json, log, salvar_json
 
 LISTA = "https://myaccount.mercadolivre.com.br/my_purchases/list"
@@ -52,6 +51,8 @@ _BARRADO = re.compile(r"captcha|n[aã]o sou um rob[oô]|/jms/|/login", re.I)
 _CEP = re.compile(r"\b\d{5}-?\d{3}\b")
 _ENDERECO = re.compile(r"\b(rua|r\.|av\.|avenida|alameda|travessa|apto?\.?|apartamento|bloco|cep|cpf|cnpj|cart[aã]o|"
                        r"final \d{4}|visa|mastercard|recebe|retirar|porteiro|portaria)\b", re.I)
+# Cartão sem fronteira de palavra: a Amazon escreve "Mastercardterminando em NNNN" (medido em 09/11).
+_PAGAMENTO = re.compile(r"mastercard|visa|hipercard|american express|amex|\belo\b|terminando em \d{4}|final \d{4}", re.I)
 
 
 def reais(texto: str) -> Decimal:
@@ -64,7 +65,7 @@ def linhas_de(texto: str) -> list[str]:
 
 def seguras(linhas: list[str], proibidos: list[str]) -> list[str]:
     """Tira o que tem cara de endereço, documento ou cartão, e os termos do nao_publicar."""
-    return [l for l in linhas if not (_CEP.search(l) or _ENDERECO.search(l)
+    return [l for l in linhas if not (_CEP.search(l) or _ENDERECO.search(l) or _PAGAMENTO.search(l)
                                       or any(p in l.lower() for p in proibidos))]
 
 
@@ -207,10 +208,7 @@ def linhas_para_envio(itens: list[dict], detalhes: dict, conta: str, proibidos: 
 
 
 def enviar(linhas: list[dict], acesso: dict) -> None:
-    import pg8000.native as pg
-    con = pg.Connection(acesso["usuario"], host=acesso["host"], port=int(acesso.get("porta", 5432)),
-                        database=acesso.get("banco", "postgres"), password=acesso["senha"],
-                        ssl_context=ssl.create_default_context(cafile=str(CA)), timeout=20)
+    con = conectar(acesso)
     try:
         for l in linhas:
             con.run("insert into recebido.pedidos_online (loja, conta, pedido_externo, item_externo, titulo, "
@@ -222,6 +220,17 @@ def enviar(linhas: list[dict], acesso: dict) -> None:
         con.close()
 
 
+# Compra a caminho também tem "Ver detalhe", mas sem "Comprado em": em 05/11 eram 15 links para 13
+# compras, e a lista toda foi recusada. Cada link sobe até o maior bloco que só contém ele, e conta
+# se esse bloco diz "Comprado em". A contagem em itens_da_lista continua de guarda.
+_LINKS_DO_HISTORICO = """els => els.filter(a => /detalhe/i.test(a.innerText || '')).map(a => {
+    const n = e => ((e.innerText || '').match(/ver detalhe/gi) || []).length;
+    let card = a;
+    while (card.parentElement && n(card.parentElement) <= 1) card = card.parentElement;
+    return [/Comprado em/.test(card.innerText || ''), a.href];
+})"""
+
+
 def coletar(page, cache: dict, proibidos: list[str]) -> tuple[list[dict], list[str]]:
     """Lê a lista e abre o detalhe só de transação nova. Login ou captcha: para e avisa."""
     from .navegador import ir, texto
@@ -230,8 +239,7 @@ def coletar(page, cache: dict, proibidos: list[str]) -> tuple[list[dict], list[s
     corpo = texto(page)
     if _BARRADO.search(page.url) or _BARRADO.search(corpo[:3000]):
         return [], ["Mercado Livre pediu login ou captcha na lista de compras; nada lido"]
-    ancoras = page.eval_on_selector_all("a", "els => els.map(e => [(e.innerText||'').trim().slice(0,40), e.href])")
-    links = [h for t, h in ancoras if "detalhe" in t.lower()]
+    links = [h for no_historico, h in page.eval_on_selector_all("a", _LINKS_DO_HISTORICO) if no_historico]
     try:
         itens = itens_da_lista(linhas_de(corpo), links)
     except ValueError as e:
@@ -262,18 +270,28 @@ def rodar(cfg: dict, acesso: dict | None, proibidos: list[str], ensaio: bool) ->
     """Devolve quantas linhas saíram (ou sairiam, no ensaio). Sem exceção por loja fora do ar: avisa no log."""
     from .navegador import abrir_navegador
 
-    cache = carregar_json(CACHE, {})
+    from . import compras_amazon
+
+    cache, cache_amz = carregar_json(CACHE, {}), carregar_json(compras_amazon.CACHE, {})
     pw, ctx = abrir_navegador(cfg, visivel=False)
     try:
         page = ctx.pages[0] if ctx.pages else ctx.new_page()
         itens, avisos = coletar(page, cache, proibidos)
+        try:  # uma loja quebrada não leva a outra junto
+            pedidos_amz, avisos_amz = compras_amazon.coletar(page, cache_amz, proibidos)
+        except Exception as exc:
+            pedidos_amz, avisos_amz = [], [f"Amazon: ERRO {type(exc).__name__}"]
     finally:
         ctx.close()
         pw.stop()
     salvar_json(CACHE, cache)
+    salvar_json(compras_amazon.CACHE, cache_amz)
     conta = (acesso or {}).get("conta", "danilo")
     linhas, a2 = linhas_para_envio(itens, cache, conta, proibidos)
-    for a in avisos + a2:
+    linhas_amz, a3 = compras_amazon.linhas_para_envio(pedidos_amz, cache_amz, conta, proibidos)
+    linhas += linhas_amz
+    itens = itens + pedidos_amz  # para a contagem e para marcar o dia: basta uma loja ter lido
+    for a in avisos + a2 + avisos_amz + a3:
         log("Compras online: " + a)
     if ensaio:
         for l in linhas:

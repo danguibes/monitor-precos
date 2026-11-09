@@ -19,8 +19,10 @@ Uso:
   py monitor.py --vigiar     -> fica olhando o GitHub: botão "Atualizar agora" e pedidos de monitor
                                 (o lançador do logon chama isto depois da rodada)
   py monitor.py --sem-abrir  -> não abre o relatório ao fim (o vigia usa)
-  py monitor.py --compras-online -> entrega os pedidos do Mercado Livre ao Augustinus
+  py monitor.py --compras-online -> entrega os pedidos do Mercado Livre e da Amazon ao Augustinus
                                 (com --ensaio, só mostra o que sairia, sem enviar)
+  py monitor.py --notas-sefaz -> abre na SEFAZ as NFC-e que o Augustinus não consegue e entrega as páginas
+                                (com --ensaio, abre e confere sem gravar)
 
 Tudo o que é gerado (histórico, relatório, log, perfil do navegador) fica em dados/.
 """
@@ -102,6 +104,25 @@ def travar_rodada_compras():
     return _trava_compras
 
 
+def garantir_trava(ja_travado: bool) -> bool:
+    """A mesma trava serve às duas entregas: travar de novo pelo mesmo processo falharia."""
+    return ja_travado or _trava_compras is not None or travar_rodada_compras() is not None
+
+
+def entregar_notas_sefaz(monitores, ja_travado: bool) -> None:
+    """Na rodada do logon, uma vez por dia: as NFC-e que o Augustinus não consegue abrir. Falha não derruba a rodada."""
+    from precos import sefaz
+    local = mon.ler_toml(mon.LOCAL, obrigatorio=False)
+    if not local.get("augustinus") or not local.get("augustinus_pedidos") or sefaz.feito_hoje():
+        return
+    if not garantir_trava(ja_travado):
+        return
+    try:
+        sefaz.rodar(monitores[0]["cfg"], local["augustinus"], local["augustinus_pedidos"], ensaio=False)
+    except Exception as exc:
+        log(f"Notas da SEFAZ: ERRO {type(exc).__name__}; tento na próxima rodada.")
+
+
 def entregar_compras_online(monitores, ja_travado: bool) -> None:
     """Na rodada do logon, uma vez por dia. Sem a seção no local.toml, não faz nada; se falhar, a rodada não sente."""
     from precos import compras_online
@@ -109,7 +130,7 @@ def entregar_compras_online(monitores, ja_travado: bool) -> None:
     acesso = local.get("augustinus_pedidos")
     if not acesso or compras_online.entregue_hoje():
         return
-    if not ja_travado and travar_rodada_compras() is None:
+    if not garantir_trava(ja_travado):
         return
     proibidos = [str(t).lower() for t in [local.get("cep", ""), *local.get("nao_publicar", [])] if t]
     try:
@@ -283,6 +304,18 @@ def main(argv):
         compras_online.rodar(monitores[0]["cfg"], local.get("augustinus_pedidos"), proibidos, "--ensaio" in argv)
         return 0
 
+    if "--notas-sefaz" in argv:  # as NFC-e presas no Augustinus; --ensaio abre e confere sem gravar
+        if travar_rodada_compras() is None:
+            log("Outra rodada já está em andamento; notas da SEFAZ ficam para depois.")
+            return 0
+        from precos import sefaz
+        local = mon.ler_toml(mon.LOCAL, obrigatorio=False)
+        if not local.get("augustinus"):
+            log("Notas da SEFAZ: falta a seção [augustinus] no local.toml.")
+            return 1
+        sefaz.rodar(monitores[0]["cfg"], local["augustinus"], local.get("augustinus_pedidos"), "--ensaio" in argv)
+        return 0
+
     if "--publicar" in argv:  # só republica, sem coletar; a referência do Augustinus não depende da coleta
         aug = ler_augustinus()
         for m in monitores:
@@ -328,6 +361,7 @@ def main(argv):
         publicar_se_ligado(monitores, argv)
     if "--logon" in argv:
         entregar_compras_online(monitores, ja_travado=trava is not None)
+        entregar_notas_sefaz(monitores, ja_travado=trava is not None)
     return 0
 
 

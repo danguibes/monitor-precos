@@ -49,7 +49,8 @@ caminho absoluto e, sem isso, o monitor para de rodar no logon sem avisar.
 | `py monitor.py --nao-publicar` | coleta sem publicar |
 | `py monitor.py --pedidos` | atende os pedidos do formulário e roda já os monitores criados |
 | `py monitor.py --vigiar` | o vigia: olha o GitHub a cada `vigia_minutos` (o lançador chama depois do `--logon`) |
-| `py monitor.py --compras-online` | entrega os pedidos do Mercado Livre à pousada do Augustinus; com `--ensaio`, só mostra o que sairia. O `--logon` faz isto no máximo uma vez por dia, se houver `[augustinus_pedidos]` no `local.toml`; as regras medidas estão em `precos/compras_online.py` |
+| `py monitor.py --compras-online` | entrega os pedidos do Mercado Livre e da Amazon à pousada do Augustinus; com `--ensaio`, só mostra o que sairia. O `--logon` faz isto no máximo uma vez por dia, se houver `[augustinus_pedidos]` no `local.toml`; as regras medidas estão em `precos/compras_online.py` |
+| `py monitor.py --notas-sefaz` | abre pelo navegador as NFC-e que a SEFAZ-SP recusa ao servidor do Augustinus (só o link do QR; captcha ou rejeição não grava) e entrega as páginas; com `--ensaio`, abre e confere sem gravar. O `--logon` faz isto uma vez por dia |
 | `py instalar.py --remover` | tira o lançador da pasta Inicializar |
 
 ## Monitores: o rol de produtos

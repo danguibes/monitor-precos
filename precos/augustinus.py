@@ -42,12 +42,17 @@ CAMPOS = ("data_emissao", "descricao", "quantidade", "unidade", "valor_unitario"
           "produto_quantidade", "produto_unidade", "embalagem", "quantidade_base", "unidade_base", "conceito_id")
 
 
+def conectar(acesso: dict):
+    """Conexão ao banco do Augustinus por uma seção do local.toml ([augustinus] ou [augustinus_pedidos])."""
+    import pg8000.native as pg
+    return pg.Connection(acesso["usuario"], host=acesso["host"], port=int(acesso.get("porta", 5432)),
+                         database=acesso.get("banco", "postgres"), password=acesso["senha"],
+                         ssl_context=ssl.create_default_context(cafile=str(CA)), timeout=20)
+
+
 def ler_compras(aug: dict) -> list[dict]:
     """As compras da casa, pela view. Levanta exceção se não conectar: quem chama avisa."""
-    import pg8000.native as pg
-    con = pg.Connection(aug["usuario"], host=aug["host"], port=int(aug.get("porta", 5432)),
-                        database=aug.get("banco", "postgres"), password=aug["senha"],
-                        ssl_context=ssl.create_default_context(cafile=str(CA)), timeout=20)
+    con = conectar(aug)
     try:
         linhas = con.run("select " + ", ".join(CAMPOS) + " from monitor.compras_da_casa")
     finally:
