@@ -64,3 +64,29 @@ def test_desconto_em_varios_itens_nao_sai():
 
 def test_pagina_sem_resumo_falha_em_vez_de_chutar():
     assert pedido_do_detalhe(["Pedido realizado 1 de novembro de 2026", "Livro A", "Vendido por: X"], HOJE) is None
+
+
+def test_asin_vem_do_link_com_o_titulo_do_item():
+    from precos.compras_amazon import asins_pelo_titulo
+    itens = [{"titulo": "Livro A"}, {"titulo": "Produto B"}, {"titulo": "Sem link"}]
+    links = [["Livro A", "/dp/8535902775/ref=x"], ["Produto B", "/gp/product/B0ABCDEF12?psc=1"],
+             ["Recomendado", "/dp/B0ZZZZZZZZ"], ["Sem link", "/gp/css/order-details?orderID=1"]]
+    asins_pelo_titulo(itens, links)
+    assert [i["asin"] for i in itens] == ["8535902775", "B0ABCDEF12", None]
+
+
+def test_asin_ambiguo_nao_chuta():
+    from precos.compras_amazon import asins_pelo_titulo
+    itens = [{"titulo": "Livro A"}]
+    asins_pelo_titulo(itens, [["Livro A", "/dp/8535902775"], ["Livro A", "/dp/B0ABCDEF12"]])
+    assert itens[0]["asin"] is None
+
+
+def test_url_leva_o_asin_e_cache_antigo_e_relido():
+    from precos.compras_amazon import _ja_lido
+    p = pedido_do_detalhe(detalhe(("Livro A", "38,00")), HOJE)
+    p["itens"][0]["asin"] = "8535902775"
+    linhas, _ = linhas_para_envio(["1"], {"1": _para_cache(p, [])}, "danilo", [])
+    assert linhas[0]["url"] == "/dp/8535902775"
+    assert not _ja_lido({"itens": [{"titulo": "x", "valor": "1"}]})
+    assert _ja_lido({"falhou": True}) and _ja_lido({"itens": [{"titulo": "x", "asin": None}]})

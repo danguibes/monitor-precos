@@ -72,7 +72,7 @@ def _para_cache(p: dict, proibidos: list[str]) -> dict:
     return {"data_texto": p["data_texto"], "data": p["data"] and p["data"].isoformat(),
             "subtotal": str(p["subtotal"]), "frete": None if p["frete"] is None else str(p["frete"]),
             "total": str(p["total"]), "situacao": p["situacao"],
-            "itens": [{"titulo": i["titulo"], "valor": str(i["valor"])} for i in p["itens"]],
+            "itens": [{"titulo": i["titulo"], "valor": str(i["valor"]), "asin": i.get("asin")} for i in p["itens"]],
             "bloco": seguras(p["bloco"], proibidos)}
 
 
@@ -98,8 +98,29 @@ def linhas_para_envio(ids: list[str], cache: dict, conta: str, proibidos: list[s
                            "item_externo": f"{pedido}#{n}" if varios else pedido, "titulo": item["titulo"],
                            "data_pedido": p["data"], "data_texto": p["data_texto"], "valor_total": valor,
                            "frete": frete, "total_pago": total, "situacao": p.get("situacao"), "quantidade": None,
-                           "url": "/gp/css/order-details", "bruto": json.dumps(bruto, ensure_ascii=False)})
+                           "url": f"/dp/{item['asin']}" if item.get("asin") else "/gp/css/order-details",
+                           "bruto": json.dumps(bruto, ensure_ascii=False)})
     return linhas, avisos
+
+
+_LINKS = "els => els.map(e => [(e.innerText || '').trim(), e.getAttribute('href') || ''])"
+_ASIN = re.compile(r"/(?:dp|gp/product)/([A-Z0-9]{10})(?:[/?]|$)")
+
+
+def asins_pelo_titulo(itens: list[dict], links: list[list[str]]) -> None:
+    """O ASIN do link cujo texto é o título do item, sem abrir página nenhuma.
+
+    Pedido do Augustinus (09/11): ASIN de livro impresso é o ISBN-10, e isso reconhece livro sem IA.
+    Só o link com o mesmo texto do título: recomendação também aponta para /dp/, com outro texto.
+    """
+    for item in itens:
+        achados = {m.group(1) for t, h in links if t == item["titulo"] and (m := _ASIN.search(h))}
+        item["asin"] = achados.pop() if len(achados) == 1 else None
+
+
+def _ja_lido(p: dict | None) -> bool:
+    """Lido e completo. Pedido do cache de antes do ASIN é reaberto uma vez; falho, nunca."""
+    return bool(p) and (p.get("falhou") or all("asin" in i for i in p.get("itens", [])))
 
 
 def coletar(page, cache: dict, proibidos: list[str]) -> tuple[list[str], list[str]]:
@@ -117,7 +138,7 @@ def coletar(page, cache: dict, proibidos: list[str]) -> tuple[list[str], list[st
             links.setdefault(pedido, h)
     abertos, avisos = 0, []
     for pedido, h in links.items():
-        if pedido in cache or abertos >= MAX_DETALHES:
+        if _ja_lido(cache.get(pedido)) or abertos >= MAX_DETALHES:
             continue
         abertos += 1
         ir(page, h, espera=6)
@@ -125,6 +146,8 @@ def coletar(page, cache: dict, proibidos: list[str]) -> tuple[list[str], list[st
             avisos.append("Amazon pediu login ou captcha num detalhe; parei de abrir")
             break
         p = pedido_do_detalhe(linhas_de(texto(page)), date.today())
+        if p:
+            asins_pelo_titulo(p["itens"], page.eval_on_selector_all("a", _LINKS))
         cache[pedido] = _para_cache(p, proibidos) if p else {"falhou": True}
         if not p:
             avisos.append("detalhe de um pedido da Amazon não reconhecido; não volto a abri-lo")
