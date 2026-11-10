@@ -22,8 +22,9 @@ from datetime import datetime
 from pathlib import Path
 
 from .base import DADOS, RAIZ, SEM_JANELA, brl, brl_un
+from .historico import ler_historico
 from .historico_pagina import gerar_historico
-from .relatorio import ESTILO, SCRIPT_ATUALIZAR, botao_atualizar, gerar_relatorio, selo_augustinus
+from .relatorio import ESTILO, SCRIPT_ATUALIZAR, botao_atualizar, gerar_relatorio, selo_augustinus, sparkline
 from .unidades import sufixo, unidade_de_comparacao
 
 SITE = DADOS / "site"
@@ -140,6 +141,7 @@ def _cards(itens, repo, e) -> list[str]:
                      f'<div class="det">{e(mel["produto"][:90])} · {e(mel["loja"])}</div>')
         else:
             corpo = '<div class="det">Sem oferta na última rodada.</div>'
+        corpo += f'<div class="spark">{sparkline(it.get("serie") or [])}</div>'
         pausado = (it.get("cfg") or {}).get("pausado")
         gerir = ""
         if repo:
@@ -199,6 +201,27 @@ d.addEventListener("toggle",function(){var f=[];document.querySelectorAll("detai
 </script>"""
 
 
+def serie_do_card(linhas: list[dict], cfg: dict) -> list[float]:
+    """O mini-gráfico do card: dia a dia, o mesmo número grande do card (melhor_do_card).
+
+    Por litro, kg ou unidade quando o monitor tem unidade; senão, o total. Com frete conhecido,
+    se houver no dia, como no card. As linhas já vêm sem os DESCARTES do histórico.
+    """
+    from .augustinus import entregue_por_unidade
+    unidade = unidade_de_comparacao(cfg)
+    por_dia: dict[str, list] = {}
+    for l in linhas:
+        if l.get("total_pix"):
+            por_dia.setdefault(l["data"][:10], []).append(l)
+    serie = []
+    for dia in sorted(por_dia):
+        do_dia = [l for l in por_dia[dia] if l.get("frete") is not None] or por_dia[dia]
+        valores = [v for l in do_dia if (v := entregue_por_unidade(l, cfg) if unidade else l["total_pix"])]
+        if valores:
+            serie.append(min(valores))
+    return serie
+
+
 def melhor_do_card(melhores: list[dict], cfg: dict) -> dict | None:
     """A oferta do card: a mais barata por litro, kg ou unidade (a mesma do quadro do Augustinus).
 
@@ -236,7 +259,8 @@ def gerar_site(monitores: list[dict], pasta: Path = SITE, repo: str | None = Non
                         volta=f"{m['id']}.html", publico=True)
         melhor = melhor_do_card([r["melhor"] for r in res if r["melhor"]], m["cfg"])
         itens.append({"id": m["id"], "nome": m["cfg"].get("nome", m["id"]), "melhor": melhor,
-                      "ultima": melhor["data"] if melhor else None, "cfg": m["cfg"], "referencia": ref})
+                      "ultima": melhor["data"] if melhor else None, "cfg": m["cfg"], "referencia": ref,
+                      "serie": serie_do_card(ler_historico(m["historico"]), m["cfg"])})
     gerar_indice(itens, pasta / "index.html", repo, carregar_json(AVISOS_PEDIDOS, []), porta)
 
 

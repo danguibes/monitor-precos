@@ -68,3 +68,14 @@ def test_modelo_de_monitor_e_valido_e_nao_fica_em_monitores():
     m = tomllib.loads(MODELO.read_text(encoding="utf-8"))
     assert m["modo"] == "descoberta" and m["termos"] and "lojas" not in m
     assert MODELO.parent.name != "monitores"  # senão viraria um monitor de verdade
+
+
+def test_serie_do_card_segue_o_numero_grande_do_card():
+    from precos.publicar import serie_do_card
+    l = lambda data, total, frete=0.0, produto="Agua com gas 1,5 L": {
+        "data": data, "total_pix": total, "frete": frete, "produto": produto}
+    linhas = [l("2026-11-01 06:00", 30.0), l("2026-11-01 18:00", 24.0), l("2026-11-02 06:00", 99.0, None),
+              l("2026-11-02 06:00", 27.0)]
+    assert serie_do_card(linhas, {}) == [24.0, 27.0]  # sem unidade: o total, o menor do dia, com frete
+    por_litro = {"modo": "descoberta", "regras": {"volume_ml": [1400, 1600]}}
+    assert serie_do_card(linhas, por_litro) == [16.0, 18.0]  # 1,5 L: o mesmo número, por litro
