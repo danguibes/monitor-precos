@@ -31,6 +31,7 @@ def test_filtro_descarta_garantia_e_acessorio():
     assert not eh_freezer("Gaxeta Borracha Porta Freezer Electrolux FEI27T")
     assert not eh_freezer("Tampa Do Gaveta Freezer Vertical Consul Cvu18 Cvu20")     # o "melhor freezer" de 01/11
     assert not eh_freezer("Conjunto Relé De Partida Freezer Vertical 18 Consul Cvu18")
+    assert not eh_freezer("Evaporador Freezer Consul Cvu17 Cvu18 326014012 Original")  # R$ 780,20 no ML, 03/11 e 09/11
     assert eh_freezer("Freezer Vertical Philco 4 Gavetas 140L PFV165B")              # gaveta no meio: é freezer
     assert eh_freezer("Freezer Vertical Electrolux Fei27t 249l Compressor Inverter Branco Bivolt")
     assert eh_freezer("Freezer Vertical Degelo Manual Consul 1 Porta 121 Litros CVU18GBBNA")
