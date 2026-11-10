@@ -17,7 +17,7 @@ h1{font-size:22px;margin:0 0 4px} .sub{color:var(--mut);margin:0 0 20px}
 .card{background:var(--card);border:1px solid var(--ln);border-radius:12px;padding:14px 16px}
 .card header{display:flex;justify-content:space-between;gap:8px;align-items:baseline}
 h2{font-size:16px;margin:0} .meta,.det{color:var(--mut);font-size:13px}
-.total{font-size:24px;font-weight:650;margin:8px 0 2px} .spark{color:var(--ac);margin-top:6px}
+.total{font-size:24px;font-weight:650;margin:8px 0 2px} .total .un{font-size:15px;font-weight:500;color:var(--mut);margin-left:2px} .spark{color:var(--ac);margin-top:6px}
 .desce{color:var(--ok);font-size:14px} .sobe{color:var(--bad);font-size:14px}
 .selo{background:var(--ok);color:var(--card);border-radius:99px;font-size:11px;padding:2px 8px;white-space:nowrap}
 a{color:var(--ac)} table{width:100%;border-collapse:collapse;font-size:13px;margin-top:8px}
@@ -281,14 +281,23 @@ def gerar_relatorio(cfg, erros: list[str], destino=RELATORIO, origem=HISTORICO, 
                     delta = f'<span class="{cls}">{seta} {brl_un(abs(d)) if por_unidade(cfg) else brl(abs(d))}{un if por_unidade(cfg) else ""}</span>'
             eh_min = r["minimo"] and mel["valor"] <= r["minimo"]["valor"]
             selo = '<span class="selo">menor preço já visto</span>' if eh_min and len(r["serie"]) > 1 else ""
-            corpo = (f'<div class="total">{brl(mel["total_pix"])} {delta}</div>'
-                     f'{selo_augustinus(mel, referencia, cfg)}'
+            # como no índice: com unidade padrão, o destaque é o preço por unidade e o total vira detalhe
+            padrao = descoberta and unidade_de_comparacao(cfg) is not None and por_un is not None
+            if padrao:
+                topo = (f'<div class="total">{brl_un(por_un)}<span class="un">{e(un)}</span> '
+                        f'{delta if por_unidade(cfg) else ""}</div>'
+                        f'<div class="det"><b>{brl(mel["total_pix"])}</b> entregue'
+                        f'{"" if por_unidade(cfg) else " " + delta}{aviso_kit(mel["produto"], cfg)}</div>')
+            else:
+                topo = f'<div class="total">{brl(mel["total_pix"])} {delta}</div>'
+            corpo = (topo
+                     + f'{selo_augustinus(mel, referencia, cfg)}'
                      f'<div class="det">{brl(mel["preco_pix"])}{"" if descoberta else " no Pix"} + '
                      f'{"frete não informado" if mel["frete"] is None else brl(mel["frete"]) + " de frete"}'
                      f' · {e(mel["loja"])} ({e(mel["vendedor"])}) · {e(mel["prazo"])}</div>'
                      f'<div class="det">Cartão: {brl(mel["total_cartao"])} · '
                      + (f'<b>{brl_un(por_un)}{un}</b> entregue{aviso_kit(mel["produto"], cfg) if descoberta else ""} · '
-                        if conta else '')
+                        if conta and not padrao else '')
                      + f'mínimo histórico '
                      f'{brl_un(r["minimo"]["valor"]) if por_unidade(cfg) else brl(r["minimo"]["valor"])}{un if por_unidade(cfg) else ""} em {e(r["minimo"]["data"][:10])}</div>'
                      f'<div class="spark">{sparkline(r["serie"])}</div>'
