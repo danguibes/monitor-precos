@@ -11,15 +11,15 @@ termos = ["Samsung S21", "Samsung S22", "Samsung S23", "Samsung S24", "Samsung S
 
 [regras]
 # o modelo como palavra: "S24", "S24+", "S24 FE", "S24 Ultra"; nunca "S240" nem "A24"
-incluir = ['samsung|galaxy', '\bs2[1-6](?!\d)']
+incluir = ['samsung|galaxy', '\bs2[1-6](?!\d)', '(?<!\d)256(?!\d)', '(?<!\d)8\s*gb\b']
 excluir = ['capa|capinha|pel[ií]cula|\bcase\b|carregador|\bcabo\b|suporte|vidro|lente|bateria|display|\btela\b',
            'frontal|tampa|carca[cç]a|\bflex\b|gabinete|pulseira|\bbuds\b|\bwatch\b|\btab\b|adaptador|fone',
-           'usad[oa]|recondicionad[oa]|semi[- ]?nov[oa]|tablet|manual|livro']
+           'usad[oa]|recondicionad[oa]|semi[- ]?nov[oa]|tablet|manual|livro|caixa aberta']
 
 [pedido]
 numero = 13
 termos = "Samsung S21\nSamsung S22\nSamsung S23\nSamsung S24\nSamsung S25\nSamsung S26"
-precisa = "samsung|galaxy\ns21-s26"
-exclui = "capa, película, case, carregador, cabo, suporte, vidro, lente, bateria, display, tela, peças, watch, tab, buds, fone, usado, recondicionado, semi-novo, tablet, manual, livro"
+precisa = "samsung|galaxy\ns21-s26\n256\n8 GB"
+exclui = "capa, película, case, carregador, cabo, suporte, vidro, lente, bateria, display, tela, peças, watch, tab, buds, fone, usado, recondicionado, semi-novo, tablet, manual, livro, caixa aberta"
 tamanho = ""
 pack = ""
