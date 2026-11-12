@@ -34,3 +34,8 @@ nao_publicar = ["Rua Exemplo", "ap 00"]
 # usuario = "monitor_pedidos.<ref>"
 # senha = "..."
 # conta = "danilo"
+
+# Opcional: só para ferramentas/sonda_oxylabs.py (teste da Oxylabs contra o gabarito do
+# monitor). É a chave gerada na instância do Web API no painel, não o login do painel.
+# [oxylabs]
+# chave = "..."
