@@ -83,11 +83,15 @@ def travar_rodada():
 
     Devolve o arquivo travado (solto ao sair do processo) ou None se outra rodada já segura.
     """
-    import msvcrt
     TRAVA_RODADA.parent.mkdir(parents=True, exist_ok=True)
     f = open(TRAVA_RODADA, "a+")
     try:
-        msvcrt.locking(f.fileno(), msvcrt.LK_NBLCK, 1)
+        try:
+            import msvcrt  # Windows, onde o monitor roda
+            msvcrt.locking(f.fileno(), msvcrt.LK_NBLCK, 1)
+        except ImportError:  # Linux, onde o GitHub roda os testes: sem isto o teste da trava sempre falhava
+            import fcntl
+            fcntl.flock(f.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
     except OSError:
         f.close()
         return None
